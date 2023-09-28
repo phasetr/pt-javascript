@@ -1,4 +1,17 @@
+"use client"
+import { useState } from "react";
+
 export default function Signup() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    console.log("submit", name, email, password);
+  }
+
+
   return (
     <div
       style={{ height: "88vh" }}
@@ -11,7 +24,7 @@ export default function Signup() {
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form>
+          <form onSubmit={(e) => handleSubmit(e)}>
             <div>
               <label
                 htmlFor="email"
@@ -26,6 +39,7 @@ export default function Signup() {
                 autoComplete="name"
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div className="mt-6">
@@ -42,6 +56,7 @@ export default function Signup() {
                 autoComplete="email"
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="mt-6">
@@ -58,6 +73,7 @@ export default function Signup() {
                 autoComplete="new-password"
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div className="mt-6">
