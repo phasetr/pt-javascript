@@ -16,6 +16,8 @@ npx create-next-app client --ts
 npm init -y
 ```
 
+- `Prisma`初期化周りは公式を確認しよう
+
 ## supabase
 
 - 2023-09-28-fullstack-sns-development
