@@ -17,6 +17,12 @@ npm init -y
 ```
 
 - `Prisma`初期化周りは公式を確認しよう
+- マイグレーションは次の通り
+
+```shell
+npx prisma migrate dev --name <some name>
+npx prisma migrate dev --name init
+```
 
 ## supabase
 
