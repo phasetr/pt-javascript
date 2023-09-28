@@ -15,3 +15,8 @@ npx create-next-app client --ts
 ```shell
 npm init -y
 ```
+
+## supabase
+
+- 2023-09-28-fullstack-sns-development
+- FHw7VzR6X30W9eU8
