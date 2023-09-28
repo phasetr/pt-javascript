@@ -1,7 +1,8 @@
-import express from "express";
-import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
+const express = require("express");
+require("dotenv").config();
+const bcrypt = require("bcrypt");
+const { PrismaClient } = require("@prisma/client");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 const PORT = 8000;
