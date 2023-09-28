@@ -1,0 +1,20 @@
+## api auth register1
+POST http://localhost:8000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "phasetr",
+  "email": "phasetr@gmail.com",
+  "password": "phasetr"
+}
+
+###
+## api auth register2
+POST http://localhost:8000/api/auth/register
+Content-Type: application/json
+
+{
+"username": "phasetr2",
+"email": "phasetr+added@gmail.com",
+"password": "phasetr2"
+}

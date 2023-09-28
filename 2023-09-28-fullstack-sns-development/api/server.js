@@ -4,8 +4,10 @@ import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const PORT = 8000;
-
 const prisma = new PrismaClient();
+
+app.use(express.json());
+
 app.get("/", (req, res) => {
   console.log("Hello World!");
   res.send("<h1>Hello World!</h1>");
