@@ -6,10 +6,16 @@ const prisma = new PrismaClient();
 
 // 新規ユーザー登録API
 router.post("/register", async (req, res) => {
-  const { username, email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({ data: { username, email, password: hashedPassword } });
-  return res.json(user);
+  try{
+    const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({ data: { username, email, password: hashedPassword } });
+    return res.json(user);
+  } catch (err){
+    console.log(err)
+    // TODO: エラーの型を切って適切な返り値を設定する
+    return res.json(err);
+  }
 })
 
 // ログインAPI

@@ -4,7 +4,7 @@ import apiClient from "@/app/lib/api-client";
 import { useRouter } from "next/navigation";
 
 export default function Signup() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -15,7 +15,12 @@ export default function Signup() {
     // send request to server
     // TODO: validate email and password
     try {
-      apiClient.post("/auth/register", { name, email, password });
+      const res = await apiClient.post("/auth/register", JSON.stringify({ username, email, password }));
+      if (res.status !== 200) {
+        console.log(res);
+        // TODO: 適切なエラーメッセージを設定して画面に表示する
+        return;
+      }
       router.push("/login");
     } catch (err) {
       alert(err);
@@ -37,19 +42,19 @@ export default function Signup() {
           <form onSubmit={(e) => handleSubmit(e)}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700"
               >
-                Name
+                User Name
               </label>
               <input
-                id="name"
-                name="name"
+                id="username"
+                name="username"
                 type="text"
-                autoComplete="name"
+                autoComplete="username"
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="mt-6">
