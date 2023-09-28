@@ -18,3 +18,13 @@ Content-Type: application/json
 "email": "phasetr+added@gmail.com",
 "password": "phasetr2"
 }
+
+###
+## api auth login
+POST http://localhost:8000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "phasetr@gmail.com",
+  "password": "phasetr"
+}

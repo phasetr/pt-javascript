@@ -36,7 +36,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: "1d" });
-  return res.json({ user, token });
+  return res.json({ token });
 })
 
 app.listen(PORT, () => console.log(`server is running on port ${PORT}`))
