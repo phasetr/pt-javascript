@@ -11,11 +11,9 @@ export default function Signup() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    // send request to server
     // TODO: validate email and password
     try {
-      const res = await apiClient.post("/auth/register", JSON.stringify({ username, email, password }));
+      const res = await apiClient.post("/auth/register", { username, email, password });
       if (res.status !== 200) {
         console.log(res);
         // TODO: 適切なエラーメッセージを設定して画面に表示する
