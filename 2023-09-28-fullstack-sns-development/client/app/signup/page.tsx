@@ -1,16 +1,26 @@
-"use client"
+"use client";
 import { useState } from "react";
+import apiClient from "@/app/lib/api-client";
+import { useRouter } from "next/navigation";
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log("submit", name, email, password);
-  }
 
+    // send request to server
+    // TODO: validate email and password
+    try {
+      apiClient.post("/auth/register", { name, email, password });
+      router.push("/login");
+    } catch (err) {
+      alert(err);
+    }
+  }
 
   return (
     <div
