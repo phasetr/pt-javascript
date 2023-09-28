@@ -1,5 +1,5 @@
 "use client";
-import { Database } from "../../../database.types";
+import { Database } from "@/database.types";
 import { useRouter } from "next/navigation";
 import useStore from "@/store";
 import supabase from "@/utils/supabase";

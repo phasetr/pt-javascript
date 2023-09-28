@@ -1,5 +1,5 @@
 import { createServerComponentSupabaseClient } from "@supabase/auth-helpers-nextjs";
-import { Database } from "../../../database.types";
+import { Database } from "@/database.types";
 import { cookies, headers } from "next/headers";
 import TodoItem from "@/app/components/todo-item";
 

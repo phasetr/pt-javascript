@@ -1,4 +1,4 @@
-import { Database } from "../../../../database.types";
+import { Database } from "@/database.types";
 import { Headers } from "next/dist/compiled/@edge-runtime/primitives";
 import { notFound } from "next/navigation";
 import { format } from "util";

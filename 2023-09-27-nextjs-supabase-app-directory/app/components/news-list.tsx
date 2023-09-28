@@ -1,4 +1,4 @@
-import { Database } from "../../../database.types";
+import { Database } from "@/database.types";
 import Counter from "@/app/components/counter";
 
 type News = Database["public"]["Tables"]["news"]["Row"]
