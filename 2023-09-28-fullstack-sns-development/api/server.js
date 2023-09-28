@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const app = express();
 const PORT = 8000;
@@ -33,6 +34,9 @@ app.post("/api/auth/login", async (req, res) => {
   if (!isPasswordValid) {
     return res.status(401).json({ error: "Invalid password" });
   }
+
+  const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+  return res.json({ user, token });
 })
 
 app.listen(PORT, () => console.log(`server is running on port ${PORT}`))
