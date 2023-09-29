@@ -2,11 +2,24 @@
 import Post from "@/app/components/post";
 import apiClient from "@/app/lib/api-client";
 import { PostType } from "@/types";
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function Timeline() {
   const [postText, setPostText] = React.useState("");
   const [latestPosts, setLatestPosts] = React.useState<PostType[]>([]);
+
+  useEffect(() => {
+    async function fetchLatestPosts() {
+      try {
+        const response = await apiClient.get("/posts/get_latest_posts");
+        setLatestPosts(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    fetchLatestPosts();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
