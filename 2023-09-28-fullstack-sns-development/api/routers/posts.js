@@ -5,27 +5,31 @@ const prisma = new PrismaClient();
 
 // つぶやき投稿用API
 router.post("/post", isAuthenticated, async (req, res) => {
-  const { content } = req.body;
-  if (!content) {
-    return res.status(400).json({ message: "Empty post" });
-  }
+    const { content } = req.body;
+    if (!content) {
+      return res.status(400).json({ message: "Empty post" });
+    }
 
-  try {
-    const newPost = await prisma.post.create({
-      data: {
-        content: content,
-        authorId: req.userId
-      },
-      include: {
-        author: true
-      }
-    });
-    return res.status(201).json(newPost);
-  } catch (err) {
-    console.log(err)
-    return res.status(500).json({ message: "Internal server error" });
+    try {
+      const newPost = await prisma.post.create({
+        data: {
+          content: content,
+          authorId: req.userId
+        },
+        include: {
+          author: {
+            include: { profile: true }
+          }
+        }
+      });
+      return res.status(201).json(newPost);
+    } catch
+      (err) {
+      console.log(err)
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
-})
+)
 
 // 最新つぶやき取得用API
 router.get("/get_latest_posts", async (req, res) => {
@@ -33,7 +37,11 @@ router.get("/get_latest_posts", async (req, res) => {
     const latestPosts = await prisma.post.findMany({
       take: 10,
       orderBy: { createdAt: "desc" },
-      include: { author: true }
+      include: {
+        author: {
+          include: { profile: true }
+        }
+      }
     });
     return res.status(200).json(latestPosts);
   } catch (err) {
