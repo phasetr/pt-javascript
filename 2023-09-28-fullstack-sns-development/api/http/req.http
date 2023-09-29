@@ -28,3 +28,7 @@ Content-Type: application/json
   "email": "phasetr@gmail.com",
   "password": "phasetr"
 }
+
+###
+## api profile
+GET http://localhost:8000/api/users/profile/6
