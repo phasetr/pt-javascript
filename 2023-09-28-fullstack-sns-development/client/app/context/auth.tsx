@@ -1,5 +1,6 @@
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
+import apiClient from "@/app/lib/api-client";
 
 interface AuthContextType {
   login: (token: string) => void;
@@ -11,7 +12,7 @@ interface AuthProviderProps {
 }
 
 const AuthContext = React.createContext<AuthContextType>({
-  login: (token: string) => {
+  login: () => {
   },
   logout: () => {
   },
@@ -22,6 +23,11 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+  }, []);
+
   const login = async (token: string) => {
     localStorage.setItem("auth_token", token);
   };
