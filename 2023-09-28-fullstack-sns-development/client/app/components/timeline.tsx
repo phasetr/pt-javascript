@@ -40,7 +40,7 @@ export default function Timeline() {
             </button>
           </form>
         </div>
-        {latestPosts.map((post) => (<Post key={post.id}/>))}
+        {latestPosts.map((post) => (<Post key={post.id} post={post}/>))}
       </main>
     </div>
   );
