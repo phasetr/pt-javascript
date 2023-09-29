@@ -50,4 +50,20 @@ router.get("/get_latest_posts", async (req, res) => {
   }
 })
 
+// あるユーザーの投稿内容取得用API
+router.get("/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const posts = await prisma.post.findMany({
+      where: { authorId: parseInt(userId) },
+      orderBy: { createdAt: "desc" },
+      include: { author: true }
+    });
+    return res.status(200).json(posts);
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;
