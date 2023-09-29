@@ -20,7 +20,7 @@ export default function NavBar() {
                   href={`/profile/${user.id}`}
                   className="bg-white text-gray-900 py-2 px-3 rounded-lg font-medium"
                 >
-                  Profile
+                  {user.username}
                 </Link>
                 <button
                   onClick={() => logout()}
