@@ -14,6 +14,9 @@ router.post("/post", async (req, res) => {
       data: {
         content: content, authorId: 1 // TODO: ログインユーザーのIDを取得する
       },
+      include: {
+        author: true
+      }
     });
     return res.status(201).json(newPost);
   } catch (err) {
@@ -26,8 +29,9 @@ router.post("/post", async (req, res) => {
 router.get("/get_latest_posts", async (req, res) => {
   try {
     const latestPosts = await prisma.post.findMany({
-      take:10,
+      take: 10,
       orderBy: { createdAt: "desc" },
+      include: { author: true }
     });
     return res.status(200).json(latestPosts);
   } catch (err) {
