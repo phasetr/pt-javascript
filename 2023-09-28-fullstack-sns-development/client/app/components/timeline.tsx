@@ -1,17 +1,20 @@
 "use client";
 import Post from "@/app/components/post";
 import apiClient from "@/app/lib/api-client";
+import { PostType } from "@/types";
 import React from "react";
 
 export default function Timeline() {
   const [postText, setPostText] = React.useState("");
+  const [latestPosts, setLatestPosts] = React.useState<PostType[]>([]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      await apiClient.post("/posts/post", {
+      const newPost = await apiClient.post("/posts/post", {
         content: postText
       });
+      setLatestPosts((prevPosts) => [newPost.data, ...prevPosts]);
       setPostText("");
     } catch (err) {
       alert("You should login first!");
@@ -37,7 +40,7 @@ export default function Timeline() {
             </button>
           </form>
         </div>
-        <Post/>
+        {latestPosts.map((post) => (<Post key={post.id}/>))}
       </main>
     </div>
   );
