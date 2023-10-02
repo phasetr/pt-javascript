@@ -3,7 +3,7 @@
 - [【Next.js/Node.js/Prisma/Supabase】本格的なSNSアプリをフルスタック構築するマスター講座](https://www.udemy.com/course/fullstack-sns-development/)
 - [フロントエンド](https://github.com/Shin-sibainu/udemy-sns-client)
 - [バックエンド](https://github.com/Shin-sibainu/udemy-sns-api)
-- リリース部分は未対応
+- 最終的なリリース部分は未対応：`env`の設定はしている
 
 ## フロントエンド
 
