@@ -12,3 +12,12 @@ test("band component displays correct band information", async () => {
   });
   expect(heading).toBeInTheDocument();
 });
+
+test("band component displays error message", async () => {
+  render(<BandComponent band={null} error="error message" />);
+
+  const errorHeading = screen.getByRole("heading", {
+    name: /could not retrieve band data: error message/i,
+  });
+  expect(errorHeading).toBeInTheDocument();
+});
