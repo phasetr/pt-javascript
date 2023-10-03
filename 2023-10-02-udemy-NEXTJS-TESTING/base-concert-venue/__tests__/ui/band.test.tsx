@@ -8,7 +8,7 @@ test("band component displays correct band information", async () => {
   render(<BandComponent band={fakeBands[0]} error={null} />);
 
   const heading = screen.getByRole("heading", {
-    name: /the wandering bunnines/i,
+    name: /the wandering bunnies/i,
   });
   expect(heading).toBeInTheDocument();
 });
