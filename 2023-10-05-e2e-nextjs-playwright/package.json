@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next build && next start",
+    "lint": "next lint",
+    "test": "playwright test"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.13",

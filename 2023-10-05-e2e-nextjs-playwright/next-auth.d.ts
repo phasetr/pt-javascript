@@ -7,3 +7,4 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
 }
+
