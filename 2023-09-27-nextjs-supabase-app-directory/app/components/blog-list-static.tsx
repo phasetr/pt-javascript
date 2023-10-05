@@ -19,11 +19,13 @@ async function fetchBlogs() {
 
 export default async function BlogListStatic() {
   const blogs = await fetchBlogs();
-  return <div className="p-4">
-    {blogs?.map((blog) => (
-      <li key={blog.id} className="my-1 text-base">
-        <Link prefetch={false} href={`/blogs/${blog.id}`}>{blog.title}</Link>
-      </li>
-    ))}
-  </div>;
+  return (
+    <div className="p-4">
+      {blogs?.map((blog) => (
+        <li key={blog.id} className="my-1 text-base">
+          <Link prefetch={false} href={`/blogs/${blog.id}`}>{blog.title}</Link>
+        </li>
+      ))}
+    </div>
+  );
 }

@@ -21,7 +21,6 @@ export default function EditTask() {
     e.preventDefault();
     if (editedTask.id === "") {
       // 新規作成
-      // const { error } = await supabase
       await supabase
         .from("todos")
         .insert([{ title: editedTask.title, user_id: loginUser.id }]);
@@ -29,7 +28,6 @@ export default function EditTask() {
       reset();
     } else {
       // 編集
-      // const { error } = await supabase
       await supabase
         .from("todos")
         .update({ title: editedTask.title })
