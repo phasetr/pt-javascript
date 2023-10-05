@@ -49,3 +49,17 @@ nest g service user --no-spec
 nest g service todo --no-spec
 nest g service prisma --no-spec
 ```
+
+```shell
+nest g module auth
+nest g module user
+nest g module todo
+nest g module prisma
+nest g controller auth
+nest g controller user
+nest g controller todo
+nest g service auth
+nest g service user
+nest g service todo
+nest g service prisma
+```
