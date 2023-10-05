@@ -12,7 +12,8 @@ npm i -g @nestjs/cli
 nest new api-lesson
 ```
 
-- `localhost:3005`で起動するように設定
+- `main.ts`で`localhost:3005`で起動するように設定
+- `.env.sample`をコピーして適切に設定
 
 ```shell
 yarn add -D prisma
@@ -30,7 +31,7 @@ npx prisma generate
 
 ```shell
 yarn add @nestjs/config @nestjs/jwt @nestjs/passport 
-yarn add cookie-parser csurf passport passport-jwt bcrypt class-validator
+yarn add cookie-parser csurf passport passport-jwt bcrypt class-validator class-transformer
 yarn add -D @types/express @types/cookie-parser @types/csurf @types/passport-jwt @types/bcrypt
 ```
 
