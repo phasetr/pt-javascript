@@ -6,9 +6,7 @@ import supabase from "@/utils/supabase";
 
 export default function SupabaseListener({ accessToken }: { accessToken?: string }) {
   const router = useRouter();
-  const {
-    updateLoginUser
-  } = useStore();
+  const { updateLoginUser } = useStore();
   useEffect(() => {
     const getUserInfo = async () => {
       const { data } = await supabase.auth.getSession();

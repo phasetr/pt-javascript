@@ -8,7 +8,6 @@ type PageProps = { params: { todoId: string } }
 
 export default async function TodoDetailPage({ params }: PageProps) {
   const supabase = createServerComponentSupabaseClient<Database>({ headers, cookies });
-  // const { data: todo, error } = await supabase
   const { data: todo } = await supabase
     .from("todos")
     .select("*")
