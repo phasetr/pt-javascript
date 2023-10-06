@@ -4,6 +4,7 @@ import axios from "axios";
 import { LogoutIcon } from "@heroicons/react/solid";
 import { Layout } from "../components/Layout";
 import { useQueryClient } from "@tanstack/react-query";
+import { UserInfo } from "../components/UserInfo";
 
 const Dashboard: NextPage = () => {
   const router = useRouter();
@@ -20,6 +21,7 @@ const Dashboard: NextPage = () => {
         className="mb-6 h-6 w-6 cursor-pointer text-indigo-500"
         onClick={logout}
       />
+      <UserInfo />
     </Layout>
   );
 };
