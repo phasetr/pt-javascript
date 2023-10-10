@@ -14,7 +14,8 @@
 
     npx create-next-app@11.1.2 .
 
-#### Node.js version 10.13以降が必要です。 -> ターミナル `node -v`でver確認出来ます。
+- `Node.js version 10.13`以降が必要です。
+- -> ターミナル `node -v`でバージョン確認できます。
 
 ### 1-3.  Apollo Client + heroicons + cross-fetch のインストール
 
@@ -72,7 +73,7 @@
 
 ## 2. TypeScript の導入
 
-https://nextjs.org/learn/excel/typescript/create-tsconfig
+- <https://nextjs.org/learn/excel/typescript/create-tsconfig>
 
 ### 2-1. 空のtsconfig.json作成
 
@@ -86,7 +87,7 @@ https://nextjs.org/learn/excel/typescript/create-tsconfig
 
     yarn dev
 
-### 2-4. _app.js, index.js -> tsx へ拡張子変更
+### 2-4. _app.js, index.tsx -> tsx へ拡張子変更
 
 ### 2-5. AppProps型追記
 
