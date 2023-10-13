@@ -6,7 +6,9 @@ import { Layout } from "../components/Layout";
 import Link from "next/link";
 
 const FetchMain: VFC = () => {
-  const { data, error } = useQuery<GetUsersQuery>(GET_USERS);
+  const { data, error } = useQuery<GetUsersQuery>(GET_USERS, {
+    fetchPolicy: "network-only"
+  });
   if (error) {
     return (
       <Layout title={"Hasura fetchPolicy"}>
