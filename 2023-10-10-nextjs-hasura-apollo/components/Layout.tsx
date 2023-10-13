@@ -1,28 +1,41 @@
+import { ReactNode, VFC } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
 
 interface Props {
-  children: React.ReactNode;
+  children: ReactNode;
   title: string;
 }
 
-export const Layout: React.FC<Props> = ({ children, title = "Welcome to Nextjs" }) => {
+export const Layout: VFC<Props> = ({
+                                     children,
+                                     title = "Welcome to Nextjs",
+                                   }) => {
   return (
-    <div className={"flex flex-col justify-center items-center min-h-screen text-gray-600 text-sm font-mono"}>
-      <Head><title>{title}</title></Head>
+    <div className="flex flex-col justify-center items-center min-h-screen text-gray-600 text-sm font-mono">
+      <Head>
+        <title>{title}</title>
+      </Head>
       <header>
-        <nav className={"bg-gray-800 w-screen"}>
-          <div className={"flex items-center pl-8 h-14"}>
-            <div className={"flex space-x-4"}>
-              <Link href={"/"}>
-                <a data-testid={"home-nav"}
-                   className={"text-gray-300 hover:bg-gray-700 px-3 py-2 rounded"}>Home</a>
+        <nav className="bg-gray-800 w-screen">
+          <div className="flex items-center pl-8 h-14">
+            <div className="flex space-x-4">
+              <Link href="/">
+                <a
+                  data-testid="home-nav"
+                  className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded"
+                >
+                  Home
+                </a>
               </Link>
-              <Link href={"/local-state-a"}>
-                <a data-testid={"makevar-nav"}
-                   className={"text-gray-300 hover:bg-gray-700 px-3 py-2 rounded"}>makeVar</a>
+              <Link href="/local-state-a">
+                <a
+                  data-testid="makevar-nav"
+                  className="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded"
+                >
+                  makeVar
+                </a>
               </Link>
               <Link href="/hasura-main">
                 <a
@@ -60,7 +73,7 @@ export const Layout: React.FC<Props> = ({ children, title = "Welcome to Nextjs" 
           </div>
         </nav>
       </header>
-      <main className={"flex flex-1 justify-center items-center flex-col w-screen"}>
+      <main className="flex flex-1 flex-col justify-center items-center w-screen">
         {children}
       </main>
       <footer className="w-full h-12 flex justify-center items-center border-t">
@@ -70,8 +83,9 @@ export const Layout: React.FC<Props> = ({ children, title = "Welcome to Nextjs" 
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+          Powered by{" "}
+          {/* <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" /> */}
+          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16}/>
         </a>
       </footer>
     </div>

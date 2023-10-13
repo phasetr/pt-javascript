@@ -2,17 +2,21 @@ import { Dispatch, memo, SetStateAction, VFC } from "react";
 import { DeleteUserMutationFn, Users } from "../types/generated/graphql";
 
 interface Props {
-  user: { __typename?: "users" } & Pick<Users, "id" | "name" | "created_at">;
+  user: {
+    __typename?: "users"
+  } & Pick<Users, "id" | "name" | "created_at">;
   delete_users_by_pk: DeleteUserMutationFn;
-  setEditedUser: Dispatch<SetStateAction<{
-    id: string
-    name: string
-  }>
+  setEditedUser: Dispatch<
+    SetStateAction<{
+      id: string
+      name: string
+    }>
   >;
 }
 
 export const UserItem: VFC<Props> = memo(
   ({ user, delete_users_by_pk, setEditedUser }) => {
+    //console.log('UserItem rendered')
     return (
       <div className="my-1">
         <span className="mr-2">{user.name}</span>

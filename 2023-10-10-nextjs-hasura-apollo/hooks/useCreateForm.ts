@@ -40,7 +40,9 @@ export const useCreateForm = () => {
         alert(err.message);
       }
       setUsername("");
-    }, [username]);
+    },
+    [username]
+  );
   return {
     text,
     handleSubmit,

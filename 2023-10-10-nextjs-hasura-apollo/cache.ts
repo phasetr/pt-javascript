@@ -1,6 +1,6 @@
 import { makeVar } from "@apollo/client";
 
-interface Task{
-  title:string
+interface Task {
+  title: string;
 }
-export const todoVar = makeVar<Task[]>([])
+export const todoVar = makeVar<Task[]>([]);

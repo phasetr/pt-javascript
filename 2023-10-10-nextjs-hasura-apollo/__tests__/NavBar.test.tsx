@@ -1,49 +1,51 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, cleanup } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
-import userEvent from '@testing-library/user-event'
-import { getPage, initTestHelpers } from 'next-page-tester'
-import { setupServer } from 'msw/node'
-import { handlers } from '../mock/handlers'
-import 'setimmediate'
+import { cleanup, render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/extend-expect";
+import userEvent from "@testing-library/user-event";
+import { getPage, initTestHelpers } from "next-page-tester";
+import { setupServer } from "msw/node";
+import { handlers } from "../mock/handlers";
+import "setimmediate";
 
-initTestHelpers()
+process.env.NEXT_PUBLIC_HASURA_URL = "https://desired-camel-38.hasura.app/v1/graphql";
 
-const server = setupServer(...handlers)
+initTestHelpers();
+
+const server = setupServer(...handlers);
 
 beforeAll(() => {
-  server.listen()
-})
+  server.listen();
+});
 afterEach(() => {
-  server.resetHandlers()
-  cleanup()
-})
+  server.resetHandlers();
+  cleanup();
+});
 afterAll(() => {
-  server.close()
-})
+  server.close();
+});
 
-describe('Navigation Test Cases', () => {
-  it('Should route to selected page in navbar', async () => {
+describe("Navigation Test Cases", () => {
+  it("Should route to selected page in navbar", async () => {
     const { page } = await getPage({
-      route: '/',
-    })
-    render(page)
-    expect(await screen.findByText('Next.js + GraphQL')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('makevar-nav'))
-    expect(await screen.findByText('makeVar')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('fetchpolicy-nav'))
-    expect(await screen.findByText('Hasura main page')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('crud-nav'))
-    expect(await screen.findByText('CRUD(Hasura)')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('ssg-nav'))
-    expect(await screen.findByText('SSG+ISR')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('memo-nav'))
+      route: "/",
+    });
+    render(page);
+    expect(await screen.findByText("Next.js + GraphQL")).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("makevar-nav"));
+    expect(await screen.findByText("makeVar")).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("fetchpolicy-nav"));
+    expect(await screen.findByText("Hasura main page")).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("crud-nav"));
+    expect(await screen.findByText("CRUD(Hasura)")).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("ssg-nav"));
+    expect(await screen.findByText("SSG+ISR")).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("memo-nav"));
     expect(
-      await screen.findByText('Custom Hook + useCallback + memo')
-    ).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('home-nav'))
-    expect(await screen.findByText('Next.js + GraphQL')).toBeInTheDocument()
-  })
-})
+      await screen.findByText("Custom Hook + useCallback + memo")
+    ).toBeInTheDocument();
+    userEvent.click(screen.getByTestId("home-nav"));
+    expect(await screen.findByText("Next.js + GraphQL")).toBeInTheDocument();
+  });
+});

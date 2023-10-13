@@ -4,9 +4,9 @@ import { CreateUser } from "../components/CreateUser";
 
 const HooksMemo: VFC = () => {
   return (
-    <Layout title={"Hooks Memo"}>
+    <Layout title="Hooks memo">
       <CreateUser/>
-    </Layout>);
+    </Layout>
+  );
 };
-
 export default HooksMemo;

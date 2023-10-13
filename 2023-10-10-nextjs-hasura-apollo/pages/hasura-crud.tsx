@@ -1,11 +1,11 @@
 import { FormEvent, useState, VFC } from "react";
-import { CREATE_USER, DELETE_USER, GET_USERS, UPDATE_USER } from "../queries/queries";
-import { CreateUserMutation, DeleteUserMutation, GetUsersQuery, UpdateUserMutation } from "../types/generated/graphql";
 import { useMutation, useQuery } from "@apollo/client";
+import { CREATE_USER, DELETE_USER, GET_USERS, UPDATE_USER, } from "../queries/queries";
+import { CreateUserMutation, DeleteUserMutation, GetUsersQuery, UpdateUserMutation, } from "../types/generated/graphql";
 import { Layout } from "../components/Layout";
 import { UserItem } from "../components/UserItem";
 
-const HasuraCrud: VFC = () => {
+const HasuraCRUD: VFC = () => {
   const [editedUser, setEditedUser] = useState({ id: "", name: "" });
   const { data, error } = useQuery<GetUsersQuery>(GET_USERS, {
     fetchPolicy: "cache-and-network"
@@ -18,10 +18,10 @@ const HasuraCrud: VFC = () => {
         fields: {
           users(existingUsers, { toReference }) {
             return [toReference(cacheId), ...existingUsers];
-          }
-        }
+          },
+        },
       });
-    }
+    },
   });
   const [delete_users_by_pk] = useMutation<DeleteUserMutation>(DELETE_USER, {
     update(cache, { data: { delete_users_by_pk } }) {
@@ -31,28 +31,31 @@ const HasuraCrud: VFC = () => {
             return existingUsers.filter(
               (user) => delete_users_by_pk.id !== readField("id", user)
             );
-          }
-        }
+          },
+        },
       });
-    }
+    },
   });
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editedUser.id) {
-      // 編集処理
       try {
         await update_users_by_pk({
-          variables: { id: editedUser.id, name: editedUser.name }
+          variables: {
+            id: editedUser.id,
+            name: editedUser.name,
+          },
         });
       } catch (err) {
         alert(err.message);
       }
       setEditedUser({ id: "", name: "" });
     } else {
-      // 新規作成処理
       try {
         await insert_users_one({
-          variables: { name: editedUser.name }
+          variables: {
+            name: editedUser.name,
+          },
         });
       } catch (err) {
         alert(err.message);
@@ -60,12 +63,12 @@ const HasuraCrud: VFC = () => {
       setEditedUser({ id: "", name: "" });
     }
   };
-  if(error) return <Layout title={"Hasura CRUD"}><p>Error: {error.message}</p></Layout>;
+  if (error) return <Layout title="Hasura CRUD">Error: {error.message}</Layout>;
   return (
-    <Layout title={"Hasura CRUD"}>
-      <p className={"mb-3 font-bold"}>Hasura CRUD</p>
+    <Layout title="Hasura CRUD">
+      <p className="mb-3 font-bold">Hasura CRUD</p>
       <form
-        className={"flex flex-col justify-center items-center"}
+        className="flex flex-col justify-center items-center"
         onSubmit={handleSubmit}
       >
         <input
@@ -83,7 +86,7 @@ const HasuraCrud: VFC = () => {
           data-testid="new"
           type="submit"
         >
-          {editedUser.id ? 'Update' : 'Create'}
+          {editedUser.id ? "Update" : "Create"}
         </button>
       </form>
 
@@ -95,9 +98,9 @@ const HasuraCrud: VFC = () => {
             setEditedUser={setEditedUser}
             delete_users_by_pk={delete_users_by_pk}
           />
-        )
+        );
       })}
-    </Layout>);
+    </Layout>
+  );
 };
-
-export default HasuraCrud;
+export default HasuraCRUD;

@@ -1,36 +1,38 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, cleanup } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
-import { getPage, initTestHelpers } from 'next-page-tester'
-import { setupServer } from 'msw/node'
-import { handlers } from '../mock/handlers'
-import 'setimmediate'
+import { cleanup, render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/extend-expect";
+import { getPage, initTestHelpers } from "next-page-tester";
+import { setupServer } from "msw/node";
+import { handlers } from "../mock/handlers";
+import "setimmediate";
 
-initTestHelpers()
+process.env.NEXT_PUBLIC_HASURA_URL = "https://desired-camel-38.hasura.app/v1/graphql";
 
-const server = setupServer(...handlers)
+initTestHelpers();
+
+const server = setupServer(...handlers);
 beforeAll(() => {
-  server.listen()
-})
+  server.listen();
+});
 afterEach(() => {
-  server.resetHandlers()
-  cleanup()
-})
+  server.resetHandlers();
+  cleanup();
+});
 afterAll(() => {
-  server.close()
-})
+  server.close();
+});
 
-describe('SSG Test Cases', () => {
-  it('Should render the list of users pre-fetched by getStaticProps', async () => {
+describe("SSG Test Cases", () => {
+  it("Should render the list of users pre-fetched by getStaticProps", async () => {
     const { page } = await getPage({
-      route: '/hasura-ssg',
-    })
-    render(page)
-    expect(await screen.findByText('SSG+ISR')).toBeInTheDocument()
-    expect(screen.getByText('Test user A')).toBeInTheDocument()
-    expect(screen.getByText('Test user B')).toBeInTheDocument()
-    expect(screen.getByText('Test user C')).toBeInTheDocument()
-  })
-})
+      route: "/hasura-ssg",
+    });
+    render(page);
+    expect(await screen.findByText("SSG+ISR")).toBeInTheDocument();
+    expect(screen.getByText("Test user A")).toBeInTheDocument();
+    expect(screen.getByText("Test user B")).toBeInTheDocument();
+    expect(screen.getByText("Test user C")).toBeInTheDocument();
+  });
+});

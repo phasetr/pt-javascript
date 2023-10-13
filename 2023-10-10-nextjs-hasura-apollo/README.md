@@ -10,24 +10,24 @@
     npm install --global yarn
     yarn --version
 
-### 1-2.  create-next-app
+### 1-2. create-next-app
 
     npx create-next-app@11.1.2 .
 
 - `Node.js version 10.13`以降が必要です。
 - -> ターミナル `node -v`でバージョン確認できます。
 
-### 1-3.  Apollo Client + heroicons + cross-fetch のインストール
+### 1-3. Apollo Client + heroicons + cross-fetch のインストール
 
     yarn add @apollo/client@3.3.15 graphql@15.5.0 @apollo/react-hooks@4.0.0 cross-fetch@3.1.4 @heroicons/react@1.0.6
 
-### 1-4.  React-Testing-Library + MSW + next-page-tester のインストール
+### 1-4. React-Testing-Library + MSW + next-page-tester のインストール
 
     yarn add react@17.0.2 react-dom@17.0.2
     yarn add next@11.1.2
     yarn add -D msw@0.35.0 next-page-tester@0.29.0 jest@26.6.3 @testing-library/react@11.2.6 @types/jest@26.0.22 @testing-library/jest-dom@5.11.10 @testing-library/dom@7.30.3 @testing-library/user-event@13.1.3 babel-jest@26.6.3 @babel/core@7.17.9 jest-css-modules
 
-### 1-5.  Project folder 直下に".babelrc"ファイルを作成して下記設定を追加
+### 1-5. Project folder 直下に".babelrc"ファイルを作成して下記設定を追加
 
     touch .babelrc
 
@@ -37,7 +37,7 @@
     }
 ~~~
 
-### 1-6.  package.json に jest の設定を追記
+### 1-6. package.json に jest の設定を追記
 
 ~~~
     "jest": {
@@ -51,7 +51,7 @@
     }
 ~~~
 
-### 1-7.  package.jsonに test scriptを追記
+### 1-7. package.jsonに test scriptを追記
 
 ~~~
     "scripts": {
@@ -60,7 +60,7 @@
     },
 ~~~
 
-### 1-8.  prettierの設定 : settingsでRequire Config + Format On Saveにチェック
+### 1-8. prettierの設定 : settingsでRequire Config + Format On Saveにチェック
 
     touch .prettierrc
 
@@ -169,15 +169,15 @@ Time:        1.728 s, estimated 2 s
 
 ## 5. GraphQL codegen
 
-### 5-1.  install modules + init
+### 5-1. install modules + init
 
     yarn add -D @graphql-codegen/cli@1.21.3
     yarn graphql-codegen init
     yarn
     yarn add -D @graphql-codegen/typescript@1.21.1
 
-### 5-2.  add queries in queries/queries.ts file
+### 5-2. add queries in queries/queries.ts file
 
-### 5-3.  generate types automatically
+### 5-3. generate types automatically
 
     yarn gen-types
