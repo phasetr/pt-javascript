@@ -7,7 +7,10 @@ import Link from "next/link";
 
 const FetchMain: VFC = () => {
   const { data, error } = useQuery<GetUsersQuery>(GET_USERS, {
-    fetchPolicy: "network-only"
+    // fetchPolicy: "network-only"
+    fetchPolicy: "cache-and-network"
+    // fetchPolicy: "cache-first"
+    // fetchPolicy: "no-cache"
   });
   if (error) {
     return (
