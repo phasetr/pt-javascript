@@ -27,98 +27,82 @@ npx wrangler whoami
 
 ### プロジェクトの初期化
 
+- このリポジトリを前提にするなら以下のコマンドは発行不要
+
 ```shell
-npm create cloudflare@latest -- my-remix-app --framework=remix
+npm create cloudflare@latest -- remix-first-sample --framework=remix
 ```
 
-手動デプロイ
+### `Pages`へのデプロイ確認
+
+- 手動デプロイ
 
 ```shell
 npm run deploy
 ```
 
-コマンド出力に現れる URL にアクセスする。
+- コマンド出力に現れる`URL`にアクセスする。
+- 必要に応じてソースを追加・修正して再度手動デプロイして、正しくデプロイできているか確認する。
 
-必要に応じてソースを追加・修正して再度手動デプロイして、正しくデプロイできているか確認する。
-
-### `D1`データベースへのアクセス
+### `D1`の環境構築
 
 [Configure your D1 database](https://developers.cloudflare.com/d1/get-started/)に沿う。
 
-- `D1`データベースを作成する
+- クラウド上に`D1`データベースを作成する
 
 ```shell
-npx wrangler d1 create prod-d1-my-first-remix
+npx wrangler d1 create remix-first-sample
 ```
 
-- `wrangler.toml`の`[[d1_databases]]`セクションに適切な値を記入する
-
-- スキーマを作る
+- 出力結果の値を`wrangler.toml`の`[[d1_databases]]`に記録する
+  - `TODO`：秘匿するべきはずの値を直接書くのが嫌。
+    `.env`や`wrangler pages secret put DATABASE_NAME`で設定した値を読み込む方法を探す
+- ローカルへのコマンド発行（下記コマンドで生成される`SQLite`は`.wrangler/state/<version>/d1`に置かれる
+  - 第一のコマンドはまだローカルにファイルがないことを確認するために発行
 
 ```shell
-mkdir db
-touch db/schema.sql
+npx wrangler d1 execute DB --local --command="SELECT * FROM Customers"
+npx wrangler d1 execute DB --local --file=db/schema.sql
+npx wrangler d1 execute DB --local --command="SELECT * FROM Customers"
 ```
 
-- まずローカルで試す
-
-```shell
-npx wrangler d1 execute prod-d1-my-first-remix --local --file=db/schema.sql
-npx wrangler d1 execute prod-d1-my-first-remix --local --command="SELECT * FROM Customers"
-```
-
-- バインディングの TypeScript の型を生成
+- バインディングの`TypeScript`の型を生成
 
 ```shell
 npm run typegen
 ```
 
-- リモートに設定する：2024-11-27 時点で`db/schema.sql`のコマンドでエラーが出る。原因調査中。当面は`Cloudflare`の WebUI 上でクエリを実行している。
+- `D1`のリモートを作成・データ投入
 
 ```shell
-npx wrangler d1 execute prod-d1-my-first-remix --remote --file=db/schema.sql
-npx wrangler d1 execute prod-d1-my-first-remix --remote --command="SELECT * FROM Customers"
+npx wrangler d1 execute remix-first-sample --remote --file=db/schema.sql
+npx wrangler d1 execute remix-first-sample --remote --command="SELECT * FROM Customers"
 ```
 
-- `routes/_index.tsx`に以下のような適当な記述を追加して`D1`から値が取れるか確認する
+### `D1`データベースへのアクセス確認
 
-```typescript
-import type { LoaderFunction, MetaFunction } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
-import { useLoaderData } from "@remix-run/react";
+- ローカル環境で正しく動くか確認する
 
-export const loader: LoaderFunction = async ({ context, params }) => {
-  const { env, cf, ctx } = context.cloudflare;
-  let { results } = await env.DB.prepare("SELECT * FROM Customers").all();
-  return json(results);
-};
-
-// export default function Index()内
-<div>
-  <h2>Welcome to Remix</h2>
-  <div>
-    A value from D1:
-    <ul>
-      {results.map(({ CustomerId, CompanyName, ContactName }) => (
-        <li key={CustomerId}>
-          <p>
-            {CustomerId}: {CompanyName}, {ContactName}
-          </p>
-        </li>
-      ))}
-    </ul>
-  </div>
-</div>;
+```shell
+npm run dev
 ```
+
+- リモートにデプロイ
+
+```shell
+npm run deploy
+```
+
+- 出力結果の`URL`から適切に`D1`アクセスができているか確認
 
 ### 作った環境の削除
 
 ```shell
-npx wrangler d1 delete prod-d1-my-first-remix
-npx wrangler delete
+npx wrangler d1 delete remix-first-sample
+npx pages wrangler remix-first-sample delete
 ```
 
-削除がうまくいかない場合は WebUI から直接削除する。
+- 削除がうまくいかない場合は`WebUI`から直接削除する。
 
 ## サンプル 2（うまくいっていない）
 
