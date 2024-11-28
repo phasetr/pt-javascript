@@ -1,5 +1,4 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
@@ -9,14 +8,23 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+type Customer = {
+  CustomerId: number;
+  CompanyName: string;
+  ContactName: string;
+}
+type LoaderData = {
+  results: Customer[];
+}
+
 export const loader: LoaderFunction = async ({ context, params }) => {
   const { env, cf, ctx } = context.cloudflare;
   let { results } = await env.DB.prepare("SELECT * FROM Customers").all();
-  return json(results);
+  return Response.json({ results: results as Customer[] });
 };
 
 export default function Index() {
-  const results = useLoaderData<typeof loader>();
+  const data = useLoaderData<LoaderData>();
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-16">
@@ -62,7 +70,7 @@ export default function Index() {
           <div>
             A value from D1:
             <ul>
-              {results.map(({ CustomerId, CompanyName, ContactName }) => (
+              {data.results.map(({ CustomerId, CompanyName, ContactName }) => (
                 <li key={CustomerId}>
                   <p>
                     {CustomerId}: {CompanyName}, {ContactName}
