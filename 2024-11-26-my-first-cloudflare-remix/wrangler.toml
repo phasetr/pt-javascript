@@ -27,7 +27,7 @@ pages_build_output_dir = "./build/client"
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#d1-databases
 [[d1_databases]]
 binding = "DB"
-database_name = ""
+database_name = "remix-first-sample"
 database_id = ""
 
 # Bind a Durable Object. Durable objects are a scale-to-zero compute primitive based on the actor model.

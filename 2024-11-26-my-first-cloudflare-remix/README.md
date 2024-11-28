@@ -33,17 +33,6 @@ npx wrangler whoami
 npm create cloudflare@latest -- remix-first-sample --framework=remix
 ```
 
-### `Pages`へのデプロイ確認
-
-- 手動デプロイ
-
-```shell
-npm run deploy
-```
-
-- コマンド出力に現れる`URL`にアクセスする。
-- 必要に応じてソースを追加・修正して再度手動デプロイして、正しくデプロイできているか確認する。
-
 ### `D1`の環境構築
 
 [Configure your D1 database](https://developers.cloudflare.com/d1/get-started/)に沿う。
@@ -58,10 +47,8 @@ npx wrangler d1 create remix-first-sample
   - `TODO`：秘匿するべきはずの値を直接書くのが嫌。
     `.env`や`wrangler pages secret put DATABASE_NAME`で設定した値を読み込む方法を探す
 - ローカルへのコマンド発行（下記コマンドで生成される`SQLite`は`.wrangler/state/<version>/d1`に置かれる
-  - 第一のコマンドはまだローカルにファイルがないことを確認するために発行
 
 ```shell
-npx wrangler d1 execute DB --local --command="SELECT * FROM Customers"
 npx wrangler d1 execute DB --local --file=db/schema.sql
 npx wrangler d1 execute DB --local --command="SELECT * FROM Customers"
 ```
@@ -79,7 +66,7 @@ npx wrangler d1 execute remix-first-sample --remote --file=db/schema.sql
 npx wrangler d1 execute remix-first-sample --remote --command="SELECT * FROM Customers"
 ```
 
-### `D1`データベースへのアクセス確認
+### ローカルでの`D1`データベースへのアクセス確認
 
 - ローカル環境で正しく動くか確認する
 
