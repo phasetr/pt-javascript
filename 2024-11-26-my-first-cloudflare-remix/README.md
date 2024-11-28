@@ -89,7 +89,7 @@ npx wrangler d1 delete remix-first-sample
 npx pages wrangler remix-first-sample delete
 ```
 
-- 削除がうまくいかない場合は`WebUI`から直接削除する。
+- 削除がうまくいかない場合は[Webのダッシュボード](https://dash.cloudflare.com)から直接削除する。
 
 ## サンプル 2（うまくいっていない）
 
