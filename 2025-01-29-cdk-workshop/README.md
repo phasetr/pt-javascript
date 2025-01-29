@@ -30,6 +30,20 @@ aws cloudformation describe-stacks --stack-name CdkWorkshopStack
 ```
 
 ```sh
+cdk deploy --hotswap
+# cdk watch
+```
+
+```sh
+cdk deploy
+aws cloudformation describe-stacks \
+  --stack-name CdkWorkshopStack \
+  --query "Stacks[0].Outputs[?OutputKey=='myApiGatewayUrlOutput'].OutputValue" \
+  --output text \
+  | xargs -I {} curl {}
+```
+
+```sh
 cdk destroy
 ```
 
