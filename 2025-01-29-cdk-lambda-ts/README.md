@@ -1,6 +1,13 @@
 # Welcome to your CDK TypeScript project
 
-- [【AWS CDK】LambdaをTypeScriptで書きたい](https://www.cloudbuilders.jp/articles/4642/)
+- [【TypeScript】AWS CDKv2でサクッとLambda関数を作る](https://qiita.com/tokkun5552/items/9e5cf5ebc817cbd4602e)
+
+## コマンド
+
+```sh
+sh deploy.sh
+aws cloudformation describe-stacks --stack-name CdkLambdaTsStack --query "Stacks[0].Outputs[?ExportName=='lambdaApiUrl'].OutputValue" --output text | xargs curl
+```
 
 ## プロジェクトの初期化：最初の一回だけ
 
@@ -18,9 +25,9 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Useful commands
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+- `npm run build`   compile typescript to js
+- `npm run watch`   watch for changes and compile
+- `npm run test`    perform the jest unit tests
+- `cdk deploy`      deploy this stack to your default AWS account/region
+- `cdk diff`        compare deployed stack with current state
+- `cdk synth`       emits the synthesized CloudFormation template

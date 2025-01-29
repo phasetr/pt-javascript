@@ -1,19 +1,30 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
+import { CfnOutput, Duration, Stack, type StackProps } from "aws-cdk-lib";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import type { Construct } from "constructs";
 
 export class CdkLambdaTsStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
+	constructor(scope: Construct, id: string, props?: StackProps) {
+		super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'CdkLambdaTsQueue', {
-      visibilityTimeout: Duration.seconds(300)
-    });
+		const api = new lambda.Function(this, "HelloWorld", {
+			functionName: "HelloWorld",
+			handler: "handler.handler",
+			runtime: lambda.Runtime.NODEJS_22_X,
+			code: new lambda.AssetCode("./src"),
+			memorySize: 512,
+			timeout: Duration.seconds(10),
+		});
 
-    const topic = new sns.Topic(this, 'CdkLambdaTsTopic');
+		// Define the Lambda function resource
+		const apiUrl = api.addFunctionUrl({
+			authType: lambda.FunctionUrlAuthType.NONE,
+		});
 
-    topic.addSubscription(new subs.SqsSubscription(queue));
-  }
+		// Define a CloudFormation Output for your URL
+		new CfnOutput(this, "lambdaApiUrlOutput", {
+			value: apiUrl.url,
+			description: "lambda function URL",
+			exportName: "lambdaApiUrl",
+		});
+	}
 }
