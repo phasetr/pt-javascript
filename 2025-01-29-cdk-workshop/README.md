@@ -1,6 +1,7 @@
 # Welcome to your CDK TypeScript project
 
 - [AWS CDK Immersion Day ワークショップ](https://catalog.us-east-1.prod.workshops.aws/workshops/10141411-0192-4021-afa8-2436f3c66bd8/ja-JP)
+- [TypeScriptによるLambda](https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/typescript-handler.html)
 - TODO
   - LambdaのコードのTypeScript化
   - コードを置く適切なディレクトリ設定の確認
