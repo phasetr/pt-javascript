@@ -1,5 +1,14 @@
 # Welcome to your CDK TypeScript project
 
+## デプロイ
+
+- `Docker`を立ち上げる
+
+```sh
+cdk deploy
+aws cloudformation describe-stacks --stack-name CdkLambdaFastifyStack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text | xargs curl
+```
+
 ## プロジェクトの初期化：最初の一回だけ
 
 ```sh
