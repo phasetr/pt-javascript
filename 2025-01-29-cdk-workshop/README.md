@@ -9,6 +9,30 @@ npm install -g aws-cdk
 cdk --version
 ```
 
+## ワークショップのコマンド履歴
+
+```sh
+cdk synth
+cdk bootstrap
+cdk deploy
+```
+
+`aws cloudformation describe-stacks`でデプロイ内容の確認
+
+```sh
+aws cloudformation describe-stacks --stack-name CdkWorkshopStack
+```
+
+```sh
+cdk diff
+cdk deploy
+aws cloudformation describe-stacks --stack-name CdkWorkshopStack
+```
+
+```sh
+cdk destroy
+```
+
 ## プロジェクトの初期化：最初の一回だけ
 
 ```sh

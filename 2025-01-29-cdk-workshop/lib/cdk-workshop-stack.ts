@@ -1,19 +1,16 @@
-import { Duration, Stack, type StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Stack, type StackProps } from 'aws-cdk-lib';
+import { Code, Function as LambdaFunction, Runtime } from "aws-cdk-lib/aws-lambda";
 import type { Construct } from 'constructs';
 
 export class CdkWorkshopStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'CdkWorkshopQueue', {
-      visibilityTimeout: Duration.seconds(300)
+    // defines an AWS Lambda resource
+    const hello = new LambdaFunction(this, 'HelloHandler', {
+      runtime: Runtime.NODEJS_18_X,
+      code: Code.fromAsset('lambda'),
+      handler: 'hello.handler',
     });
-
-    const topic = new sns.Topic(this, 'CdkWorkshopTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
   }
 }
