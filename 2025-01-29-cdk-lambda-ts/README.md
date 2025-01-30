@@ -6,7 +6,7 @@
 
 ```sh
 sh deploy.sh
-aws cloudformation describe-stacks --stack-name CdkLambdaTsStack --query "Stacks[0].Outputs[?ExportName=='lambdaApiUrl'].OutputValue" --output text | xargs curl
+aws cloudformation describe-stacks --stack-name CdkLambdaTsStack --query "Stacks[0].Outputs[?OutputKey=='LTLambdaApiUrlOutput'].OutputValue" --output text | xargs curl
 ```
 
 ## プロジェクトの初期化：最初の一回だけ

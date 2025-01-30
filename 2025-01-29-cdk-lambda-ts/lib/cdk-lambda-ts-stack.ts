@@ -5,9 +5,10 @@ import type { Construct } from "constructs";
 export class CdkLambdaTsStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
+		const projectName = "LT";
 
-		const api = new lambda.Function(this, "HelloWorld", {
-			functionName: "HelloWorld",
+		const api = new lambda.Function(this, `${projectName}-HelloWorld`, {
+			functionName: `${projectName}-HelloWorld`,
 			handler: "handler.handler",
 			runtime: lambda.Runtime.NODEJS_22_X,
 			code: new lambda.AssetCode("./src"),
@@ -21,10 +22,10 @@ export class CdkLambdaTsStack extends Stack {
 		});
 
 		// Define a CloudFormation Output for your URL
-		new CfnOutput(this, "lambdaApiUrlOutput", {
+		new CfnOutput(this, `${projectName}-LambdaApiUrlOutput`, {
 			value: apiUrl.url,
 			description: "lambda function URL",
-			exportName: "lambdaApiUrl",
+			exportName: `${projectName}-LambdaApiUrl`,
 		});
 	}
 }
