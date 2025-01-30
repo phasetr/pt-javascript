@@ -8,9 +8,10 @@ import * as path from "node:path";
 export class CdkLambdaFastifyStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
+		const projectName = "LF";
 
-		const apiLambda = new NodejsFunction(this, "LambdaFastify", {
-			functionName: "LambdaFastify",
+		const apiLambda = new NodejsFunction(this, `${projectName}-LambdaFastify`, {
+			functionName: `${projectName}-LambdaFastify`,
 			entry: path.join(__dirname, "../src/index.ts"),
 			handler: "handler",
 			runtime: lambda.Runtime.NODEJS_22_X,
@@ -24,12 +25,16 @@ export class CdkLambdaFastifyStack extends Stack {
 			},
 		});
 
-		const apiGateway = new apigateway.LambdaRestApi(this, "ApiGateway", {
-			handler: apiLambda,
-		});
+		const apiGateway = new apigateway.LambdaRestApi(
+			this,
+			`${projectName}-ApiGateway`,
+			{
+				handler: apiLambda,
+			},
+		);
 
 		// API GatewayのURLを出力
-		new CfnOutput(this, "ApiGatewayUrl", {
+		new CfnOutput(this, `${projectName}-ApiGatewayUrl`, {
 			value: apiGateway.url,
 		});
 	}

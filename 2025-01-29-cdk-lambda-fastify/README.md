@@ -6,7 +6,7 @@
 
 ```sh
 cdk deploy
-aws cloudformation describe-stacks --stack-name CdkLambdaFastifyStack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text | xargs curl
+aws cloudformation describe-stacks --stack-name CdkLambdaFastifyStack --query "Stacks[0].Outputs[?OutputKey=='LFApiGatewayUrl'].OutputValue" --output text | xargs curl
 ```
 
 ## プロジェクトの初期化：最初の一回だけ
