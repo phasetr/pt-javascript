@@ -1,28 +1,31 @@
 # Welcome to your CDK TypeScript project
 
-## ローカルでの確認
+- [AWS CDKでWebSocketを使ったサーバーレスチャットアプリを作る](https://www.fourier.jp/blog/building-chat-app-with-websocket-api-using-aws-cdk)
 
-- ローカルでのサーバーの起動
-
-```sh
-ts-node src/ws/index.ts
-```
-
-- `wscat`のインストール
+## `wscat`のインストール
 
 ```sh
 npm install -g wscat
 ```
 
+## ローカルでの確認
+
+- ローカルでのサーバーの起動
+
+```sh
+npm run dev
+```
+
+- ターミナルをもう一つ立ち上げる
 - `wscat`でサーバーに接続
 
 ```sh
 wscat -c ws://localhost:3000/ws
 ```
 
-- 適当にメッセージを送受信
+- メッセージを送信してサーバーから`FROM SERVER: 送った文字列`が返ってくるか確認
 
-## `wscat`によるサーバーの立ち上げ・クライアントの接続
+## 参考：`wscat`によるサーバーの立ち上げ・クライアントの接続
 
 - ターミナルを二つ（A/Bとする）を立ち上げる
 - ターミナルAでサーバーの立ち上げ

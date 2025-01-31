@@ -1,6 +1,7 @@
 import Fastify, { type FastifyRequest } from "fastify";
 import websocket from "@fastify/websocket";
 import type WebSocket from "ws";
+import awsLambdaFastify from "@fastify/aws-lambda";
 
 const fastify = Fastify();
 fastify.register(websocket);
@@ -49,3 +50,6 @@ fastify.listen({ port: 3000 }, (err) => {
 	}
 	console.log("サーバーがポート3000で起動しました");
 });
+
+const proxy = awsLambdaFastify(fastify);
+export const handler = proxy;
