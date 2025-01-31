@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@fastify/websocket": "^11.0.2",
-    "aws-cdk-lib": "2.177.0",
+    "aws-cdk-lib": "^2.177.0",
     "constructs": "^10.0.0",
     "fastify": "^5.2.1",
     "ws": "^8.18.0"
