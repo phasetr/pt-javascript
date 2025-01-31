@@ -1,5 +1,44 @@
 # Welcome to your CDK TypeScript project
 
+## ローカルでの確認
+
+- ローカルでのサーバーの起動
+
+```sh
+ts-node src/ws/index.ts
+```
+
+- `wscat`のインストール
+
+```sh
+npm install -g wscat
+```
+
+- `wscat`でサーバーに接続
+
+```sh
+wscat -c ws://localhost:3000/ws
+```
+
+- 適当にメッセージを送受信
+
+## `wscat`によるサーバーの立ち上げ・クライアントの接続
+
+- ターミナルを二つ（A/Bとする）を立ち上げる
+- ターミナルAでサーバーの立ち上げ
+
+```sh
+wscat -l 6000
+```
+
+- ターミナルBでクライアントの接続
+
+```sh
+wscat -c localhost:6000
+```
+
+- クライアント・サーバー双方で文字列を打ち込んで互いにメッセージが送受信されるか確認
+
 ## プロジェクトの初期化：最初の一回だけ
 
 ```sh
