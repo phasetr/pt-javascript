@@ -1,6 +1,10 @@
 # Welcome to your CDK TypeScript project
 
-- [AWS CDKでWebSocketを使ったサーバーレスチャットアプリを作る](https://www.fourier.jp/blog/building-chat-app-with-websocket-api-using-aws-cdk)
+## 大事な注意
+
+これは`AWS`上で動かすサンプルとしては不適切。
+単にローカルで`WebSocket`のサーバーとクライアントを`TypeScript`で実装したサンプルとみなす。
+`AWS`上で`WebSocket`を動かすサンプルは`2025-01-31-cdk-websocket-api-chat-app-tutorial`を参照。
 
 ## `wscat`のインストール
 
