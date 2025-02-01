@@ -1,5 +1,7 @@
 # Welcome to your CDK TypeScript project
 
+- 2024-09-21, [Building a Real-Time Chat Service with AWS API Gateway and WebSockets Using Express.js & AWS Lambda](https://medium.com/@sonishubham65/building-a-real-time-chat-service-with-aws-api-gateway-and-websockets-using-express-js-aws-lambda-321e7330c18b)
+
 ## 大事な注意
 
 これは`AWS`上で動かすサンプルとしては不適切。
