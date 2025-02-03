@@ -10,56 +10,28 @@ export class CdkLambdaWebsocketStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
 		super(scope, id, props);
 
-		const connectHandler = new aws_lambda_nodejs.NodejsFunction(
-			this,
-			`${projectName}-ConnectHandler`,
-			{
-				runtime: Runtime.NODEJS_22_X,
-				entry: "src/ws/index.ts",
-			},
-		);
-		const disconnectHandler = new aws_lambda_nodejs.NodejsFunction(
-			this,
-			`${projectName}-DisconnectHandler`,
-			{
-				runtime: Runtime.NODEJS_22_X,
-				entry: "src/ws/index.ts",
-			},
-		);
-		const sendMessageHandler = new aws_lambda_nodejs.NodejsFunction(
-			this,
-			`${projectName}-SendHandler`,
-			{
-				runtime: Runtime.NODEJS_22_X,
-				entry: "src/ws/index.ts",
-			},
-		);
-		const defaultHandler = new aws_lambda_nodejs.NodejsFunction(
-			this,
-			`${projectName}-DefaultHandler`,
-			{
-				runtime: Runtime.NODEJS_22_X,
-				entry: "src/ws/index.ts",
-			},
-		);
+		const connectHandler = this.connectHandlerBuilder();
+		const disconnectHandler = this.disconnectHandlerBuilder();
+		const sendMessageHandler = this.sendMessageHandlerBuilder();
+		const defaultHandler = this.defaultHandlerBuilder();
 
-		const webSocketApi = new WebSocketApi(this, `${projectName}-Api`, {
+		const webSocketApi = new WebSocketApi(this, `${projectName}-MessageApi`, {
 			routeSelectionExpression: "$request.body.action",
 			connectRouteOptions: {
 				integration: new WebSocketLambdaIntegration(
-					`${projectName}-ConnectIntegration`,
+					`${projectName}-MessageApiConnectIntegration`,
 					connectHandler,
 				),
 			},
 			disconnectRouteOptions: {
 				integration: new WebSocketLambdaIntegration(
-					`${projectName}-DisconnectIntegration`,
+					`${projectName}-MessageApiDisconnectIntegration`,
 					disconnectHandler,
 				),
 			},
 			defaultRouteOptions: {
 				integration: new WebSocketLambdaIntegration(
-					`${projectName}-DefaultIntegration`,
+					`${projectName}-MessageApiDefaultIntegration`,
 					defaultHandler,
 				),
 			},
@@ -67,7 +39,7 @@ export class CdkLambdaWebsocketStack extends cdk.Stack {
 
 		webSocketApi.addRoute("send-message", {
 			integration: new WebSocketLambdaIntegration(
-				`${projectName}-SendIntegration`,
+				`${projectName}-MessageApiSendIntegration`,
 				sendMessageHandler,
 			),
 		});
@@ -75,15 +47,66 @@ export class CdkLambdaWebsocketStack extends cdk.Stack {
 		webSocketApi.grantManageConnections(sendMessageHandler);
 		webSocketApi.grantManageConnections(defaultHandler);
 
-		const webSocketStage = new WebSocketStage(this, `${projectName}-Prod`, {
-			webSocketApi,
-			stageName: "prod",
-			autoDeploy: true,
-		});
+		const webSocketStage = new WebSocketStage(
+			this,
+			`${projectName}-MessageApiProd`,
+			{
+				webSocketApi,
+				stageName: "prod",
+				autoDeploy: true,
+			},
+		);
 
-		// WebSocketのURLを出力
-		new cdk.CfnOutput(this, `${projectName}-WebSocketUrl`, {
+		// WebSocket APIのURLを取得する
+		new cdk.CfnOutput(this, `${projectName}-MessageApiUrl`, {
 			value: `${webSocketApi.apiEndpoint}/${webSocketStage.stageName}`,
 		});
+	}
+
+	connectHandlerBuilder() {
+		const handler = new aws_lambda_nodejs.NodejsFunction(
+			this,
+			`${projectName}-MessageApiWebSocketConnectHandler`,
+			{
+				runtime: Runtime.NODEJS_22_X,
+				entry: "src/lambda/connect-handler.ts",
+			},
+		);
+		return handler;
+	}
+
+	disconnectHandlerBuilder() {
+		const handler = new aws_lambda_nodejs.NodejsFunction(
+			this,
+			`${projectName}-MessageApiWebSocketDisconnectHandler`,
+			{
+				runtime: Runtime.NODEJS_22_X,
+				entry: "src/lambda/disconnect-handler.ts",
+			},
+		);
+		return handler;
+	}
+
+	sendMessageHandlerBuilder() {
+		const handler = new aws_lambda_nodejs.NodejsFunction(
+			this,
+			`${projectName}-MessageApiWebSocketSendHandler`,
+			{
+				runtime: Runtime.NODEJS_22_X,
+				entry: "src/lambda/send-handler.ts",
+			},
+		);
+		return handler;
+	}
+
+	defaultHandlerBuilder() {
+		return new aws_lambda_nodejs.NodejsFunction(
+			this,
+			`${projectName}-MessageApiWebSocketDefaultHandler`,
+			{
+				entry: "src/lambda/default-handler.ts",
+				runtime: Runtime.NODEJS_22_X,
+			},
+		);
 	}
 }

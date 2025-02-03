@@ -4,15 +4,32 @@
 
 ## 大事な注意
 
-これは`AWS`上で動かすサンプルとしては不適切。
-単にローカルで`WebSocket`のサーバーとクライアントを`TypeScript`で実装したサンプルとみなす。
-`AWS`上で`WebSocket`を動かすサンプルは`2025-01-31-cdk-websocket-api-chat-app-tutorial`を参照。
+`fastify`を利用したローカルでの`WebSocket`のサンプルは`src/ws`にあり、
+ローカルでは適切に動作する一方でこれをそのまま`AWS`上にデプロイできない。
+`AWS`上で動かすサンプルは`src/lambda`にあり、
+実際に`lib`でデプロイしているソースはこちら。
 
 ## `wscat`のインストール
 
 ```sh
 npm install -g wscat
 ```
+
+## `AWS`でのテスト
+
+```sh
+URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='CLWSMessageApiUrl'].OutputValue" --output text)
+wscat -c "$URL"
+```
+
+立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。
+
+>Use the send-message route to send a message. Your info:{"ConnectedAt":"2025-02-03T01:46:33.523Z","Identity":{"SourceIp":"0.0.0.8","UserAgent":null},"LastActiveAt":"2025-02-03T01:46:36.076Z","connectionId":"FYnvDeD_NjMCKlg="}
+>Disconnected (code: 1001, reason: "Going away")
+
+次に`{"action": "send-message", "message": "Hello, world!"}`のように`action`を`send-message`にしてメッセージを送信する：次のようなメッセージが来れば良い。
+
+>{"message":"こんにちは、これはクライアントへの単純なメッセージです。"}
 
 ## ローカルでの確認
 
