@@ -15,7 +15,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
 		});
 
 		const response = {
-			message: "こんにちは、これはクライアントへの単純なメッセージです。",
+			message: `FROM AWS: your message is '${message}'`,
 		};
 
 		// 指定されたconnectionIdへメッセージを投稿

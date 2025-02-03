@@ -5,7 +5,7 @@
 ## 大事な注意
 
 `fastify`を利用したローカルでの`WebSocket`のサンプルは`src/ws`にあり、
-ローカルでは適切に動作する一方でこれをそのまま`AWS`上にデプロイできない。
+ローカルでは適切に動作する一方でこれをそのまま`AWS`上にデプロイできない模様（調査中）。
 `AWS`上で動かすサンプルは`src/lambda`にあり、
 実際に`lib`でデプロイしているソースはこちら。
 
@@ -24,12 +24,16 @@ wscat -c "$URL"
 
 立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。
 
->Use the send-message route to send a message. Your info:{"ConnectedAt":"2025-02-03T01:46:33.523Z","Identity":{"SourceIp":"0.0.0.8","UserAgent":null},"LastActiveAt":"2025-02-03T01:46:36.076Z","connectionId":"FYnvDeD_NjMCKlg="}
+>Use the send-message route to send a message. Your info:{"ConnectedAt":"2025-02-03T01:46:33.523Z","Identity":{"SourceIp":"自分のIP","UserAgent":null},"LastActiveAt":"2025-02-03T01:46:36.076Z","connectionId":"FYnvDeD_NjMCKlg="}
 >Disconnected (code: 1001, reason: "Going away")
 
-次に`{"action": "send-message", "message": "Hello, world!"}`のように`action`を`send-message`にしてメッセージを送信する：次のようなメッセージが来れば良い。
+次のように`action`を`send-message`にしてメッセージを送信する。
 
->{"message":"こんにちは、これはクライアントへの単純なメッセージです。"}
+>`{"action": "send-message", "message": "Hello, world!"}`
+
+これに対して次のようなメッセージが来れば良い。
+
+>{"message":"FROM AWS: your message is 'Hello, world!'"}
 
 ## ローカルでの確認
 
