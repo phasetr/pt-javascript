@@ -5,11 +5,17 @@
 ## 動作確認
 
 ```sh
-URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaExpressWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='WebSocketApiEndpoint'].OutputValue" --output text) && wscat -c "$URL"
+URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaExpressWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='CLEWSWebSocketApiEndpoint'].OutputValue" --output text) && wscat -c "$URL"
 ```
 
 ```sh
-{action: "sendMessage", data: "Hello World"}
+{"action": "sendMessage", "data": "Hello World"}
+```
+
+これで次のような文字列がサーバーから返って来れば良い。
+
+```sh
+{"data":{"message":"OK Done, your message is 'Hello World'"},"status":200}
 ```
 
 ## プロジェクトの初期化：最初の一回だけ

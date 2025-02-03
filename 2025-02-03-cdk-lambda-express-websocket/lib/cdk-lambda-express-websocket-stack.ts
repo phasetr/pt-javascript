@@ -6,6 +6,7 @@ import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integra
 import * as iam from "aws-cdk-lib/aws-iam";
 import type { Construct } from "constructs";
 
+const projectName = "CLEWS";
 export class CdkLambdaExpressWebsocketStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
 		super(scope, id, props);
@@ -13,46 +14,11 @@ export class CdkLambdaExpressWebsocketStack extends cdk.Stack {
 		// ChatServiceFunction の作成（aws_lambda_nodejs.NodejsFunction を利用）
 		const chatServiceFunction = new nodejs.NodejsFunction(
 			this,
-			"ChatServiceFunction",
+			`${projectName}-ServiceFunction`,
 			{
-				functionName: "ChatService",
-				entry: "src/express/lambda.ts",
-				handler: "handler",
 				runtime: lambda.Runtime.NODEJS_22_X,
-				memorySize: 256,
-				timeout: cdk.Duration.seconds(30),
-				environment: {
-					NODE_ENV: "dev",
-				},
+				entry: "src/express/lambda.ts",
 			},
-		);
-
-		// 必要なマネージドポリシーを付与
-		chatServiceFunction.role?.addManagedPolicy(
-			iam.ManagedPolicy.fromAwsManagedPolicyName(
-				"service-role/AWSLambdaBasicExecutionRole",
-			),
-		);
-		chatServiceFunction.role?.addManagedPolicy(
-			iam.ManagedPolicy.fromAwsManagedPolicyName("AWSLambda_ReadOnlyAccess"),
-		);
-		chatServiceFunction.role?.addManagedPolicy(
-			iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXrayWriteOnlyAccess"),
-		);
-
-		chatServiceFunction.addToRolePolicy(
-			new iam.PolicyStatement({
-				effect: iam.Effect.ALLOW,
-				actions: ["execute-api:ManageConnections", "execute-api:Invoke"],
-				resources: [
-					`arn:aws:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:*/dev/POST/@connections/*`,
-				],
-			}),
-		);
-
-		// API Gateway から Lambda 呼び出しの権限を付与
-		chatServiceFunction.grantInvoke(
-			new iam.ServicePrincipal("apigateway.amazonaws.com"),
 		);
 
 		// WebSocket の $connect ルート用 Lambda 統合（L2 コンストラクト）
@@ -63,23 +29,38 @@ export class CdkLambdaExpressWebsocketStack extends cdk.Stack {
 
 		// WebSocket API の作成（L2 コンストラクトを利用）
 		const webSocketApi = new WebSocketApi(this, "WebSocketApi", {
-			apiName: "WebSocketApi",
 			routeSelectionExpression: "$request.body.action",
 			connectRouteOptions: {
-				integration: connectIntegration,
+				integration: new WebSocketLambdaIntegration(
+					`${projectName}-ConnectIntegration`,
+					chatServiceFunction,
+				),
+			},
+			disconnectRouteOptions: {
+				integration: new WebSocketLambdaIntegration(
+					`${projectName}-DisconnectIntegration`,
+					chatServiceFunction,
+				),
+			},
+			defaultRouteOptions: {
+				integration: new WebSocketLambdaIntegration(
+					`${projectName}-DefaultIntegration`,
+					chatServiceFunction,
+				),
 			},
 		});
 
-		// Stage の作成（dev ステージ）
-		const stage = new WebSocketStage(this, "WebSocketStage", {
+		webSocketApi.grantManageConnections(chatServiceFunction);
+
+		const webSocketStage = new WebSocketStage(this, `${projectName}-Prod`, {
 			webSocketApi,
-			stageName: "dev",
+			stageName: "prod",
 			autoDeploy: true,
 		});
 
 		// スタック作成時にエンドポイント URL を出力
-		new cdk.CfnOutput(this, "WebSocketApiEndpoint", {
-			value: stage.url,
+		new cdk.CfnOutput(this, `${projectName}-WebSocketApiEndpoint`, {
+			value: `${webSocketApi.apiEndpoint}/${webSocketStage.stageName}`,
 		});
 	}
 }

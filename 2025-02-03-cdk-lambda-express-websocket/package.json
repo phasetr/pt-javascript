@@ -5,13 +5,14 @@
     "cdk-lambda-express-websocket": "bin/cdk-lambda-express-websocket.js"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk"
-  },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.147",
+		"build": "tsc",
+		"watch": "tsc -w",
+		"test": "jest",
+		"cdk": "cdk",
+		"check": "ts-node aws-check/check01.ts"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.147",
     "@types/aws-serverless-express": "^3.3.10",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",

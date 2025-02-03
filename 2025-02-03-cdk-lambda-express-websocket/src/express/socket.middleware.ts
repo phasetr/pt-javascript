@@ -18,23 +18,29 @@ export const socketMiddleware = async (
 
 		switch (routeKey) {
 			case "$connect":
+				console.log("connect", connectionId);
 				res.status(200).json({ message: `Connected - ${connectionId}` });
 				break;
 
 			case "$disconnect":
+				console.log("disconnect", connectionId);
 				res.status(200).json({ message: `Disconnected - ${connectionId}` });
 				break;
 
 			case "$default": {
 				const body = JSON.parse(event?.socketBody || "{}");
 				if (body.action === "sendMessage") {
-					const endpoint = `https://${event.requestContext.domainName}`;
+					const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
 					const apigwManagementApi = new ApiGatewayManagementApi({
 						apiVersion: "2018-11-29",
 						endpoint,
 					});
-
-					const response = { data: { message: "OK Done" }, status: 200 };
+					const response = {
+						data: {
+							message: `OK Done, your message is '${body.data}'`,
+						},
+						status: 200,
+					};
 					if (!connectionId) {
 						throw new Error("Missing connectionId");
 					}
@@ -44,7 +50,6 @@ export const socketMiddleware = async (
 							Data: JSON.stringify(response),
 						})
 						.promise();
-
 					res.status(response.status).json({ data: response.data });
 				} else {
 					throw new Error("Unknown route");
