@@ -1,5 +1,5 @@
 import { eventContext } from "aws-serverless-express/middleware";
-import express, { NextFunction, type Request, Response } from "express";
+import express, { type Request } from "express";
 import type { APIGatewayEvent } from "aws-lambda";
 import { socketMiddleware } from "./socket.middleware";
 const app = express();
