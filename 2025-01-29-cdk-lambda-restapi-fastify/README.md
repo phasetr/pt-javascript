@@ -1,5 +1,7 @@
 # Welcome to your CDK TypeScript project
 
+- `Fastify`による`HTTP`サービスを`Lambda`の`RestAPI`で公開
+
 ## デプロイ
 
 - `Docker`を立ち上げる
