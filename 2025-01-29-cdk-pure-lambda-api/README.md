@@ -1,5 +1,10 @@
 # Welcome to your CDK TypeScript project
 
+`Express`や`Fastify`のような`WAF`は使わず,
+ライブラリ`aws-lambda`だけで`API Gateway`利用のサービスを立てる.
+
+## 参考
+
 - [【TypeScript】AWS CDKv2でサクッとLambda関数を作る](https://qiita.com/tokkun5552/items/9e5cf5ebc817cbd4602e)
 
 ## コマンド
