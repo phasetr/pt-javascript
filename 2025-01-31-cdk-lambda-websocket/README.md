@@ -31,7 +31,7 @@ wscat -c "$URL"
 
 >{"action": "sendMessage", "data": "Hello World"}
 
-これで次のような文字列がサーバーから返って来れば良い：多少（10秒程度？）時間がかかる。
+これで次のような文字列がサーバーから返って来れば良い：多少時間がかかる場合あり。
 
 >{"data":{"message":"OK Done, your message is 'Hello World'"},"status":200}
 
