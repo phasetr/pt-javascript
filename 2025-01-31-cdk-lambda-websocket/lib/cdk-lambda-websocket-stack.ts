@@ -16,15 +16,18 @@ export class CdkLambdaWebsocketStack extends cdk.Stack {
 			`${projectName}-ServiceFunction`,
 			{
 				runtime: lambda.Runtime.NODEJS_22_X,
-				entry: "src/express/lambda.ts",
+				entry: "src/express/index.prod.ts",
 			},
 		);
 
 		// WebSocket の $connect ルート用 Lambda 統合（L2 コンストラクト）
-		new WebSocketLambdaIntegration("ConnectIntegration", chatServiceFunction);
+		new WebSocketLambdaIntegration(
+			`${projectName}-ConnectIntegration`,
+			chatServiceFunction,
+		);
 
 		// WebSocket API の作成（L2 コンストラクトを利用）
-		const webSocketApi = new WebSocketApi(this, "WebSocketApi", {
+		const webSocketApi = new WebSocketApi(this, `${projectName}-WebSocketApi`, {
 			routeSelectionExpression: "$request.body.action",
 			connectRouteOptions: {
 				integration: new WebSocketLambdaIntegration(

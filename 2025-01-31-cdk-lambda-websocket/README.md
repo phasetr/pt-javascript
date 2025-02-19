@@ -26,12 +26,12 @@ npm install -g wscat
 ```sh
 OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text)
 URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text)
-wscat -c "$URL";
+wscat -c "$URL"
 ```
 
 >{"action": "sendMessage", "data": "Hello World"}
 
-これで次のような文字列がサーバーから返って来れば良い：多少時間がかかる可能性がある。
+これで次のような文字列がサーバーから返って来れば良い：多少（10秒程度？）時間がかかる。
 
 >{"data":{"message":"OK Done, your message is 'Hello World'"},"status":200}
 
