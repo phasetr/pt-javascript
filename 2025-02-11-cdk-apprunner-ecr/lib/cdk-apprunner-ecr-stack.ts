@@ -1,19 +1,35 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import { Construct } from 'constructs';
+// Start of Selection
+import * as cdk from "aws-cdk-lib";
+import type { Construct } from "constructs";
+import * as apprunner from "@aws-cdk/aws-apprunner-alpha";
+import * as ecr from "aws-cdk-lib/aws-ecr";
+import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 
-export class CdkApprunnerEcrStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, props);
+const projectName = "cae";
 
-    const queue = new sqs.Queue(this, 'CdkApprunnerEcrQueue', {
-      visibilityTimeout: Duration.seconds(300)
-    });
+export class CdkApprunnerEcrStack extends cdk.Stack {
+	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+		super(scope, id, props);
 
-    const topic = new sns.Topic(this, 'CdkApprunnerEcrTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
-  }
+		const dockerAsset = new DockerImageAsset(
+			this,
+			`${projectName}-DockerImage`,
+			{
+				directory: "src", // Dockerfile およびアプリケーションが存在するディレクトリ
+        platform: Platform.LINUX_AMD64
+			},
+		);
+		const app = new apprunner.Service(this, `${projectName}-app-runner`, {
+			source: apprunner.Source.fromAsset({
+				imageConfiguration: { port: 3000 },
+				asset: dockerAsset,
+			}),
+			cpu: apprunner.Cpu.HALF_VCPU,
+			memory: apprunner.Memory.ONE_GB,
+			isPubliclyAccessible: true,
+		});
+		new cdk.CfnOutput(this, `${projectName}-app-runner-url`, {
+			value: app.serviceUrl,
+		});
+	}
 }

@@ -1,0 +1,30 @@
+# Node モジュールのディレクトリはビルドに不要
+node_modules
+
+# TypeScript のビルド成果物（ビルドディレクトリが build または dist の場合）
+build
+dist
+
+# Git 関連のファイル・ディレクトリ
+.git
+.gitignore
+
+# Dockerfile や docker-compose 関連のファイル（複数の環境ファイルが存在する場合）
+Dockerfile*
+docker-compose*
+
+# ログファイル類
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# TypeScript のビルドキャッシュ
+*.tsbuildinfo
+
+# macOS 固有のシステムファイル
+.DS_Store
+
+# 環境変数ファイル（必要に応じて管理対象外にする）
+.env
+.env.*

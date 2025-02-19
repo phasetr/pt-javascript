@@ -1,0 +1,11 @@
+{
+  "availability-zones:account=573143736992:region=ap-northeast-1": [
+    "ap-northeast-1a",
+    "ap-northeast-1c",
+    "ap-northeast-1d"
+  ],
+  "hosted-zone:account=573143736992:domainName=academic-event.com:region=ap-northeast-1": {
+    "Id": "/hostedzone/Z0987107KRCO11NWFV4T",
+    "Name": "academic-event.com."
+  }
+}
