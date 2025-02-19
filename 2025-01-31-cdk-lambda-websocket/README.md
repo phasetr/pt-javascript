@@ -17,9 +17,10 @@ npm install -g wscat
 
 ## `AWS`でのテスト
 
+### `ProperLambdaConstruct`
+
 ```sh
-URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='CLWSMessageApiUrl'].OutputValue" --output text)
-wscat -c "$URL"
+URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='CLWSPLMessageApiUrlFCCEF835'].OutputValue" --output text) && wscat -c "$URL"
 ```
 
 立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。

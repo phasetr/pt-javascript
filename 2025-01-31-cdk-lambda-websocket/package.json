@@ -26,9 +26,11 @@
   "dependencies": {
     "@fastify/aws-lambda": "^5.1.4",
     "@fastify/websocket": "^11.0.2",
+    "@types/express": "^5.0.0",
     "aws-cdk-lib": "^2.177.0",
     "aws-sdk": "^2.1692.0",
     "constructs": "^10.0.0",
+    "express": "^4.21.2",
     "fastify": "^5.2.1",
     "ws": "^8.18.0"
   }
