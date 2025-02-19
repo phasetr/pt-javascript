@@ -17,6 +17,24 @@ npm install -g wscat
 
 ## `AWS`でのテスト
 
+### `ExpressConstruct`
+
+- `src/express`、特に`index.prod.ts`を利用：ローカルでは動かず、あくまで`AWS Lambda`上で動かす前提のコード
+
+立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。
+
+```sh
+OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text)
+URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text)
+wscat -c "$URL";
+```
+
+>{"action": "sendMessage", "data": "Hello World"}
+
+これで次のような文字列がサーバーから返って来れば良い：多少時間がかかる可能性がある。
+
+>{"data":{"message":"OK Done, your message is 'Hello World'"},"status":200}
+
 ### `LambdaConstruct`
 
 - `src/lambda`のコードを利用：ローカルでは動かず、あくまで`AWS Lambda`上で動かす前提のコード

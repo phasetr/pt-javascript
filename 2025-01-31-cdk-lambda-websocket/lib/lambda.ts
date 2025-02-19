@@ -15,7 +15,7 @@ export class LambdaConstruct extends Construct {
 	constructor(
 		scope: Construct,
 		id: string,
-		props?: WebSocketApiConstructProps,
+		_props?: WebSocketApiConstructProps,
 	) {
 		super(scope, id);
 

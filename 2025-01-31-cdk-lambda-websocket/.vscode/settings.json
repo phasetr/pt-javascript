@@ -1,3 +1,15 @@
 {
-	"cSpell.words": ["apigatewayv", "CLWS", "websocat", "wscat"]
+	"cSpell.words": [
+		"apigatewayv",
+		"CLWS",
+		"websocat",
+		"wscat",
+		"WSDCI",
+		"WSDI",
+		"WSLI",
+		"WSLIC",
+		"WSLID",
+		"WSLIDC",
+		"WSLISM"
+	]
 }
