@@ -9,7 +9,7 @@ const projectName = "PL";
 
 export interface WebSocketApiConstructProps extends cdk.StackProps {}
 
-export class ProperLambdaConstruct extends Construct {
+export class LambdaConstruct extends Construct {
 	public readonly webSocketApiUrl: string;
 
 	constructor(

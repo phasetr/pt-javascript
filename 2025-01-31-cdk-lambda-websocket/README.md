@@ -17,10 +17,14 @@ npm install -g wscat
 
 ## `AWS`でのテスト
 
-### `ProperLambdaConstruct`
+### `LambdaConstruct`
+
+- `src/lambda`のコードを利用：ローカルでは動かず、あくまで`AWS Lambda`上で動かす前提のコード
 
 ```sh
-URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='CLWSPLMessageApiUrlFCCEF835'].OutputValue" --output text) && wscat -c "$URL"
+OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text)
+URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text)
+wscat -c "$URL"
 ```
 
 立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。
@@ -30,7 +34,7 @@ URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --
 
 次のように`action`を`send-message`にしてメッセージを送信する。
 
->`{"action": "send-message", "message": "Hello, world!"}`
+>{"action": "send-message", "message": "Hello, world!"}
 
 これに対して次のようなメッセージが来れば良い。
 
