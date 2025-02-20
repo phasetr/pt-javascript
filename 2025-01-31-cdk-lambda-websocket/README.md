@@ -4,10 +4,8 @@
 
 ## 大事な注意
 
-`fastify`を利用したローカルでの`WebSocket`のサンプルは`src/ws`にあり、
-ローカルでは適切に動作する一方でこれをそのまま`AWS`上にデプロイできない模様（調査中）。
-`AWS`上で動かすサンプルは`src/lambda`にあり、
-実際に`lib`でデプロイしているソースはこちら。
+2025-02-20時点で`src/fastify`のコードは`Lambda`にアップロードしても動かない。
+`Fastify`は一旦諦める。
 
 ## `wscat`のインストール
 
@@ -24,9 +22,7 @@ npm install -g wscat
 立ち上がった`wscat`で単純にメッセージ（例えば`test`）を送信する：次のようなメッセージが来れば良い。
 
 ```sh
-OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text)
-URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text)
-wscat -c "$URL"
+OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text) && URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text) && wscat -c "$URL"
 ```
 
 >{"action": "sendMessage", "data": "Hello World"}
