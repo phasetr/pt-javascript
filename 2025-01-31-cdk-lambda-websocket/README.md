@@ -25,11 +25,11 @@ npm install -g wscat
 OUTPUT_KEY=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[0].OutputKey" --output text) && URL=$(aws cloudformation describe-stacks --stack-name CdkLambdaWebsocketStack --query "Stacks[0].Outputs[?OutputKey=='${OUTPUT_KEY}'].OutputValue" --output text) && wscat -c "$URL"
 ```
 
->{"action": "sendMessage", "data": "Hello World"}
+>{"action": "send-message", "message": "Hello, world!"}
 
 これで次のような文字列がサーバーから返って来れば良い：多少時間がかかる場合あり。
 
->{"data":{"message":"OK Done, your message is 'Hello World'"},"status":200}
+>{"data":{"message":"EXPRESS: OK Done, your message is 'Hello World'"},"status":200}
 
 ### `LambdaConstruct`
 
@@ -52,7 +52,7 @@ wscat -c "$URL"
 
 これに対して次のようなメッセージが来れば良い。
 
->{"message":"FROM AWS: your message is 'Hello, world!'"}
+>{"message":"FROM AWS LAMBDA: your message is 'Hello, world!'"}
 
 ## ローカルでの確認
 

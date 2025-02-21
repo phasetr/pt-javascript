@@ -1,4 +1,5 @@
 import * as cdk from "aws-cdk-lib";
+import * as logs from "aws-cdk-lib/aws-logs";
 import * as nodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { WebSocketApi, WebSocketStage } from "aws-cdk-lib/aws-apigatewayv2";
@@ -28,6 +29,12 @@ export class ExpressConstruct extends Construct {
 				entry: "src/express/index.prod.ts",
 			},
 		);
+
+		new logs.LogGroup(this, `${projectName}-ChatServiceFunctionLogGroup`, {
+			logGroupName: `/aws/lambda/${projectName}`,
+			removalPolicy: cdk.RemovalPolicy.DESTROY, // スタック削除時にロググループも削除
+			retention: logs.RetentionDays.ONE_WEEK, // 任意の保持期間を設定（もしくは RetentionDays.INFINITE）
+		});
 
 		// WebSocket の $connect ルート用 Lambda 統合（L2 コンストラクト）
 		new WebSocketLambdaIntegration(

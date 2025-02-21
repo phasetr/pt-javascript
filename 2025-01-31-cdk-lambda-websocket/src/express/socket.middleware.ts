@@ -34,7 +34,7 @@ export const socketMiddleware = async (
 			case "$default": {
 				console.log(nowJst(), "default", connectionId);
 				const body = JSON.parse(event?.socketBody || "{}");
-				if (body.action === "sendMessage") {
+				if (body.action === "send-message") {
 					const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
 					const apigwManagementApi = new ApiGatewayManagementApiClient({
 						endpoint,
