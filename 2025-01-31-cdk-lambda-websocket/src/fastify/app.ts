@@ -1,5 +1,8 @@
 import fastify from "fastify";
-import { ApiGatewayManagementApi } from "aws-sdk";
+import {
+	ApiGatewayManagementApiClient,
+	PostToConnectionCommand,
+} from "@aws-sdk/client-apigatewaymanagementapi";
 import type { FastifyRequest } from "fastify";
 import type { APIGatewayProxyEvent, APIGatewayProxyEventV2 } from "aws-lambda";
 
@@ -40,11 +43,9 @@ app.all("/*", async (request: LambdaFastifyRequest, reply) => {
 					const stage = lambdaEvent.requestContext?.stage;
 					const endpoint = `https://${domainName}/${stage}`;
 
-					const apigwManagementApi = new ApiGatewayManagementApi({
-						apiVersion: "2018-11-29",
-						endpoint: endpoint,
+					const apigwManagementApi = new ApiGatewayManagementApiClient({
+						endpoint,
 					});
-
 					const response = {
 						data: {
 							message: `OK Done, your message is '${body.data}'`,
@@ -56,12 +57,12 @@ app.all("/*", async (request: LambdaFastifyRequest, reply) => {
 						throw new Error("Missing connectionId");
 					}
 
-					await apigwManagementApi
-						.postToConnection({
+					await apigwManagementApi.send(
+						new PostToConnectionCommand({
 							ConnectionId: connectionId,
 							Data: JSON.stringify(response),
-						})
-						.promise();
+						}),
+					);
 
 					reply.status(response.status).send({ data: response.data });
 					return;
