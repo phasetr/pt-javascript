@@ -5,14 +5,18 @@
 	"main": "src/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"dev": "tsx watch src/index.ts"
+		"dev": "tsx watch src/index.ts",
+    "oneshot": "tsx watch src/oneshot.ts"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"type": "module",
 	"dependencies": {
+		"@fastify/formbody": "^8.0.2",
+		"@fastify/websocket": "^11.0.2",
 		"dotenv": "^16.4.7",
+		"fastify": "^5.2.1",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
