@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as nodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { WebSocketApi, WebSocketStage } from "aws-cdk-lib/aws-apigatewayv2";
 import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { Construct } from "constructs";
@@ -28,6 +29,12 @@ export class FastifyConstruct extends Construct {
 				entry: "src/fastify/index.prod.ts",
 			},
 		);
+
+		new logs.LogGroup(this, `${projectName}-ChatServiceFunctionLogGroup`, {
+			logGroupName: `/aws/lambda/${projectName}`,
+			removalPolicy: cdk.RemovalPolicy.DESTROY, // スタック削除時にロググループも削除
+			retention: logs.RetentionDays.ONE_WEEK, // 任意の保持期間を設定（もしくは RetentionDays.INFINITE）
+		});
 
 		// WebSocket の $connect ルート用 Lambda 統合（L2 コンストラクト）
 		new WebSocketLambdaIntegration(
