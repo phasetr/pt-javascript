@@ -1,5 +1,8 @@
 import type { APIGatewayProxyWebsocketHandlerV2 } from "aws-lambda";
-import AWS from "aws-sdk";
+import {
+	ApiGatewayManagementApiClient,
+	PostToConnectionCommand,
+} from "@aws-sdk/client-apigatewaymanagementapi";
 
 export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
 	try {
@@ -9,22 +12,22 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
 		const connectionId = event.requestContext.connectionId;
 		console.log("クライアントの接続ID:", connectionId);
 
-		const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-			apiVersion: "2018-11-29",
-			endpoint: `${event.requestContext.domainName}/${event.requestContext.stage}`,
+		// v3 のクライアントを生成
+		const client = new ApiGatewayManagementApiClient({
+			endpoint: `https://${event.requestContext.domainName}/${event.requestContext.stage}`,
 		});
 
 		const response = {
 			message: `FROM AWS: your message is '${message}'`,
 		};
 
-		// 指定されたconnectionIdへメッセージを投稿
-		await apigwManagementApi
-			.postToConnection({
+		// 指定された connectionId へメッセージを投稿
+		await client.send(
+			new PostToConnectionCommand({
 				ConnectionId: connectionId,
 				Data: JSON.stringify(response),
-			})
-			.promise();
+			}),
+		);
 
 		return {
 			statusCode: 200,

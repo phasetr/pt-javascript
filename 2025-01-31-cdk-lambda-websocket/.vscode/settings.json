@@ -3,6 +3,7 @@
 		"apigatewaymanagementapi",
 		"apigatewayv",
 		"CLWS",
+		"formbody",
 		"websocat",
 		"wscat",
 		"WSDCI",

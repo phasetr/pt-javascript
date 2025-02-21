@@ -27,6 +27,7 @@
 	"dependencies": {
 		"@aws-sdk/client-apigatewaymanagementapi": "^3.750.0",
 		"@fastify/aws-lambda": "^5.1.4",
+		"@fastify/formbody": "^8.0.2",
 		"@fastify/websocket": "^11.0.2",
 		"aws-cdk-lib": "^2.177.0",
 		"aws-serverless-express": "^3.4.0",
