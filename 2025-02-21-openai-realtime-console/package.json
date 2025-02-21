@@ -1,0 +1,17 @@
+{
+  "name": "2025-02-21-openai-realtime-console",
+  "version": "1.0.0",
+  "description": "- [OpenAI Realtime API: A Guide With Examples](https://www.datacamp.com/tutorial/realtime-api-openai) - 参考：WebRTC、GitHub, [openai-realtime-console](https://github.com/openai/openai-realtime-console)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.0"
+  }
+}
