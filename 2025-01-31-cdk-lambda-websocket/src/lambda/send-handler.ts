@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
 		});
 
 		const response = {
-			message: `FROM AWS: your message is '${message}'`,
+			message: `FROM AWS LAMBDA: your message is '${message}'`,
 		};
 
 		// 指定された connectionId へメッセージを投稿

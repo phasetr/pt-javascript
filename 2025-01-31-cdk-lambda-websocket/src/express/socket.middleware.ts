@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import type { APIGatewayEvent } from "aws-lambda";
-import { ApiGatewayManagementApi } from "aws-sdk";
+import {
+	ApiGatewayManagementApiClient,
+	PostToConnectionCommand,
+} from "@aws-sdk/client-apigatewaymanagementapi";
+import { nowJst } from "../utils";
 
 export const socketMiddleware = async (
 	req: Request & {
@@ -18,38 +22,38 @@ export const socketMiddleware = async (
 
 		switch (routeKey) {
 			case "$connect":
-				console.log("connect", connectionId);
+				console.log(nowJst(), "connect", connectionId);
 				res.status(200).json({ message: `Connected - ${connectionId}` });
 				break;
 
 			case "$disconnect":
-				console.log("disconnect", connectionId);
+				console.log(nowJst(), "disconnect", connectionId);
 				res.status(200).json({ message: `Disconnected - ${connectionId}` });
 				break;
 
 			case "$default": {
+				console.log(nowJst(), "default", connectionId);
 				const body = JSON.parse(event?.socketBody || "{}");
 				if (body.action === "sendMessage") {
 					const endpoint = `https://${event.requestContext.domainName}/${event.requestContext.stage}`;
-					const apigwManagementApi = new ApiGatewayManagementApi({
-						apiVersion: "2018-11-29",
+					const apigwManagementApi = new ApiGatewayManagementApiClient({
 						endpoint,
 					});
 					const response = {
 						data: {
-							message: `OK Done, your message is '${body.data}'`,
+							message: `EXPRESS: OK Done, your message is '${body.data}'`,
 						},
 						status: 200,
 					};
 					if (!connectionId) {
 						throw new Error("Missing connectionId");
 					}
-					await apigwManagementApi
-						.postToConnection({
+					await apigwManagementApi.send(
+						new PostToConnectionCommand({
 							ConnectionId: connectionId,
 							Data: JSON.stringify(response),
-						})
-						.promise();
+						}),
+					);
 					res.status(response.status).json({ data: response.data });
 				} else {
 					throw new Error("Unknown route");
