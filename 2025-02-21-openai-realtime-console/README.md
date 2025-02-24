@@ -17,3 +17,7 @@ cp .env.example .env
 ```sh
 npm run dev
 ```
+
+```sh
+wscat -c ws://localhost:3000
+```
