@@ -1,35 +1,22 @@
-import WebSocket from "ws";
+import type WebSocket from "ws";
 import { config } from "dotenv";
-import { nowJst } from "./utils";
+import {
+	createConversationItem,
+	createRealtimeApiWebSocket,
+	createResponse,
+	nowJst,
+} from "./utils";
 config();
 
 async function handleOpen(ws: WebSocket) {
 	console.log(`${nowJst()}: Connection is opened`);
-
-	const createConversationEvent = {
-		type: "conversation.item.create",
-		item: {
-			type: "message",
-			role: "user",
-			content: [
-				{
-					type: "input_text",
-					text: "Explain in one sentence what a web socket is",
-				},
-			],
-		},
-	};
 	// イベントを送信
-	ws.send(JSON.stringify(createConversationEvent));
-
-	const createResponseEvent = {
-		type: "response.create",
-		response: {
-			modalities: ["text"],
-			instructions: "Please assist the user.",
-		},
-	};
-	ws.send(JSON.stringify(createResponseEvent));
+	ws.send(
+		JSON.stringify(
+			createConversationItem("Explain in one sentence what a web socket is"),
+		),
+	);
+	ws.send(JSON.stringify(createResponse()));
 }
 
 async function handleMessage(ws: WebSocket, messageStr: string) {
@@ -61,16 +48,12 @@ async function handleError(error: Error) {
 }
 
 function main() {
-	// Connect to the API
-	const url =
-		"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01";
-	const ws = new WebSocket(url, {
-		headers: {
-			Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-			"OpenAI-Beta": "realtime=v1",
-		},
-	});
+	const openai_api_key = process.env.OPENAI_API_KEY || "";
+	if (openai_api_key === "") {
+		console.error("👺👺WE HAVE AN EMPTY OPENAI_API_KEY👺👺");
+	}
 
+	const ws = createRealtimeApiWebSocket(openai_api_key);
 	ws.on("open", () => handleOpen(ws));
 	ws.on("message", (messageStr: string) => handleMessage(ws, messageStr));
 	ws.on("close", handleClose);
