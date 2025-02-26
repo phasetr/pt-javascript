@@ -28,6 +28,8 @@ export function honoWs(app: Hono) {
 			let streamSid: string | null = null;
 			/** クライアントに返すメッセージをためる配列 */
 			let returnMessages: string[] = [];
+			// 各接続のクライアント側 WebSocket を保持する変数
+			let clientWs: WebSocket | null = null;
 
 			/** OpenAIとのやりとりのためのWebSocketを作成 */
 			const openAiWs = createRealtimeApiWebSocket(OPENAI_API_KEY);
@@ -47,10 +49,47 @@ export function honoWs(app: Hono) {
 			openAiWs.on("error", (error) => {
 				console.error("Error in the OpenAI WebSocket:", error);
 			});
+			// openAiWsのmessageイベントリスナーを１度だけ登録し、クライアントへの送信用にclientWsを活用する
+			openAiWs.on("message", (data) => {
+				try {
+					const response = JSON.parse(data.toString());
+
+					if (LOG_EVENT_TYPES.includes(response.type)) {
+						console.log(`Received event: ${response.type}`);
+					}
+
+					switch (response.type) {
+						case "response.text.delta":
+							// 差分を配列にためる
+							returnMessages.push(response.delta);
+							break;
+						case "response.text.done":
+							// 差分の連結結果をクライアントへ送信
+							if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+								clientWs.send(returnMessages.join(""));
+							}
+							returnMessages = [];
+							break;
+						case "response.done":
+							if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+								clientWs.send("👺THE END OF RESPONSE👺\n");
+							}
+							break;
+					}
+				} catch (error) {
+					console.error(
+						"Error processing OpenAI message:",
+						error,
+						"Raw message:",
+						data,
+					);
+				}
+			});
 
 			try {
 				return {
 					onOpen(_event, ws) {
+						clientWs = ws as unknown as WebSocket;
 						console.log("client connected.");
 						ws.send("We connected to you!");
 					},
@@ -66,38 +105,6 @@ export function honoWs(app: Hono) {
 					// クライアントからのメッセージを処理
 					onMessage(event, ws) {
 						try {
-							// OpenAIからのメッセージを受信してクライアントへ転送
-							openAiWs.on("message", (data) => {
-								try {
-									const response = JSON.parse(data.toString());
-
-									if (LOG_EVENT_TYPES.includes(response.type)) {
-										console.log(`Received event: ${response.type}`);
-									}
-
-									switch (response.type) {
-										case "response.text.delta":
-											// 差分を配列にためる
-											returnMessages.push(response.delta);
-											break;
-										case "response.text.done":
-											// 差分の連結結果をクライアントへ送信
-											ws.send(returnMessages.join(""));
-											returnMessages = [];
-											break;
-										case "response.done":
-											ws.send("👺THE END OF RESPONSE👺\n");
-											break;
-									}
-								} catch (error) {
-									console.error(
-										"Error processing OpenAI message:",
-										error,
-										"Raw message:",
-										data,
-									);
-								}
-							});
 							// const data = message.toString();
 							const data = event.data.toString();
 							switch (data) {
