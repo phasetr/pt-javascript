@@ -6,7 +6,8 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "tsx watch src/index.ts",
-		"oneshot": "tsx watch src/oneshot.ts"
+		"oneshot": "tsx watch src/oneshot.ts",
+		"hono": "tsx watch src/hono.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -15,13 +16,17 @@
 	"dependencies": {
 		"@fastify/formbody": "^8.0.2",
 		"@fastify/websocket": "^11.0.2",
+		"@hono/node-server": "^1.13.8",
+		"@hono/node-ws": "^1.1.0",
 		"dotenv": "^16.4.7",
 		"fastify": "^5.2.1",
+		"hono": "^4.7.2",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
 		"@types/node": "^22.13.4",
 		"@types/ws": "^8.5.14",
+		"depcheck": "^1.4.7",
 		"tsx": "^4.19.3",
 		"typescript": "^5.7.3"
 	}
