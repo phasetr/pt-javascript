@@ -62,11 +62,36 @@ export function honoWs(app: Hono) {
 						case "response.text.delta":
 							// 差分を配列にためる
 							returnMessages.push(response.delta);
+							// 部分的に段落の区切りが含まれているか確認
+							if (response.delta.includes("\n\n")) {
+								// すべての差分を一度連結して段落に分割
+								const paragraphs = returnMessages.join("").split("\n\n");
+								// 最後の要素はまだ完結していない可能性があるので取り除く
+								const completeParagraphs = paragraphs.slice(0, -1);
+								const remainder = paragraphs[paragraphs.length - 1];
+								for (const para of completeParagraphs) {
+									if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+										clientWs.send(para);
+									}
+								}
+								// 未完の段落部分を再度蓄積する
+								returnMessages = [remainder];
+							}
 							break;
 						case "response.text.done":
-							// 差分の連結結果をクライアントへ送信
-							if (clientWs && clientWs.readyState === WebSocket.OPEN) {
-								clientWs.send(returnMessages.join(""));
+							// 最終的なテキストを組み立て、段落ごとに分割して送信
+							{
+								const fullMessage = returnMessages.join("");
+								const paragraphs = fullMessage.split("\n\n");
+								for (const para of paragraphs) {
+									if (
+										para.trim() !== "" &&
+										clientWs &&
+										clientWs.readyState === WebSocket.OPEN
+									) {
+										clientWs.send(para);
+									}
+								}
 							}
 							returnMessages = [];
 							break;
@@ -103,9 +128,8 @@ export function honoWs(app: Hono) {
 						ws.send("We have some error. Sorry.");
 					},
 					// クライアントからのメッセージを処理
-					onMessage(event, ws) {
+					onMessage(event, _ws) {
 						try {
-							// const data = message.toString();
 							const data = event.data.toString();
 							switch (data) {
 								case "--delete":
