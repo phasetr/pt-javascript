@@ -5,7 +5,7 @@
 RULES_DIR="./.cline/rules"
 ROOMODES_DIR="./.cline/roomodes"
 OUTPUT_FILE=".clinerules"
-ROOMODES_FILE=".roomodes"
+# ROOMODES_FILE=".roomodes"
 
 # ディレクトリが存在するか確認
 if [ ! -d "$RULES_DIR" ]; then
@@ -34,8 +34,8 @@ if [ -d "$ROOMODES_DIR" ]; then
   echo "カスタムモードを処理中..."
   
   # JSONファイルの開始
-  echo '{' > "$ROOMODES_FILE"
-  echo '  "customModes": [' >> "$ROOMODES_FILE"
+  # echo '{' > "$ROOMODES_FILE"
+  # echo '  "customModes": [' >> "$ROOMODES_FILE"
   
   first_mode=true
   mode_count=0
@@ -60,18 +60,18 @@ if [ -d "$ROOMODES_DIR" ]; then
         
         # JSON出力
         if [ "$first_mode" = false ]; then
-          echo "," >> "$ROOMODES_FILE"
+          : # echo "," >> "$ROOMODES_FILE"
         else
           first_mode=false
         fi
         
         # JSONに追加
-        echo "    {" >> "$ROOMODES_FILE"
-        echo "      \"slug\": \"$slug\"," >> "$ROOMODES_FILE"
-        echo "      \"name\": \"$name\"," >> "$ROOMODES_FILE"
-        echo "      \"roleDefinition\": $(echo "$body" | sed 's/"/\\"/g' | tr '\n' ' ')," >> "$ROOMODES_FILE"
-        echo "      \"__filename\": \"$file\"" >> "$ROOMODES_FILE"
-        echo -n "    }" >> "$ROOMODES_FILE"
+        # echo "    {" >> "$ROOMODES_FILE"
+        # echo "      \"slug\": \"$slug\"," >> "$ROOMODES_FILE"
+        # echo "      \"name\": \"$name\"," >> "$ROOMODES_FILE"
+        # echo "      \"roleDefinition\": $(echo "$body" | sed 's/"/\\"/g' | tr '\n' ' ')," >> "$ROOMODES_FILE"
+        # echo "      \"__filename\": \"$file\"" >> "$ROOMODES_FILE"
+        # echo -n "    }" >> "$ROOMODES_FILE"
         
         # 結果にモード情報を追加
         result="${result}\n- ${slug} ${name} at ${file#./}"
@@ -80,11 +80,11 @@ if [ -d "$ROOMODES_DIR" ]; then
   done
   
   # JSONファイルを閉じる
-  echo "" >> "$ROOMODES_FILE"
-  echo "  ]" >> "$ROOMODES_FILE"
-  echo "}" >> "$ROOMODES_FILE"
+  # echo "" >> "$ROOMODES_FILE"
+  # echo "  ]" >> "$ROOMODES_FILE"
+  # echo "}" >> "$ROOMODES_FILE"
   
-  echo "生成: $ROOMODES_FILE ($mode_count モードファイル)"
+  # echo "生成: $ROOMODES_FILE ($mode_count モードファイル)"
 fi
 
 # 最終出力ファイルに書き込み

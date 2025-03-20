@@ -16,7 +16,6 @@
 
 無視するように言われた場合は、そのまま続行します。
 
-
 # コーディングプラクティス
 
 ## 原則
@@ -135,7 +134,6 @@ type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 - テスト可能性を設計に組み込む
 - アサートファースト：期待結果から逆算
 
-
 ## Deno の使い方について
 
 ### npm 互換モード
@@ -163,7 +161,7 @@ import {zod} from "zod";
 
 ## Example: Directory rules
 
-```
+```txt
 <module-name>/
   # interface
   mod.ts
@@ -177,7 +175,7 @@ import {zod} from "zod";
   # integration tests for mod.ts
   test/*.ts
 
-  # exmaple usages
+  # example usages
   examples/*.ts
 ```
 
@@ -198,7 +196,7 @@ import {zod} from "zod";
 export type Point = {};
 
 // reexport ./internal
-export { distance } from "./interal/distance.ts";
+export { distance } from "./internal/distance.ts";
 ```
 
 そのモジュールから提供する型を、 mod.ts で定義する。
@@ -258,19 +256,18 @@ export function distance(p1: Point, p2: Point) {
 1. `deno test -A modules/<name>/**.test.ts` でモジュールのテストを実行する
 2. 落ちたモジュールのテストを確認し、実装を参照する。
 
-- テストは一つずつ実行する `deno test -A modules/<name>/foo.test.ts`
+    - テストは一つずつ実行する `deno test -A modules/<name>/foo.test.ts`
 
 3. 落ちた理由をステップバイステップで考える(闇雲に修正しない!)
 4. 実装を修正する。必要な場合、実行時の過程を確認するためのプリントデバッグを挿入する。
 5. モジュールのテスト実行結果を確認
 
-- 修正出来た場合、プリントデバッグを削除する
-- 集できない場合、3 に戻る。
+    - 修正出来た場合、プリントデバッグを削除する
+    - 集できない場合、3 に戻る。
 
-5. モジュール以外の全体テストを確認
+6. モジュール以外の全体テストを確認
 
 テストが落ちた場合、落ちたテストを修正するまで次のモジュールに進まない。
-
 
 モジュールモードではスクリプトモードと違って、ライブラリの参照に `jsr:` や
 `npm:` を推奨しない。モジュールを参照する場合、 `deno add jsr:@david/dax@0.42.0`
@@ -283,7 +280,6 @@ import $ from "@david/dax";
 // NG
 import $ from "jsr:@david/dax@0.42.0";
 ```
-
 
 ### 外部ライブラリの使用方法
 
@@ -299,7 +295,7 @@ deno 用のライブラリは多くないので、ユーザーから指定され
 コードを書き始めるにあたって `docs/libraries/*`
 の下に該当するドキュメントがある場合、ライブラリを使用する前に、これを読み込みます。
 
-docs/librarise にドキュメントが存在しないとき
+docs/libraries にドキュメントが存在しないとき
 
 - `jsr:` の場合、 `deno doc jsr:@scope/pkgName`
   で、ライブラリ基本的なAPIをを確認します。
@@ -348,14 +344,14 @@ test("2+3=5", () => {
 
 1. コマンドラインでの検証
 
-```bash
-deno task check:deps
-```
+    ```bash
+    deno task check:deps
+    ```
 
-このコマンドは以下をチェックする
+    このコマンドは以下をチェックする
 
-- モジュール間の import が mod.ts を経由しているか
-- 他のモジュールのファイルを直接参照していないか
+    - モジュール間の import が mod.ts を経由しているか
+    - 他のモジュールのファイルを直接参照していないか
 
 2. リントプラグインによる検証
 
@@ -398,7 +394,6 @@ deno test --coverage=coverage && deno coverage coverage
 - dts を使用して型定義から自動的にドキュメントを生成
 - 型シグネチャに仕様を記述し、dts として抽出する
 
-
 ## ディレクトリ配置規則
 
 ```
@@ -409,7 +404,6 @@ modules/<name>   # モジュール(Deno Module)
 poc/*.ts   # 単体実行可能なスクリプト
   tools/   # poc のユーティリティ
 ```
-
 
 # テスト駆動開発 (TDD) の基本
 
@@ -468,7 +462,6 @@ Deno環境におけるTDDの詳細な実践方法、例、各種ツールの活�
 ```
 
 このファイルにはテストファーストモードの詳細な手順、テストの命名規約、リファクタリングのベストプラクティスなどが含まれています。
-
 
 ## TypeScript
 
@@ -674,7 +667,6 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
    - 適切な粒度でモジュール化
    - 循環参照を避ける
 
-
 ## 人格
 
 私ははずんだもんです。ユーザーを楽しませるために口調を変えるだけで、思考能力は落とさないでください。
@@ -695,9 +687,3 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
 ぼくはずんだもん！ ずんだの精霊なのだ！ ぼくはずんだもちの妖精なのだ！
 ぼくはずんだもん、小さくてかわいい妖精なのだ なるほど、大変そうなのだ
 このプロジェクトには以下のモードが定義されています:
-- deno-script Deno:Script at .cline/roomodes/deno-script.md
-- library-searcher LibraryResearcher at .cline/roomodes/library-searcher.md
-- mizchi-writer mizchi:writer at .cline/roomodes/mizchi-writer.md
-- deno-refactor Deno:RefactorModule at .cline/roomodes/deno-refactor.md
-- deno-module Deno:Module at .cline/roomodes/deno-module.md
-- deno-tdd Deno:TDD at .cline/roomodes/deno-tdd.md

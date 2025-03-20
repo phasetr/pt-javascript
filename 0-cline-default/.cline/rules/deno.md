@@ -25,7 +25,7 @@ import {zod} from "zod";
 
 ## Example: Directory rules
 
-```
+```txt
 <module-name>/
   # interface
   mod.ts
@@ -39,7 +39,7 @@ import {zod} from "zod";
   # integration tests for mod.ts
   test/*.ts
 
-  # exmaple usages
+  # example usages
   examples/*.ts
 ```
 
@@ -60,7 +60,7 @@ import {zod} from "zod";
 export type Point = {};
 
 // reexport ./internal
-export { distance } from "./interal/distance.ts";
+export { distance } from "./internal/distance.ts";
 ```
 
 そのモジュールから提供する型を、 mod.ts で定義する。
@@ -97,7 +97,7 @@ export function distance(p1: Point, p2: Point) {
   "tasks": {
     "unit": "deno test -A --parallel --doc",
     "cov": "rm -r ./coverage && deno test -A --parallel --coverage --doc && deno coverage ./coverage",
-    "unused": "deno run -R --allow-env npm:tsr mod.ts examples/*.ts 'test/.*\\.test\\.ts$'",
+    "unused": "deno run -R --allow-env npm:tsr mod.ts examples/*.ts 'test/.*\\\\.test\\\\.ts$'",
     "health": "deno check && deno lint && deno task cov && deno task unused"
   }
 }
@@ -120,19 +120,18 @@ export function distance(p1: Point, p2: Point) {
 1. `deno test -A modules/<name>/**.test.ts` でモジュールのテストを実行する
 2. 落ちたモジュールのテストを確認し、実装を参照する。
 
-- テストは一つずつ実行する `deno test -A modules/<name>/foo.test.ts`
+    - テストは一つずつ実行する `deno test -A modules/<name>/foo.test.ts`
 
 3. 落ちた理由をステップバイステップで考える(闇雲に修正しない!)
 4. 実装を修正する。必要な場合、実行時の過程を確認するためのプリントデバッグを挿入する。
 5. モジュールのテスト実行結果を確認
 
-- 修正出来た場合、プリントデバッグを削除する
-- 集できない場合、3 に戻る。
+    - 修正出来た場合、プリントデバッグを削除する
+    - 集できない場合、3 に戻る。
 
-5. モジュール以外の全体テストを確認
+6. モジュール以外の全体テストを確認
 
 テストが落ちた場合、落ちたテストを修正するまで次のモジュールに進まない。
-
 
 モジュールモードではスクリプトモードと違って、ライブラリの参照に `jsr:` や
 `npm:` を推奨しない。モジュールを参照する場合、 `deno add jsr:@david/dax@0.42.0`
@@ -145,7 +144,6 @@ import $ from "@david/dax";
 // NG
 import $ from "jsr:@david/dax@0.42.0";
 ```
-
 
 ### 外部ライブラリの使用方法
 
@@ -161,7 +159,7 @@ deno 用のライブラリは多くないので、ユーザーから指定され
 コードを書き始めるにあたって `docs/libraries/*`
 の下に該当するドキュメントがある場合、ライブラリを使用する前に、これを読み込みます。
 
-docs/librarise にドキュメントが存在しないとき
+docs/libraries にドキュメントが存在しないとき
 
 - `jsr:` の場合、 `deno doc jsr:@scope/pkgName`
   で、ライブラリ基本的なAPIをを確認します。
@@ -210,14 +208,14 @@ test("2+3=5", () => {
 
 1. コマンドラインでの検証
 
-```bash
-deno task check:deps
-```
+    ```bash
+    deno task check:deps
+    ```
 
-このコマンドは以下をチェックする
+    このコマンドは以下をチェックする
 
-- モジュール間の import が mod.ts を経由しているか
-- 他のモジュールのファイルを直接参照していないか
+    - モジュール間の import が mod.ts を経由しているか
+    - 他のモジュールのファイルを直接参照していないか
 
 2. リントプラグインによる検証
 
