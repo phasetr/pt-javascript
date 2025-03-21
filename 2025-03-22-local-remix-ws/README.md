@@ -5,6 +5,7 @@
 RemixでMPAと共存した形でAPIが作れるか確認したい。
 APIはcurlでアクセスできるHTTP APIと、
 wscatでアクセスできるWebSocket APIの両方が同時に実装できるか確認したい。
+APIは`api`ディレクトリを切ってこの中にファイルをまとめ、WAFの`Hono`を使って実装する。
 
 ## プロジェクトの略称
 

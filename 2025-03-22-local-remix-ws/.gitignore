@@ -1,29 +1,5 @@
-# Deno
-cov/
-coverage/
-coverage.lcov
-
-# Editor
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea/
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Logs
-logs
-*.log
-npm-debug.log*
-
-# Cache
-.deno/*
-tmp
 node_modules
+
+/.cache
+/build
 .env
-.env.local
-.dev.vars
