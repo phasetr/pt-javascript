@@ -97,7 +97,7 @@ export function distance(p1: Point, p2: Point) {
   "tasks": {
     "unit": "deno test -A --parallel --doc",
     "cov": "rm -r ./coverage && deno test -A --parallel --coverage --doc && deno coverage ./coverage",
-    "unused": "deno run -R --allow-env npm:tsr mod.ts examples/*.ts 'test/.*\\\\.test\\\\.ts$'",
+    "unused": "deno run -R --allow-env npm:tsr mod.ts examples/*.ts 'test/.*\\.test\\.ts$'",
     "health": "deno check && deno lint && deno task cov && deno task unused"
   }
 }
