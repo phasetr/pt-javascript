@@ -13,11 +13,17 @@ cp .env.example .env
 ```
 
 - `.env`に`OPENAI_API_KEY`を記入
+- `WAF`を適切に指定：標準は`.env.sample`に記入した値
+  - 他の候補は`src/index.ts`の条件分岐を見ること
 
 ```sh
 npm run dev
 ```
 
 ```sh
-wscat -c ws://localhost:3000
+curl http://localhost:3000
+```
+
+```sh
+wscat -c ws://localhost:3000/media-stream
 ```

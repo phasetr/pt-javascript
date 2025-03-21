@@ -15,8 +15,25 @@ dotenv.config();
 
 export function honoWs(app: Hono) {
 	const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+	// http
+	app.get("/", async (c) => {
+		try {
+			// すぐ確認できるように削除ではなくコメントアウト
+			// const { OPENAI_API_KEY, SERVICE_URL } = await getAllSecretValues(
+			// 	process.env,
+			// );
+			const jst = nowJst();
+			console.log(`現在の日本時刻: ${jst}`);
+			return c.text(`Hello, hono: ${jst}`);
+		} catch (e) {
+			console.log(e);
+			return c.text("We have some errors!");
+		}
+	});
+
+	// WebSocket
 	app.get(
-		"/",
+		"/media-stream",
 		upgradeWebSocket((_c) => {
 			/** OpenAIのAPIキー取得 */
 			const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
