@@ -3,6 +3,8 @@
 - インフラにはプロジェクトの略称からなるプレフィックスをつける
 - プレフィックスはプロジェクト直下の`README.md`で指定する
 - 適切な指定が見当たらない場合は何にするべきか確認する
+- 特に断りがない限り,
+  データベースや`CloudWatch`ログは`cdk destroy`で同時に削除できるように設定する
 
 ## インフラとアプリケーションの分離
 
@@ -20,12 +22,12 @@ graph TD
         F[S3バケット] --> D1
         G[ECRリポジトリ] --> D2
     end
-    
+
     subgraph "アプリケーション層（変更頻度高）"
         H1[Lambda関数コード] --> D1
         H2[コンテナイメージ] --> D2
     end
-    
+
     subgraph "CI/CDパイプライン"
         I[コード変更] --> J[テスト]
         J --> K1[Lambda更新]
@@ -195,41 +197,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: |
           cd src/lambda-functions/my-function
           npm ci
-      
+
       - name: Run tests
         run: |
           cd src/lambda-functions/my-function
           npm test
-      
+
       - name: Build and package
         run: |
           cd src/lambda-functions/my-function
           npm run build
           zip -j function.zip dist/*
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-      
+
       - name: Update Lambda function code
         run: |
           aws lambda update-function-code \
             --function-name ${PREFIX}-my-function \
             --zip-file fileb://src/lambda-functions/my-function/function.zip
-      
+
       - name: Publish new version
         id: publish-version
         run: |
@@ -238,7 +240,7 @@ jobs:
             --description "Deployment from GitHub Actions - ${{ github.sha }}" \
             --output json | jq -r '.Version')
           echo "::set-output name=version::$VERSION"
-      
+
       - name: Update staging alias
         run: |
           aws lambda update-alias \
@@ -263,18 +265,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
@@ -286,13 +288,13 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-      
+
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition ${PREFIX}-my-service \
             --query taskDefinition > task-definition.json
-      
+
       - name: Update task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -300,7 +302,7 @@ jobs:
           task-definition: task-definition.json
           container-name: app
           image: ${{ steps.build-image.outputs.image }}
-      
+
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:

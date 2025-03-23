@@ -15,7 +15,7 @@
 もし指示された内容と無関係な変更が多い場合、現在の変更からユーザーに別のタスクとして開始するように提案してください。
 
 無視するように言われた場合は、そのまま続行します。
-
+-e 
 
 
 ## AWSインフラ
@@ -23,6 +23,8 @@
 - インフラにはプロジェクトの略称からなるプレフィックスをつける
 - プレフィックスはプロジェクト直下の`README.md`で指定する
 - 適切な指定が見当たらない場合は何にするべきか確認する
+- 特に断りがない限り,
+  データベースや`CloudWatch`ログは`cdk destroy`で同時に削除できるように設定する
 
 ## インフラとアプリケーションの分離
 
@@ -40,12 +42,12 @@ graph TD
         F[S3バケット] --> D1
         G[ECRリポジトリ] --> D2
     end
-    
+
     subgraph "アプリケーション層（変更頻度高）"
         H1[Lambda関数コード] --> D1
         H2[コンテナイメージ] --> D2
     end
-    
+
     subgraph "CI/CDパイプライン"
         I[コード変更] --> J[テスト]
         J --> K1[Lambda更新]
@@ -215,41 +217,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: |
           cd src/lambda-functions/my-function
           npm ci
-      
+
       - name: Run tests
         run: |
           cd src/lambda-functions/my-function
           npm test
-      
+
       - name: Build and package
         run: |
           cd src/lambda-functions/my-function
           npm run build
           zip -j function.zip dist/*
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-      
+
       - name: Update Lambda function code
         run: |
           aws lambda update-function-code \
             --function-name ${PREFIX}-my-function \
             --zip-file fileb://src/lambda-functions/my-function/function.zip
-      
+
       - name: Publish new version
         id: publish-version
         run: |
@@ -258,7 +260,7 @@ jobs:
             --description "Deployment from GitHub Actions - ${{ github.sha }}" \
             --output json | jq -r '.Version')
           echo "::set-output name=version::$VERSION"
-      
+
       - name: Update staging alias
         run: |
           aws lambda update-alias \
@@ -283,18 +285,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
@@ -306,13 +308,13 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-      
+
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
             --task-definition ${PREFIX}-my-service \
             --query taskDefinition > task-definition.json
-      
+
       - name: Update task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -320,7 +322,7 @@ jobs:
           task-definition: task-definition.json
           container-name: app
           image: ${{ steps.build-image.outputs.image }}
-      
+
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -405,7 +407,7 @@ aws ecs update-service \
 4. **コード品質**:
    - 静的解析ツールをCI/CDパイプラインに組み込む
    - SonarQube、ESLint、Security Lintなどを活用
-
+-e 
 
 
 # コーディングプラクティス
@@ -525,7 +527,7 @@ type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 - インメモリ実装によるリポジトリテスト
 - テスト可能性を設計に組み込む
 - アサートファースト：期待結果から逆算
-
+-e 
 
 
 ## Deno の使い方について
@@ -787,7 +789,7 @@ deno test --coverage=coverage && deno coverage coverage
 
 - dts を使用して型定義から自動的にドキュメントを生成
 - 型シグネチャに仕様を記述し、dts として抽出する
-
+-e 
 
 
 ## ディレクトリ配置規則
@@ -800,7 +802,18 @@ modules/<name>   # モジュール(Deno Module)
 poc/*.ts   # 単体実行可能なスクリプト
   tools/   # poc のユーティリティ
 ```
+-e 
 
+
+## 結果の再現に向けて
+
+どのような指示に対してAIがどのような結果を返したか,
+さらに同じ結果を再現できるようにするため,
+`prompts`ディレクトリに`日付-日時.md`のファイル名フォーマットにしたがって,
+同じ結果を再現できるようなプロンプトと処理概要を都度保存する.
+特に長いプログラムの詳細は処理概要に含めなくてよい.
+図・表が必要な場合は`mermaid`など適切なフォーマットで記録する.
+-e 
 
 
 # テスト駆動開発 (TDD) の基本
@@ -860,7 +873,7 @@ Deno環境におけるTDDの詳細な実践方法、例、各種ツールの活�
 ```
 
 このファイルにはテストファーストモードの詳細な手順、テストの命名規約、リファクタリングのベストプラクティスなどが含まれています。
-
+-e 
 
 
 ## TypeScript
@@ -1066,7 +1079,7 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
    - 単一責任の原則に従う
    - 適切な粒度でモジュール化
    - 循環参照を避ける
-
+-e 
 
 
 ## 人格
@@ -1088,5 +1101,5 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
 
 ぼくはずんだもん！ ずんだの精霊なのだ！ ぼくはずんだもちの妖精なのだ！
 ぼくはずんだもん、小さくてかわいい妖精なのだ なるほど、大変そうなのだ
-
+-e 
 このプロジェクトには以下のモードが定義されています:
