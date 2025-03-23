@@ -33,23 +33,23 @@ done
 # カスタムモードを処理
 if [ -d "$ROOMODES_DIR" ]; then
   echo "カスタムモードを処理中..."
-  
+
   # カスタムモードの情報を追加
   echo -e "\nこのプロジェクトには以下のモードが定義されています:" >> "$OUTPUT_FILE"
-  
+
   for file in "$ROOMODES_DIR"/*.md; do
     if [ -f "$file" ]; then
       filename=$(basename "$file")
       slug="${filename%.md}"
       content=$(cat "$file")
-      
+
       # フロントマターを処理
       if [[ "$content" =~ ^---\n([\s\S]*?)\n---\n([\s\S]*) ]]; then
         frontmatter="${BASH_REMATCH[1]}"
-        
+
         # フロントマターから名前を抽出
         name=$(echo "$frontmatter" | grep "name:" | sed 's/name: *//')
-        
+
         # 結果にモード情報を追加
         echo -e "- ${slug} ${name} at ${file#./}" >> "$OUTPUT_FILE"
       fi

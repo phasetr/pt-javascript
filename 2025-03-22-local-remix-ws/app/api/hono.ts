@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { WebSocket } from 'ws';
+import type { WebSocket } from 'ws';
 
 // Honoインスタンスの作成
 export const api = new Hono();
