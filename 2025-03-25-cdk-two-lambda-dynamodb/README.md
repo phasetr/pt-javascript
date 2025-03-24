@@ -13,6 +13,8 @@
 - 必要に応じて`npm workspace`のような機構を利用し,
   データベースに関わるプログラム・ライブラリを共有できるようにする
 - データベースは`DynamoDB`とする
+- `DynamoDB`の`PrimaryKey`は`PK`,
+  `SortKey`は`SK`とする
 - データベースは`docker compose`でローカル起動できるようにする
 
 ## プロジェクトの略称
