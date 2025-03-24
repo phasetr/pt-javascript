@@ -12,4 +12,17 @@
 
 ## 基本的なインフラ
 
-`AWS`または`Cloudflare`
+- `AWS`
+- `Cloudflare`
+
+## 作業手順
+
+### 自分用(都度消す)
+
+```sh
+cdk init sample-app --language typescript
+npm create hono@latest apps/hono
+npx create-remix@latest apps/remix
+```
+
+### AI用
