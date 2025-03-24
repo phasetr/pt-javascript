@@ -8,14 +8,20 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "dynamodb:start": "docker compose up -d",
+    "dynamodb:stop": "docker compose down",
+    "dynamodb:init": "node scripts/init-dynamodb.js",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.774.0",
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
+    "aws-cdk": "2.1005.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
-    "aws-cdk": "2.1005.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.6.3"
   },
