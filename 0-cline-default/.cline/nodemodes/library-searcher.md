@@ -32,11 +32,11 @@ source: "project"
 
 - MCP: searchWeb でインターネットを検索する
 - MCP: searchNpm で npm ライブラリを検索する
-- コマンド `deno run -A jsr:@mizchi/npm-summary/cli pkgname`
+- コマンド `npx npm-summary pkgname`
 
 npm-summary pkg の使い方。
 
-```
+```txt
 Usage:
   npm-summary <package-name>[@version] [options]  # Display package type definitions
   npm-summary ls <package-name>[@version]         # List files in a package
@@ -74,6 +74,39 @@ Options:
 
 まずインターネットで検索して、要望を実現するライブラリが存在するかを確認します。
 
-## Deno の jsr レジストリを解決するとき
+## npm パッケージの情報を取得するとき
 
-npm-summary の代わりに `deno doc jsr:*` を使って最初の要約を得てください。
+npm-summary を使って最初の要約を得てください。また、必要に応じて以下のコマンドも活用できます：
+
+```bash
+# パッケージの基本情報を取得
+npm info <package-name>
+
+# パッケージのREADMEを表示
+npm view <package-name> readme
+
+# パッケージの依存関係を表示
+npm view <package-name> dependencies
+```
+
+## 適切な代替がない場合の Deno JSR レジストリの利用
+
+npm に適切なパッケージが見つからない場合は、Deno の JSR レジストリを使用することも検討します：
+
+```bash
+# Deno JSR パッケージの情報を取得
+deno doc jsr:<package-name>
+
+# 例: Deno の dax パッケージの情報を取得
+deno doc jsr:@david/dax
+```
+
+Deno のパッケージを Node.js で使用する場合は、以下のようにします：
+
+```bash
+# Deno パッケージを npm パッケージとして使用
+npm install @deno/<package-name>
+
+# 例: Deno の std/fs パッケージを npm 経由でインストール
+npm install @deno/std-fs
+```

@@ -1,5 +1,5 @@
 ---
-name: Deno:TDD
+name: Node:TDD
 groups:
   - read
   - edit
@@ -9,7 +9,7 @@ groups:
 source: "project"
 ---
 
-# TDDモード
+## TDDモード
 
 TDDモードでは、TDDの思想に基づき、ステップバイステップでテストの追加、テストの修正、リファクターを順次行います。
 
@@ -19,8 +19,8 @@ TDDモードでは、TDDの思想に基づき、ステップバイステップ�
 
 テストは仕様を表すと考えます。そのモジュールのREADME.mdとテスト一覧から、仕様を推測してください。
 
-```
-$ deno test -A <module> --report=pretty
+```sh
+npx vitest --reporter=verbose
 ```
 
 ### テストの実装順序
@@ -39,7 +39,7 @@ Assert）とは異なる。実装を結果から始めることで、目的を�
 
 ```ts
 // @script @tdd
-import { err, ok, Result } from "npm:neverthrow";
+import { Result, err, ok } from "neverthrow";
 
 // 型定義
 export interface User {
@@ -52,13 +52,14 @@ export type ApiError =
   | { type: "network"; message: string };
 
 // インターフェース定義
-declare function getUser(
+export async function getUser(
   token: string,
   id: string,
-): Promise<Result<User, ApiError>>;
+): Promise<Result<User, ApiError>> {
+  throw new Error("Not implemented");
+}
 
-import { expect } from "@std/expect";
-import { test } from "@std/testing/bdd";
+import { expect, test } from "vitest";
 
 test("有効なトークンの場合にユーザー情報を取得すると成功すること", async () => {
   // 1. まず期待する結果を書く
@@ -105,7 +106,7 @@ test("無効なトークンの場合にユーザー情報を取得するとエ�
 
 テスト名は以下の形式で記述する：
 
-```
+```txt
 「{状況}の場合に{操作}をすると{結果}になること」
 ```
 
@@ -117,18 +118,20 @@ test("無効なトークンの場合にユーザー情報を取得するとエ�
 ### 開発手順の詳細
 
 1. 型シグネチャの定義
+
    ```ts
-   declare function getUser(
+   export async function getUser(
      token: string,
      id: string,
-   ): Promise<Result<User, ApiError>>;
+   ): Promise<Result<User, ApiError>> {
+     throw new Error("Not implemented");
+   }
    ```
-
-   ライブラリの時は export をつける
 
 2. テストケースごとに：
 
    a. 期待する結果を定義
+
    ```ts
    const expectedUser: User = {
      id: "1",
@@ -141,11 +144,13 @@ test("無効なトークンの場合にユーザー情報を取得するとエ�
    - 仕様の見直しや追加が必要な場合は、ここで修正
 
    c. 操作コードの実装
+
    ```ts
    const result = await getUser("valid-token", "1");
    ```
 
    d. 必要な準備コードの実装
+
    ```ts
    // 必要な場合のみ
    const mockApi = new MockApi();
@@ -154,23 +159,23 @@ test("無効なトークンの場合にユーザー情報を取得するとエ�
 
 TDDモードは他のモードと両立する。
 
-## Deno における TDD の例
+## Node.js における TDD の例
 
-この例では、Deno におけるテスト駆動開発 (TDD) のプロセスを示します。
+この例では、Node.js におけるテスト駆動開発 (TDD) のプロセスを示します。
 
 ### ディレクトリ構成
 
 ```
 tdd-example/
-  mod.ts    - 公開インターフェース (再エクスポートのみ)
-  lib.ts    - 実装 (deps.ts からのインポートを使用)
-  mod.test.ts - テストコード
+  index.ts    - 公開インターフェース (再エクスポートのみ)
+  lib.ts      - 実装 (deps.ts からのインポートを使用)
+  index.test.ts - テストコード
 ```
 
 ### 実際にTDDを行う手順 (Steps)
 
 1. **テストを書く**: コードの期待される動作を定義するテストケースを
-   `mod.test.ts` に記述します。
+   `index.test.ts` に記述します。
 2. **テストの失敗を確認する**:
    実装がないため、テストが失敗することを確認します。
 3. **コードを実装する**: テストケースを満たすコードを `lib.ts` に実装します。
@@ -178,65 +183,53 @@ tdd-example/
 
 ### 落ちるテストを追加するときの手順
 
-1. **テストが通ることを確認**: `deno test -A . --reporter=dot`
+1. **テストが通ることを確認**: `npx vitest --reporter=dot`
    でテストを実行し、すべてのテストが通ることを確認します。
-2. **落ちるテストを追加**: 新しいテストケースを `mod.test.ts`
+2. **落ちるテストを追加**: 新しいテストケースを `index.test.ts`
    に追加します。このテストは、まだ実装がないため失敗するはずです。
-3. **テストが落ちることを確認**: `deno test -A tdd-example --reporter=dot`
+3. **テストが落ちることを確認**: `npx vitest tdd-example --reporter=dot`
    でテストを実行し、追加したテストが失敗することを確認します。
 4. **落ちたテストだけを再実行**:
-   `deno test -A tdd-example --reporter=dot --filter <テスト名>`
+   `npx vitest --reporter=dot --testNamePattern="<テスト名>"`
    で、落ちたテストだけを再実行します。`<テスト名>`
    は、失敗したテストの名前で置き換えてください。
-5. **型を通す**: `lib.ts` に関数を定義し、`mod.ts` で re-export します。実装は
+5. **型を通す**: `lib.ts` に関数を定義し、`index.ts` で re-export します。実装は
    `throw new Error("wip")` とします。
 6. **実装**: `lib.ts` にテストが通る実装を記述します。
 
 ### リファクターフェーズ
 
-テストが取ったあと、ユーザーにリファクタを提案してください。
+テストが通ったあと、ユーザーにリファクタを提案してください。
 
-- `deno check <target>`
-- `deno lint <target>`
+- `npx tsc --noEmit`
+- `npx eslint .`
 
 #### コードカバレッジの測定と確認
 
 テストが通った段階で、コードカバレッジを測定して、テストがコードの全ての部分をカバーしているか確認することを推奨します。
 
 1. カバレッジデータの収集：
-   ```bash
-   deno test --coverage=coverage <テストファイル>
-   ```
-   - カバレッジデータは指定したディレクトリ（この例では「coverage」）に保存されます
 
-2. カバレッジレポートの生成と確認：
    ```bash
-   deno coverage coverage
+   npx vitest --coverage
    ```
+
+   - カバレッジデータは指定したディレクトリ（デフォルトでは「coverage」）に保存されます
+
+2. カバレッジレポートの確認：
    - 基本的なカバレッジレポート（ファイルごとのブランチカバレッジとラインカバレッジ）が表示されます
-
-3. より詳細なレポートの確認：
-   ```bash
-   deno coverage --detailed coverage
-   ```
-   - ファイルごとの詳細なカバレッジ情報が表示されます
-
-4. HTML形式のレポート生成（オプション）：
-   ```bash
-   deno coverage --html --output=coverage_html coverage
-   ```
-   - ブラウザで閲覧可能なHTMLレポートが生成されます
+   - coverage/index.html をブラウザで開くと詳細なレポートを確認できます
 
 カバレッジが100%でない場合は、テストケースを追加してカバレッジを向上させることを検討してください。
 
-#### デッドコード削除のためのTSRの活用
+#### デッドコード削除のための ESLint の活用
 
-テストが通った段階で、TSR（TypeScript
-Remove）を使ってデッドコード（未使用コード）を検出することも推奨します。
+テストが通った段階で、ESLint を使ってデッドコード（未使用コード）を検出することも推奨します。
 
 1. まずデッドコードの検出：
+
    ```bash
-   deno run -A npm:tsr 'mod\.ts$'
+   npx eslint --rule 'no-unused-vars: error' .
    ```
 
 2. 検出結果を確認：
@@ -244,32 +237,53 @@ Remove）を使ってデッドコード（未使用コード）を検出する�
    - 注意：テストファイルはエントリーポイントから参照されないため、デッドコードとして検出されます
 
 3. ユーザーに削除するか確認：
-   - 「TSRが以下のデッドコードを検出しました。削除しますか？」
+   - 「ESLint が以下のデッドコードを検出しました。削除しますか？」
    - ユーザーが同意した場合のみ、以下のコマンドを実行：
+
      ```bash
-     deno run -A npm:tsr --write 'mod\.ts$'
+     npx eslint --rule 'no-unused-vars: error' --fix .
      ```
+
    - テストファイルを除外したい場合：
+
      ```bash
-     deno run -A npm:tsr --write 'mod\.ts$' '.*\.test\.ts$'
+     npx eslint --rule 'no-unused-vars: error' --fix --ignore-pattern '*.test.ts' .
      ```
 
 デッドコードを削除することで、コードベースがクリーンに保たれ、将来のメンテナンスが容易になります。
+
+#### 代替がない場合の TSR の活用
+
+ESLint で十分なデッドコード検出ができない場合は、Deno の TSR ツールを使用することも可能です：
+
+```bash
+# TSR をインストール
+npm install -g @deno/tsr
+
+# または直接 Deno で実行
+deno run -A npm:tsr 'index\.ts$'
+
+# 検出結果を確認後、ユーザーの同意を得て削除
+deno run -A npm:tsr --write 'index\.ts$'
+```
 
 #### Gitワークフローの活用
 
 TDDプロセスでは、各フェーズでの変更を適切にバージョン管理することが重要です。以下のGitワークフローを推奨します：
 
 1. **コミット状況の確認**:
+
    ```bash
    git status
    ```
+
    - 作業開始前や各ステップの移行前に、現在の変更状態を確認します
 
 2. **テスト修正後のコミット**:
    - テストを追加・修正した後、ユーザーにコミットするか確認します
    - 「テストを修正しました。これをコミットしますか？」
    - ユーザーが同意した場合、コミットメッセージを考えて実行します：
+
      ```bash
      git add <変更ファイル>
      git commit -m "test: 〇〇の機能のテストを追加"
@@ -279,6 +293,7 @@ TDDプロセスでは、各フェーズでの変更を適切にバージョン�
    - テストが通るように実装した後、ユーザーにコミットするか確認します
    - 「実装が完了しました。これをコミットしますか？」
    - ユーザーが同意した場合：
+
      ```bash
      git add <変更ファイル>
      git commit -m "feat: 〇〇の機能を実装"
@@ -288,6 +303,7 @@ TDDプロセスでは、各フェーズでの変更を適切にバージョン�
    - リファクタリングを行った後、ユーザーにコミットするか確認します
    - 「リファクタリングが完了しました。これをコミットしますか？」
    - ユーザーが同意した場合：
+
      ```bash
      git add <変更ファイル>
      git commit -m "refactor: 〇〇の実装をリファクタリング"
