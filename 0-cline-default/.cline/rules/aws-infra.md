@@ -389,3 +389,8 @@ aws ecs update-service \
 4. **コード品質**:
    - 静的解析ツールをCI/CDパイプラインに組み込む
    - SonarQube、ESLint、Security Lintなどを活用
+
+## DynamoDBに対する注意
+
+- `Partition Key`の名前は必ず`PK`,
+  `Sort Key`の名前は必ず`SK`にする.
