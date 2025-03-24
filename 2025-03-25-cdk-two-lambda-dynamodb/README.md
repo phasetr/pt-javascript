@@ -1,5 +1,7 @@
 # README
 
+TODO: dynamodbのキーはPK, SK
+
 ## プロジェクト概要
 
 - `Deno`は一切使わずに`Node.js`だけを利用する
@@ -13,8 +15,6 @@
 - 必要に応じて`npm workspace`のような機構を利用し,
   データベースに関わるプログラム・ライブラリを共有できるようにする
 - データベースは`DynamoDB`とする
-- `DynamoDB`の`PrimaryKey`は`PK`,
-  `SortKey`は`SK`とする
 - データベースは`docker compose`でローカル起動できるようにする
 
 ## プロジェクトの略称
@@ -24,3 +24,10 @@ CTLD
 ## 基本的なインフラ
 
 `AWS`
+
+## コマンドメモ
+
+```sh
+npm create hono@latest apps/hono-api
+npx create-remix@latest apps/remix
+```
