@@ -38,3 +38,4 @@ npx create-remix@latest apps/remix
 2. テストは`vitest`を利用する
 3. ビルド結果の記述のような`js`であるべき部分を除き,
    原則として`ts`を利用する
+ 
