@@ -12,7 +12,10 @@
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
-    "deploy": "cdk deploy",
+    "build:hono": "node scripts/build-hono.js",
+    "build:remix": "node scripts/build-remix.js",
+    "build:all": "npm run build && npm run build:hono",
+    "deploy": "npm run build:all && cdk deploy",
     "destroy": "cdk destroy"
   },
   "devDependencies": {

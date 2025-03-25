@@ -27,47 +27,8 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 		const honoLambda = new lambda.Function(this, `${prefix}-HonoApi`, {
 			functionName: `${prefix}-HonoApi`,
 			runtime: lambda.Runtime.NODEJS_22_X,
-			handler: "index.handler",
-			code: lambda.Code.fromAsset(path.join(__dirname, "../apps/hono-api"), {
-				bundling: {
-					image: lambda.Runtime.NODEJS_20_X.bundlingImage,
-					command: [
-						"bash",
-						"-c",
-						["npm ci", "npm run build", "cp -r dist/* /asset-output/"].join(
-							" && ",
-						),
-					],
-				},
-			}),
-			environment: {
-				TABLE_NAME: table.tableName,
-			},
-			logRetention: logs.RetentionDays.ONE_WEEK,
-			timeout: Duration.seconds(30),
-		});
-
-		// Remix Lambda関数の作成
-		const remixLambda = new lambda.Function(this, `${prefix}-RemixApp`, {
-			functionName: `${prefix}-RemixApp`,
-			runtime: lambda.Runtime.NODEJS_22_X,
-			handler: "server.handler",
-			code: lambda.Code.fromAsset(path.join(__dirname, "../apps/remix"), {
-				bundling: {
-					image: lambda.Runtime.NODEJS_22_X.bundlingImage,
-					command: [
-						"bash",
-						"-c",
-						[
-							"npm ci",
-							"npm run build",
-							"cp server.js /asset-output/",
-							"cp -r build /asset-output/",
-							"cp -r node_modules /asset-output/",
-						].join(" && "),
-					],
-				},
-			}),
+			handler: "dist/index.handler",
+			code: lambda.Code.fromAsset(path.join(__dirname, "../apps/hono-api")),
 			environment: {
 				TABLE_NAME: table.tableName,
 			},
@@ -77,7 +38,6 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 
 		// DynamoDBテーブルへのアクセス権限を付与
 		table.grantReadWriteData(honoLambda);
-		table.grantReadWriteData(remixLambda);
 
 		// Hono API用のAPI Gatewayの作成
 		const honoApi = new apigateway.LambdaRestApi(
@@ -89,25 +49,10 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 			},
 		);
 
-		// Remix用のAPI Gatewayの作成
-		const remixApi = new apigateway.LambdaRestApi(
-			this,
-			`${prefix}-RemixApiGateway`,
-			{
-				handler: remixLambda,
-				proxy: true,
-			},
-		);
-
 		// API GatewayのエンドポイントURLを出力
 		new CfnOutput(this, `${prefix}HonoApiGatewayEndpoint`, {
 			value: honoApi.url,
 			description: "Hono API Gateway Endpoint",
-		});
-
-		new CfnOutput(this, `${prefix}RemixApiGatewayEndpoint`, {
-			value: remixApi.url,
-			description: "Remix API Gateway Endpoint",
 		});
 	}
 }
