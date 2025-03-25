@@ -23,7 +23,8 @@ export class CdkStack extends cdk.Stack {
 				),
 				functionName: `${projName}HonoFunction`,
 				architecture: Architecture.ARM_64,
-				memorySize: 256,
+				memorySize: 512, // メモリを増やす
+				timeout: cdk.Duration.seconds(30), // タイムアウトを増やす
 			},
 		);
 
