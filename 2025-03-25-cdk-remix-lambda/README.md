@@ -18,7 +18,7 @@ cdk deploy
 動作確認
 
 ```sh
-open $(aws cloudformation describe-stacks --stack-name CRLCdkStack --query "Stacks[0].Outputs[?OutputKey=='CRLApiEndpoint'].OutputValue" --output text)
+open $(aws cloudformation describe-stacks --stack-name CRLCdkStack --query "Stacks[0].Outputs[?OutputKey=='CRLRemixApiEndpoint'].OutputValue" --output text)
 ```
 
 ## memo

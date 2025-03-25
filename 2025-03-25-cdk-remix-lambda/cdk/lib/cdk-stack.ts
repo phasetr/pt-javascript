@@ -11,35 +11,38 @@ import type { Construct } from "constructs";
 
 export class CdkStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-		const projName = "CRL";
+		const prefix = "CRL";
 		super(scope, id, props);
 
-		const remixFunction = new DockerImageFunction(
+		// Remix Lambda関数の作成
+		const remixLambda = new DockerImageFunction(
 			this,
-			`${projName}RemixFunction`,
+			`${prefix}RemixDockerImageFunction`,
 			{
 				code: DockerImageCode.fromImageAsset(
 					path.join(__dirname, "..", "..", "remix"),
 				),
-				functionName: `${projName}RemixFunction`,
+				functionName: `${prefix}RemixDockerImageFunction`,
 				architecture: Architecture.ARM_64,
 				memorySize: 256,
 			},
 		);
 
-		const httpApi = new HttpApi(this, `${projName}HttpApi`);
-		const integration = new HttpLambdaIntegration(
-			`${projName}LambdaIntegration`,
-			remixFunction,
+		const remixHttpApi = new HttpApi(this, `${prefix}RemixHttpApi`);
+		const remixHttpLambdaIntegration = new HttpLambdaIntegration(
+			`${prefix}RemixHttpLambdaIntegration`,
+			remixLambda,
 		);
 
-		httpApi.addRoutes({
+		remixHttpApi.addRoutes({
 			path: "/{proxy+}",
-			integration,
+			integration: remixHttpLambdaIntegration,
 		});
 
-		new cdk.CfnOutput(this, `${projName}-ApiEndpoint`, {
-			value: httpApi.apiEndpoint,
+		// API GatewayのエンドポイントURLを出力
+		new cdk.CfnOutput(this, `${prefix}RemixApiEndpoint`, {
+			value: remixHttpApi.apiEndpoint,
+			description: "Remix API Endpoint URL",
 		});
 	}
 }
