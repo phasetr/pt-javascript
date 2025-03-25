@@ -1,4 +1,12 @@
-import { handle } from "hono/aws-lambda";
-import { app } from "./hono";
+import { serve } from "@hono/node-server";
+import { app } from "./hono.js";
 
-export const handler = handle(app);
+serve(
+	{
+		fetch: app.fetch,
+		port: 3000,
+	},
+	() => {
+		console.log("Server is running");
+	},
+);

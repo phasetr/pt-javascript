@@ -23,6 +23,36 @@ CTLD
 
 `AWS`
 
+## サーバーの動作確認
+
+### `Hono`
+
+```sh
+curl $(aws cloudformation describe-stacks \
+  --stack-name CdkTwoLambdaDynamodbStack \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDHonoApiEndpoint'].OutputValue" \
+  --output text)
+```
+
+結果
+
+```txt
+Hello Lambda in Hono!
+```
+
+### `Remix`
+
+Macでの確認法：
+
+```sh
+open $(aws cloudformation describe-stacks \
+  --stack-name CdkTwoLambdaDynamodbStack \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDRemixApiEndpoint'].OutputValue" \
+  --output text)
+```
+
+結果：`Remix`の画面が見られるかどうか。
+
 ## 作業手順
 
 各ステップごとに人手で目視・手動で確認します.

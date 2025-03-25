@@ -1,7 +1,8 @@
 {
-  "name": "apps-remix",
+  "name": "remix-sample",
   "private": true,
   "sideEffects": false,
+  "type": "module",
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
