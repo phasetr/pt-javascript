@@ -1,6 +1,5 @@
 {
   "name": "hono-api",
-  "type": "module",
   "scripts": {
     "build": "esbuild --bundle --outfile=./dist/index.js --platform=node --target=node20 --format=cjs ./src/index.ts",
     "zip": "zip -j lambda.zip dist/index.js",

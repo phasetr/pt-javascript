@@ -36,8 +36,25 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 			timeout: Duration.seconds(30),
 		});
 
+		// Remix Lambda関数の作成
+		const remixLambda = new lambda.Function(this, `${prefix}-RemixApp`, {
+			functionName: `${prefix}-RemixApp`,
+			runtime: lambda.Runtime.NODEJS_22_X,
+			handler: "simple-server.handler",
+			code: lambda.Code.fromAsset(path.join(__dirname, "../apps/remix"), {
+				exclude: ['.git', 'build', 'node_modules']
+			}),
+			environment: {
+				TABLE_NAME: table.tableName,
+				NODE_ENV: 'production'
+			},
+			logRetention: logs.RetentionDays.ONE_WEEK,
+			timeout: Duration.seconds(30),
+		});
+
 		// DynamoDBテーブルへのアクセス権限を付与
 		table.grantReadWriteData(honoLambda);
+		table.grantReadWriteData(remixLambda);
 
 		// Hono API用のAPI Gatewayの作成
 		const honoApi = new apigateway.LambdaRestApi(
@@ -49,10 +66,25 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 			},
 		);
 
+		// Remix用のAPI Gatewayの作成
+		const remixApi = new apigateway.LambdaRestApi(
+			this,
+			`${prefix}-RemixApiGateway`,
+			{
+				handler: remixLambda,
+				proxy: true,
+			},
+		);
+
 		// API GatewayのエンドポイントURLを出力
 		new CfnOutput(this, `${prefix}HonoApiGatewayEndpoint`, {
 			value: honoApi.url,
 			description: "Hono API Gateway Endpoint",
+		});
+
+		new CfnOutput(this, `${prefix}RemixApiGatewayEndpoint`, {
+			value: remixApi.url,
+			description: "Remix API Gateway Endpoint",
 		});
 	}
 }
