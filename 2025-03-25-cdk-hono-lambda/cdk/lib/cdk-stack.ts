@@ -11,36 +11,39 @@ import type { Construct } from "constructs";
 
 export class CdkStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-		const projName = "CHL";
+		const prefix = "CHL";
 		super(scope, id, props);
 
-		const honoFunction = new DockerImageFunction(
+		// Hono API Lambda関数の作成
+		const honoDockerImageFunction = new DockerImageFunction(
 			this,
-			`${projName}HonoFunction`,
+			`${prefix}HonoDockerImageFunction`,
 			{
 				code: DockerImageCode.fromImageAsset(
 					path.join(__dirname, "..", "..", "hono-api"),
 				),
-				functionName: `${projName}HonoFunction`,
+				functionName: `${prefix}HonoDockerImageFunction`,
 				architecture: Architecture.ARM_64,
 				memorySize: 512, // メモリを増やす
 				timeout: cdk.Duration.seconds(30), // タイムアウトを増やす
 			},
 		);
 
-		const httpApi = new HttpApi(this, `${projName}HttpApi`);
-		const integration = new HttpLambdaIntegration(
-			`${projName}LambdaIntegration`,
-			honoFunction,
+		const honoHttpApi = new HttpApi(this, `${prefix}HonoHttpApi`);
+		const honoHttpLambdaIntegration = new HttpLambdaIntegration(
+			`${prefix}HonoHttpLambdaIntegration`,
+			honoDockerImageFunction,
 		);
 
-		httpApi.addRoutes({
+		honoHttpApi.addRoutes({
 			path: "/{proxy+}",
-			integration,
+			integration: honoHttpLambdaIntegration,
 		});
 
-		new cdk.CfnOutput(this, `${projName}ApiEndpoint`, {
-			value: httpApi.apiEndpoint,
+		// API GatewayのエンドポイントURLを出力
+		new cdk.CfnOutput(this, `${prefix}HonoApiEndpoint`, {
+			value: honoHttpApi.apiEndpoint,
+			description: "Hono API Endpoint URL",
 		});
 	}
 }

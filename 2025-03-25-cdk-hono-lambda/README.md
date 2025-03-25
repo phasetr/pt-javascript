@@ -19,10 +19,12 @@ cdk deploy
 動作確認
 
 ```sh
-curl $(aws cloudformation describe-stacks --stack-name CHLCdkStack --query "Stacks[0].Outputs[?OutputKey=='CHLApiEndpoint'].OutputValue" --output text)
+curl $(aws cloudformation describe-stacks --stack-name CHLCdkStack --query "Stacks[0].Outputs[?OutputKey=='CHLHonoApiEndpoint'].OutputValue" --output text)
 ```
 
-これで`Hello Hono!`と返って来れば良い。
+結果：
+
+>`Hello Hono!`
 
 ## 初期化
 
