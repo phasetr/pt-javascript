@@ -32,6 +32,8 @@ const tables = [
       { AttributeName: 'SK', AttributeType: 'S' },
       { AttributeName: 'email', AttributeType: 'S' },
       { AttributeName: 'status', AttributeType: 'S' },
+      { AttributeName: 'entity', AttributeType: 'S' },
+      { AttributeName: 'id', AttributeType: 'S' },
     ],
     GlobalSecondaryIndexes: [
       {
@@ -52,6 +54,20 @@ const tables = [
         KeySchema: [
           { AttributeName: 'PK', KeyType: 'HASH' },
           { AttributeName: 'status', KeyType: 'RANGE' },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5,
+          WriteCapacityUnits: 5,
+        },
+      },
+      {
+        IndexName: 'EntityIndex',
+        KeySchema: [
+          { AttributeName: 'entity', KeyType: 'HASH' },
+          { AttributeName: 'id', KeyType: 'RANGE' },
         ],
         Projection: {
           ProjectionType: 'ALL',

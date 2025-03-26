@@ -9,32 +9,25 @@ import { userRepository } from '~/lib/db';
 // ローダー関数
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    // 注: 実際のアプリケーションでは、すべてのユーザーを取得するのではなく、
-    // ページネーションやフィルタリングを実装する必要があります。
-    // このエンドポイントはデモ用です。
+    // URLからクエリパラメータを取得
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get('limit');
+    const lastEvaluatedKeyParam = url.searchParams.get('lastEvaluatedKey');
     
-    // 現在の実装では、GSIを使ってすべてのユーザーを取得する方法がないため、
-    // ダミーデータを返します。
-    const dummyUsers = [
-      {
-        userId: 'user1',
-        name: 'ユーザー1',
-        email: 'user1@example.com'
-      },
-      {
-        userId: 'user2',
-        name: 'ユーザー2',
-        email: 'user2@example.com'
-      },
-      {
-        userId: 'user3',
-        name: 'ユーザー3',
-        email: 'user3@example.com'
-      }
-    ];
+    // limitをパース（デフォルト: 20）
+    const limit = limitParam ? Number.parseInt(limitParam, 10) : 20;
+    
+    // lastEvaluatedKeyをパース
+    const lastEvaluatedKey = lastEvaluatedKeyParam ? JSON.parse(lastEvaluatedKeyParam) : undefined;
+    
+    // 全てのユーザーを取得
+    const result = await userRepository.listAllUsers(limit, lastEvaluatedKey);
     
     return json({
-      users: dummyUsers,
+      users: result.users,
+      lastEvaluatedKey: result.lastEvaluatedKey,
+      limit,
+      count: result.users.length,
       environment: process.env.ENVIRONMENT || 'local'
     });
   } catch (error) {
@@ -127,6 +120,18 @@ export default function UsersIndex() {
           </tbody>
         </table>
       </div>
+      
+      {/* ページネーション */}
+      {data.lastEvaluatedKey && (
+        <div className="mt-6 flex justify-center">
+          <Link
+            to={`/users?limit=${data.limit}&lastEvaluatedKey=${encodeURIComponent(JSON.stringify(data.lastEvaluatedKey))}`}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            次のページ
+          </Link>
+        </div>
+      )}
       
       <div className="mt-6">
         <Link to="/" className="text-blue-500 hover:underline">

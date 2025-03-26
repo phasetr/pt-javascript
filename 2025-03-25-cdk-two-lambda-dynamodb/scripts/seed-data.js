@@ -50,16 +50,18 @@ function createUserPK(userId) {
 }
 
 const USER_SK = 'PROFILE';
+const USER_ENTITY = 'USER';
 
 function createUser(params) {
   const now = new Date().toISOString();
 
   return {
-    PK: createUserPK(params.userId),
+    PK: createUserPK(params.id),
     SK: USER_SK,
-    userId: params.userId,
+    id: params.id,
     email: params.email,
     name: params.name,
+    entity: USER_ENTITY,
     createdAt: now,
     updatedAt: now
   };
@@ -74,18 +76,21 @@ function createTaskSK(taskId) {
   return `TASK#${taskId}`;
 }
 
+const TASK_ENTITY = 'TASK';
+
 function createTask(params) {
   const now = new Date().toISOString();
 
   return {
     PK: createTaskPK(params.userId),
-    SK: createTaskSK(params.taskId),
+    SK: createTaskSK(params.id),
     userId: params.userId,
-    taskId: params.taskId,
+    id: params.id,
     title: params.title,
     description: params.description,
     status: params.status || 'TODO',
     dueDate: params.dueDate,
+    entity: TASK_ENTITY,
     createdAt: now,
     updatedAt: now
   };
@@ -147,15 +152,15 @@ async function generateTestData() {
     console.log(`${userCount}名のユーザーを作成します...`);
 
     for (let i = 0; i < userCount; i++) {
-      const userId = uuidv4();
+      const id = uuidv4();
       const user = await userRepo.createUser({
-        userId,
+        id,
         email: faker.internet.email(),
         name: faker.person.fullName(),
       });
 
       users.push(user);
-      console.log(`ユーザー作成: ${user.name} (${user.userId})`);
+      console.log(`ユーザー作成: ${user.name} (${user.id})`);
     }
 
     // 合計1000件のタスクを作成（ユーザーごとに異なる数）
@@ -175,13 +180,13 @@ async function generateTestData() {
       console.log(`ユーザー ${user.name} に ${userTaskCount} 件のタスクを作成します...`);
 
       for (let j = 0; j < userTaskCount; j++) {
-        const taskId = uuidv4();
+        const id = uuidv4();
         const dueDate = faker.date.future().toISOString();
         const status = TASK_STATUSES[Math.floor(Math.random() * TASK_STATUSES.length)];
 
         await taskRepo.createTask({
-          userId: user.userId,
-          taskId,
+          userId: user.id,
+          id,
           title: faker.lorem.sentence(3),
           description: faker.lorem.paragraph(),
           dueDate,

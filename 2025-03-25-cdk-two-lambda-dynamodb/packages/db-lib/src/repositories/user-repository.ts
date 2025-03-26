@@ -5,7 +5,7 @@
  */
 
 import { type DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { type User, createUserPK, USER_SK, createUser, updateUser } from '../models/user';
+import { type User, createUserPK, USER_SK, createUser, updateUser, USER_ENTITY } from '../models/user';
 
 export interface UserRepositoryConfig {
   tableName: string;
@@ -23,11 +23,11 @@ export class UserRepository {
   /**
    * ユーザーを取得
    */
-  async getUser(userId: string): Promise<User | null> {
+  async getUser(id: string): Promise<User | null> {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: {
-        PK: createUserPK(userId),
+        PK: createUserPK(id),
         SK: USER_SK
       }
     });
@@ -40,7 +40,7 @@ export class UserRepository {
    * ユーザーを作成
    */
   async createUser(params: {
-    userId: string;
+    id: string;
     email: string;
     name: string;
   }): Promise<User> {
@@ -59,10 +59,10 @@ export class UserRepository {
   /**
    * ユーザーを更新
    */
-  async updateUser(userId: string, updates: Partial<Omit<User, 'PK' | 'SK' | 'userId' | 'createdAt'>>): Promise<User> {
-    const user = await this.getUser(userId);
+  async updateUser(id: string, updates: Partial<Omit<User, 'PK' | 'SK' | 'id' | 'createdAt'>>): Promise<User> {
+    const user = await this.getUser(id);
     if (!user) {
-      throw new Error(`User not found: ${userId}`);
+      throw new Error(`User not found: ${id}`);
     }
 
     const updatedUser = updateUser(user, updates);
@@ -79,11 +79,11 @@ export class UserRepository {
   /**
    * ユーザーを削除
    */
-  async deleteUser(userId: string): Promise<void> {
+  async deleteUser(id: string): Promise<void> {
     const command = new DeleteCommand({
       TableName: this.tableName,
       Key: {
-        PK: createUserPK(userId),
+        PK: createUserPK(id),
         SK: USER_SK
       }
     });
@@ -113,5 +113,48 @@ export class UserRepository {
     }
 
     return response.Items[0] as User;
+  }
+
+  /**
+   * 全てのユーザーを取得
+   * 
+   * 注: このメソッドはGSI（EntityIndex）を使用して、entityがUSERのアイテムを取得します。
+   * 
+   * @param limit 取得する最大件数（デフォルト: 100）
+   * @param lastEvaluatedKey 前回のレスポンスから取得した続きのキー
+   * @returns ユーザーの配列と続きのキー
+   */
+  async listAllUsers(limit: number = 100, lastEvaluatedKey?: Record<string, unknown>): Promise<{
+    users: User[];
+    lastEvaluatedKey?: Record<string, unknown>;
+  }> {
+    // デバッグ情報を出力
+    console.log(`Querying EntityIndex with entity=${USER_ENTITY} and limit: ${limit}`);
+    console.log(`Last evaluated key: ${JSON.stringify(lastEvaluatedKey)}`);
+    
+    // クエリコマンドを作成
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'EntityIndex',
+      KeyConditionExpression: 'entity = :entity',
+      ExpressionAttributeValues: {
+        ':entity': USER_ENTITY
+      },
+      Limit: limit,
+      ExclusiveStartKey: lastEvaluatedKey
+    });
+
+    // クエリを実行
+    const response = await this.client.send(command);
+    
+    // デバッグ情報を出力
+    console.log(`Found ${response.Items?.length || 0} items`);
+    console.log(`Last evaluated key: ${JSON.stringify(response.LastEvaluatedKey)}`);
+    
+    // 結果を返す
+    return {
+      users: (response.Items || []) as User[],
+      lastEvaluatedKey: response.LastEvaluatedKey
+    };
   }
 }

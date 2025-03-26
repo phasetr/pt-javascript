@@ -18,6 +18,7 @@ import {
 	createTask,
 	updateTask,
 	type TaskStatus,
+	TASK_ENTITY,
 } from "../models/task";
 
 export interface TaskRepositoryConfig {
@@ -36,12 +37,12 @@ export class TaskRepository {
 	/**
 	 * タスクを取得
 	 */
-	async getTask(userId: string, taskId: string): Promise<Task | null> {
+	async getTask(userId: string, id: string): Promise<Task | null> {
 		const command = new GetCommand({
 			TableName: this.tableName,
 			Key: {
 				PK: createTaskPK(userId),
-				SK: createTaskSK(taskId),
+				SK: createTaskSK(id),
 			},
 		});
 
@@ -54,7 +55,7 @@ export class TaskRepository {
 	 */
 	async createTask(params: {
 		userId: string;
-		taskId: string;
+		id: string;
 		title: string;
 		description?: string;
 		dueDate?: string;
@@ -77,14 +78,14 @@ export class TaskRepository {
 	 */
 	async updateTask(
 		userId: string,
-		taskId: string,
+		id: string,
 		updates: Partial<
-			Omit<Task, "PK" | "SK" | "userId" | "taskId" | "createdAt">
+			Omit<Task, "PK" | "SK" | "userId" | "id" | "createdAt">
 		>,
 	): Promise<Task> {
-		const task = await this.getTask(userId, taskId);
+		const task = await this.getTask(userId, id);
 		if (!task) {
-			throw new Error(`Task not found: ${taskId} for user ${userId}`);
+			throw new Error(`Task not found: ${id} for user ${userId}`);
 		}
 
 		const updatedTask = updateTask(task, updates);
@@ -101,12 +102,12 @@ export class TaskRepository {
 	/**
 	 * タスクを削除
 	 */
-	async deleteTask(userId: string, taskId: string): Promise<void> {
+	async deleteTask(userId: string, id: string): Promise<void> {
 		const command = new DeleteCommand({
 			TableName: this.tableName,
 			Key: {
 				PK: createTaskPK(userId),
-				SK: createTaskSK(taskId),
+				SK: createTaskSK(id),
 			},
 		});
 
@@ -150,5 +151,48 @@ export class TaskRepository {
 
 		const response = await this.client.send(command);
 		return (response.Items || []) as Task[];
+	}
+
+	/**
+	 * 全てのタスクを取得
+	 * 
+	 * 注: このメソッドはGSI（TaskEntityIndex）を使用して、entityがTASKのアイテムを取得します。
+	 * 
+	 * @param limit 取得する最大件数（デフォルト: 100）
+	 * @param lastEvaluatedKey 前回のレスポンスから取得した続きのキー
+	 * @returns タスクの配列と続きのキー
+	 */
+	async listAllTasks(limit = 100, lastEvaluatedKey?: Record<string, unknown>): Promise<{
+		tasks: Task[];
+		lastEvaluatedKey?: Record<string, unknown>;
+	}> {
+		// デバッグ情報を出力
+		console.log(`Querying TaskEntityIndex with entity=${TASK_ENTITY} and limit: ${limit}`);
+		console.log(`Last evaluated key: ${JSON.stringify(lastEvaluatedKey)}`);
+		
+		// クエリコマンドを作成
+		const command = new QueryCommand({
+			TableName: this.tableName,
+			IndexName: "TaskEntityIndex",
+			KeyConditionExpression: "entity = :entity",
+			ExpressionAttributeValues: {
+				":entity": TASK_ENTITY
+			},
+			Limit: limit,
+			ExclusiveStartKey: lastEvaluatedKey
+		});
+
+		// クエリを実行
+		const response = await this.client.send(command);
+		
+		// デバッグ情報を出力
+		console.log(`Found ${response.Items?.length || 0} items`);
+		console.log(`Last evaluated key: ${JSON.stringify(response.LastEvaluatedKey)}`);
+		
+		// 結果を返す
+		return {
+			tasks: (response.Items || []) as Task[],
+			lastEvaluatedKey: response.LastEvaluatedKey
+		};
 	}
 }

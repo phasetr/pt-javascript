@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskRepository } from '../../src/repositories/task-repository';
 import { createMockDynamoDBDocumentClient } from '../utils/dynamodb-mock';
-import { createTaskPK, createTaskSK, TaskStatus } from '../../src/models/task';
+import { createTaskPK, createTaskSK, TaskStatus, TASK_ENTITY } from '../../src/models/task';
 
 describe('TaskRepository', () => {
   const TABLE_NAME = 'TestTasks';
@@ -19,7 +19,7 @@ describe('TaskRepository', () => {
       // Arrange
       const taskData = {
         userId: 'user123',
-        taskId: 'task456',
+        id: 'task456',
         title: 'Test Task',
         description: 'This is a test task'
       };
@@ -30,9 +30,9 @@ describe('TaskRepository', () => {
       // Assert
       expect(task).toBeDefined();
       expect(task.PK).toBe(createTaskPK(taskData.userId));
-      expect(task.SK).toBe(createTaskSK(taskData.taskId));
+      expect(task.SK).toBe(createTaskSK(taskData.id));
       expect(task.userId).toBe(taskData.userId);
-      expect(task.taskId).toBe(taskData.taskId);
+      expect(task.id).toBe(taskData.id);
       expect(task.title).toBe(taskData.title);
       expect(task.description).toBe(taskData.description);
       expect(task.status).toBe(TaskStatus.TODO);
@@ -46,7 +46,7 @@ describe('TaskRepository', () => {
       // Arrange
       const taskData = {
         userId: 'user123',
-        taskId: 'task456',
+        id: 'task456',
         title: 'Test Task'
       };
 
@@ -71,19 +71,19 @@ describe('TaskRepository', () => {
       // Arrange
       const taskData = {
         userId: 'user123',
-        taskId: 'task456',
+        id: 'task456',
         title: 'Test Task',
         description: 'This is a test task'
       };
       await taskRepository.createTask(taskData);
 
       // Act
-      const task = await taskRepository.getTask(taskData.userId, taskData.taskId);
+      const task = await taskRepository.getTask(taskData.userId, taskData.id);
 
       // Assert
       expect(task).toBeDefined();
       expect(task?.userId).toBe(taskData.userId);
-      expect(task?.taskId).toBe(taskData.taskId);
+      expect(task?.id).toBe(taskData.id);
       expect(task?.title).toBe(taskData.title);
       expect(task?.description).toBe(taskData.description);
     });
@@ -94,14 +94,14 @@ describe('TaskRepository', () => {
       // Arrange
       const taskData = {
         userId: 'user123',
-        taskId: 'task456',
+        id: 'task456',
         title: 'Old Title',
         description: 'Old Description'
       };
       await taskRepository.createTask(taskData);
 
       // Act
-      const updatedTask = await taskRepository.updateTask(taskData.userId, taskData.taskId, {
+      const updatedTask = await taskRepository.updateTask(taskData.userId, taskData.id, {
         title: 'New Title',
         description: 'New Description',
         status: TaskStatus.IN_PROGRESS
@@ -112,7 +112,7 @@ describe('TaskRepository', () => {
       expect(updatedTask.description).toBe('New Description');
       expect(updatedTask.status).toBe(TaskStatus.IN_PROGRESS);
       expect(updatedTask.userId).toBe(taskData.userId);
-      expect(updatedTask.taskId).toBe(taskData.taskId);
+      expect(updatedTask.id).toBe(taskData.id);
 
       // Check if the task was updated in the mock database
       const key = `${updatedTask.PK}#${updatedTask.SK}`;
@@ -132,7 +132,7 @@ describe('TaskRepository', () => {
       // Arrange
       const taskData = {
         userId: 'user123',
-        taskId: 'task456',
+        id: 'task456',
         title: 'Test Task'
       };
       const task = await taskRepository.createTask(taskData);
@@ -142,7 +142,7 @@ describe('TaskRepository', () => {
       expect(mockStore[TABLE_NAME][key]).toBeDefined();
 
       // Act
-      await taskRepository.deleteTask(taskData.userId, taskData.taskId);
+      await taskRepository.deleteTask(taskData.userId, taskData.id);
 
       // Assert
       expect(mockStore[TABLE_NAME][key]).toBeUndefined();
@@ -168,12 +168,12 @@ describe('TaskRepository', () => {
       const userId = 'user123';
       const taskData1 = {
         userId,
-        taskId: 'task1',
+        id: 'task1',
         title: 'Task 1'
       };
       const taskData2 = {
         userId,
-        taskId: 'task2',
+        id: 'task2',
         title: 'Task 2'
       };
 
@@ -185,8 +185,8 @@ describe('TaskRepository', () => {
 
       // Assert
       expect(tasks).toHaveLength(2);
-      expect(tasks.map(t => t.taskId)).toContain(taskData1.taskId);
-      expect(tasks.map(t => t.taskId)).toContain(taskData2.taskId);
+      expect(tasks.map(t => t.id)).toContain(taskData1.id);
+      expect(tasks.map(t => t.id)).toContain(taskData2.id);
     });
   });
 
@@ -206,27 +206,27 @@ describe('TaskRepository', () => {
       // Create a TODO task
       const todoTask = await taskRepository.createTask({
         userId,
-        taskId: 'task1',
+        id: 'task1',
         title: 'TODO Task'
       });
       
       // Create an IN_PROGRESS task
       const inProgressTask = await taskRepository.createTask({
         userId,
-        taskId: 'task2',
+        id: 'task2',
         title: 'In Progress Task'
       });
-      await taskRepository.updateTask(userId, inProgressTask.taskId, {
+      await taskRepository.updateTask(userId, inProgressTask.id, {
         status: TaskStatus.IN_PROGRESS
       });
       
       // Create a DONE task
       const doneTask = await taskRepository.createTask({
         userId,
-        taskId: 'task3',
+        id: 'task3',
         title: 'Done Task'
       });
-      await taskRepository.updateTask(userId, doneTask.taskId, {
+      await taskRepository.updateTask(userId, doneTask.id, {
         status: TaskStatus.DONE
       });
 
@@ -235,7 +235,7 @@ describe('TaskRepository', () => {
       
       // Assert
       expect(todoTasks).toHaveLength(1);
-      expect(todoTasks[0].taskId).toBe('task1');
+      expect(todoTasks[0].id).toBe('task1');
       expect(todoTasks[0].status).toBe(TaskStatus.TODO);
       
       // Act - Get IN_PROGRESS tasks
@@ -243,7 +243,7 @@ describe('TaskRepository', () => {
       
       // Assert
       expect(inProgressTasks).toHaveLength(1);
-      expect(inProgressTasks[0].taskId).toBe('task2');
+      expect(inProgressTasks[0].id).toBe('task2');
       expect(inProgressTasks[0].status).toBe(TaskStatus.IN_PROGRESS);
       
       // Act - Get DONE tasks
@@ -251,8 +251,90 @@ describe('TaskRepository', () => {
       
       // Assert
       expect(doneTasks).toHaveLength(1);
-      expect(doneTasks[0].taskId).toBe('task3');
+      expect(doneTasks[0].id).toBe('task3');
       expect(doneTasks[0].status).toBe(TaskStatus.DONE);
+    });
+  });
+
+  describe('listAllTasks', () => {
+    it('should return an empty array when no tasks exist', async () => {
+      // Act
+      const result = await taskRepository.listAllTasks();
+
+      // Assert
+      expect(result.tasks).toEqual([]);
+      expect(result.lastEvaluatedKey).toBeUndefined();
+    });
+
+    it('should return all tasks', async () => {
+      // Arrange
+      const taskDataList = [
+        {
+          userId: 'user1',
+          id: 'task1',
+          title: 'Task One'
+        },
+        {
+          userId: 'user2',
+          id: 'task2',
+          title: 'Task Two'
+        },
+        {
+          userId: 'user3',
+          id: 'task3',
+          title: 'Task Three'
+        }
+      ];
+
+      // Create tasks
+      for (const taskData of taskDataList) {
+        await taskRepository.createTask(taskData);
+      }
+
+      // Act
+      const result = await taskRepository.listAllTasks();
+
+      // Assert
+      expect(result.tasks).toHaveLength(3);
+      expect(result.tasks.map(task => task.id).sort()).toEqual(['task1', 'task2', 'task3']);
+      
+      // Verify each task has the entity field set to TASK_ENTITY
+      for (const task of result.tasks) {
+        expect(task.entity).toBe(TASK_ENTITY);
+      }
+    });
+
+    it('should respect the limit parameter', async () => {
+      // Arrange
+      const taskDataList = [
+        {
+          userId: 'user1',
+          id: 'task1',
+          title: 'Task One'
+        },
+        {
+          userId: 'user2',
+          id: 'task2',
+          title: 'Task Two'
+        },
+        {
+          userId: 'user3',
+          id: 'task3',
+          title: 'Task Three'
+        }
+      ];
+
+      // Create tasks
+      for (const taskData of taskDataList) {
+        await taskRepository.createTask(taskData);
+      }
+
+      // Act
+      const result = await taskRepository.listAllTasks(2);
+
+      // Assert
+      expect(result.tasks).toHaveLength(2);
+      expect(result.lastEvaluatedKey).toBeDefined();
     });
   });
 });

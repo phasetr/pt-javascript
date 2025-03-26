@@ -6,16 +6,20 @@
 
 export interface Task {
   PK: string; // パーティションキー: USER#<userId>
-  SK: string; // ソートキー: TASK#<taskId>
+  SK: string; // ソートキー: TASK#<id>
   userId: string;
-  taskId: string;
+  id: string;
   title: string;
   description?: string;
   status: TaskStatus;
   dueDate?: string;
+  entity: string; // エンティティ種別: TASK
   createdAt: string;
   updatedAt: string;
 }
+
+// エンティティ種別
+export const TASK_ENTITY = 'TASK';
 
 export enum TaskStatus {
   TODO = 'TODO',
@@ -33,8 +37,8 @@ export function createTaskPK(userId: string): string {
 /**
  * タスクIDからソートキーを生成
  */
-export function createTaskSK(taskId: string): string {
-  return `TASK#${taskId}`;
+export function createTaskSK(id: string): string {
+  return `TASK#${id}`;
 }
 
 /**
@@ -42,7 +46,7 @@ export function createTaskSK(taskId: string): string {
  */
 export function createTask(params: {
   userId: string;
-  taskId: string;
+  id: string;
   title: string;
   description?: string;
   dueDate?: string;
@@ -51,13 +55,14 @@ export function createTask(params: {
   
   return {
     PK: createTaskPK(params.userId),
-    SK: createTaskSK(params.taskId),
+    SK: createTaskSK(params.id),
     userId: params.userId,
-    taskId: params.taskId,
+    id: params.id,
     title: params.title,
     description: params.description,
     status: TaskStatus.TODO,
     dueDate: params.dueDate,
+    entity: TASK_ENTITY,
     createdAt: now,
     updatedAt: now
   };
@@ -66,7 +71,7 @@ export function createTask(params: {
 /**
  * タスクオブジェクトを更新
  */
-export function updateTask(task: Task, updates: Partial<Omit<Task, 'PK' | 'SK' | 'userId' | 'taskId' | 'createdAt'>>): Task {
+export function updateTask(task: Task, updates: Partial<Omit<Task, 'PK' | 'SK' | 'userId' | 'id' | 'createdAt'>>): Task {
   // 現在時刻を取得（テスト用に引数で渡せるようにする）
   const now = new Date().toISOString();
   
