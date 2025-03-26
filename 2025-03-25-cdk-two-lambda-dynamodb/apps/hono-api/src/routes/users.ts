@@ -28,15 +28,24 @@ const updateUserSchema = z.object({
 // ユーザー一覧を取得（実際のアプリケーションでは、認証・認可が必要）
 userRouter.get('/', async (c) => {
   try {
-    // 注: 実際のアプリケーションでは、すべてのユーザーを取得するのではなく、
-    // ページネーションやフィルタリングを実装する必要があります。
-    // このエンドポイントはデモ用です。
+    // クエリパラメータからlimitとlastEvaluatedKeyを取得
+    const limitParam = c.req.query('limit');
+    const lastEvaluatedKeyParam = c.req.query('lastEvaluatedKey');
     
-    // 現在の実装では、GSIを使ってすべてのユーザーを取得する方法がないため、
-    // ダミーデータを返します。
+    // limitをパース（デフォルト: 100）
+    const limit = limitParam ? Number.parseInt(limitParam, 10) : 100;
+    
+    // lastEvaluatedKeyをパース
+    const lastEvaluatedKey = lastEvaluatedKeyParam ? JSON.parse(lastEvaluatedKeyParam) : undefined;
+    
+    // 全てのユーザーを取得
+    const result = await userRepository.listAllUsers(limit, lastEvaluatedKey);
+    
     return c.json({
-      message: 'This endpoint would return a list of users in a real application',
-      note: 'In a real application, you would implement pagination and filtering'
+      users: result.users,
+      lastEvaluatedKey: result.lastEvaluatedKey,
+      limit,
+      count: result.users.length
     });
   } catch (error) {
     console.error('Error fetching users:', error);
