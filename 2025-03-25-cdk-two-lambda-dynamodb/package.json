@@ -17,6 +17,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
+    "dev:hono": "npm run build -w packages/db-lib && npm run dev -w apps/hono-api",
+    "dev:remix": "npm run build -w packages/db-lib && npm run dev -w apps/remix",
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",

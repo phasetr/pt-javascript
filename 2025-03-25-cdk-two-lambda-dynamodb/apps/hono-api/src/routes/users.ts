@@ -7,7 +7,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { userRepository } from '../db';
+import { userRepository } from '../db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 // ユーザールーター

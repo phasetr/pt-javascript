@@ -4,6 +4,7 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsx watch src/index.ts",
+		"dev:with-db": "cd ../.. && npm run build -w packages/db-lib && cd apps/hono-api && tsx watch src/index.ts",
 		"start": "node build/index.js",
 		"test": "vitest run",
 		"test:watch": "vitest"

@@ -7,7 +7,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { taskRepository } from '../db';
+import { taskRepository } from '../db.js';
 import { TaskStatus } from '@ctld/db-lib';
 import { v4 as uuidv4 } from 'uuid';
 
