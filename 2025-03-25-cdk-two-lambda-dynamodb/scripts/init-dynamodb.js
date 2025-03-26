@@ -18,11 +18,11 @@ const env = process.env.ENV || 'dev';
 // リソース名のプレフィックス
 const resourcePrefix = `${prefix}-${env}`;
 
-// テーブル定義
+// テーブル定義（シングルテーブル設計）
 const tables = [
-  // ユーザーテーブル
+  // 単一テーブル（ユーザーとタスクの両方を格納）
   {
-    TableName: `${resourcePrefix}-Users`,
+    TableName: `${resourcePrefix}-Table`,
     KeySchema: [
       { AttributeName: 'PK', KeyType: 'HASH' },
       { AttributeName: 'SK', KeyType: 'RANGE' },
@@ -31,6 +31,7 @@ const tables = [
       { AttributeName: 'PK', AttributeType: 'S' },
       { AttributeName: 'SK', AttributeType: 'S' },
       { AttributeName: 'email', AttributeType: 'S' },
+      { AttributeName: 'status', AttributeType: 'S' },
     ],
     GlobalSecondaryIndexes: [
       {
@@ -46,26 +47,6 @@ const tables = [
           WriteCapacityUnits: 5,
         },
       },
-    ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5,
-      WriteCapacityUnits: 5,
-    },
-  },
-  // タスクテーブル
-  {
-    TableName: `${resourcePrefix}-Tasks`,
-    KeySchema: [
-      { AttributeName: 'PK', KeyType: 'HASH' },
-      { AttributeName: 'SK', KeyType: 'RANGE' },
-    ],
-    AttributeDefinitions: [
-      { AttributeName: 'PK', AttributeType: 'S' },
-      { AttributeName: 'SK', AttributeType: 'S' },
-      { AttributeName: 'status', AttributeType: 'S' },
-    ],
-    GlobalSecondaryIndexes: [
       {
         IndexName: 'StatusIndex',
         KeySchema: [
@@ -95,23 +76,23 @@ async function createTables() {
     // 既存のテーブル一覧を取得
     const listTablesResponse = await client.send(new ListTablesCommand({}));
     const existingTables = listTablesResponse.TableNames || [];
-    
+
     // 各テーブルを作成
     for (const tableDefinition of tables) {
       const tableName = tableDefinition.TableName;
-      
+
       // テーブルが既に存在するかチェック
       if (existingTables.includes(tableName)) {
         console.log(`テーブル ${tableName} は既に存在します`);
         continue;
       }
-      
+
       // テーブル作成コマンドを実行
       const createTableCommand = new CreateTableCommand(tableDefinition);
       const response = await client.send(createTableCommand);
       console.log(`テーブル ${tableName} が正常に作成されました:`, response.TableDescription.TableStatus);
     }
-    
+
     console.log('すべてのテーブルの作成が完了しました');
   } catch (error) {
     console.error('テーブル作成中にエラーが発生しました:', error);

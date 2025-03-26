@@ -6,6 +6,7 @@
 		"clinerules",
 		"CTLD",
 		"dynamodblocal",
-		"isbot"
+		"isbot",
+		"uuidv"
 	]
 }

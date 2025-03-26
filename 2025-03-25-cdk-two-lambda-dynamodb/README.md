@@ -25,6 +25,22 @@ CTLD
 
 `AWS`
 
+## ローカルのDynamoDB
+
+Dockerを利用して立ち上げる。
+
+```sh
+docker compose up
+docker compose up -d
+```
+
+停止方法：
+
+```sh
+docker compose down
+docker compose stop dynamodb-local
+```
+
 ## サーバーの動作確認
 
 ### `Hono`
@@ -98,4 +114,8 @@ open $(aws cloudformation describe-stacks \
 4. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
    それらに対するCRUD操作とテストを書く。
    テストのライブラリは`Vitest`を利用する。
-5. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
+5. 次のステップに向けてローカルでの確認用にデータを登録する。
+   ユーザーは10名、
+   タスクは全ユーザー合計で1000件登録し、
+   ユーザーごとに登録されているタスク数は変える。
+6. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
