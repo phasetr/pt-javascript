@@ -29,15 +29,28 @@ CTLD
 
 ```sh
 curl $(aws cloudformation describe-stacks \
-  --stack-name CdkTwoLambdaDynamodbStack \
-  --query "Stacks[0].Outputs[?OutputKey=='CTLDHonoApiEndpoint'].OutputValue" \
+  --stack-name CdkTwoLambdaDynamodbStack-Dev \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDdevHonoApiEndpoint'].OutputValue" \
   --output text)
 ```
 
 結果
 
 ```txt
-Hello Lambda in Hono!
+日本時間 Hello Lambda in Hono! Environment: dev
+```
+
+```sh
+curl $(aws cloudformation describe-stacks \
+  --stack-name CdkTwoLambdaDynamodbStack-Prod \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDprodHonoApiEndpoint'].OutputValue" \
+  --output text)
+```
+
+結果
+
+```txt
+日本時間 Hello Lambda in Hono! Environment: prod
 ```
 
 ### `Remix`
@@ -46,12 +59,13 @@ Macでの確認法：
 
 ```sh
 open $(aws cloudformation describe-stacks \
-  --stack-name CdkTwoLambdaDynamodbStack \
-  --query "Stacks[0].Outputs[?OutputKey=='CTLDRemixApiEndpoint'].OutputValue" \
+  --stack-name CdkTwoLambdaDynamodbStack-Dev \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDdevRemixApiEndpoint'].OutputValue" \
   --output text)
 ```
 
 結果：`Remix`の画面が見られるかどうか。
+環境情報を表示するようにしているため、そこまできちんと確認する。
 
 ## 作業手順
 
