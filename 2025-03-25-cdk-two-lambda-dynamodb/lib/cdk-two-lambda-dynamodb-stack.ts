@@ -17,36 +17,62 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
 
+		// 環境名を取得（デフォルトは 'dev'）
+		const environment = this.node.tryGetContext('environment') || 'dev';
+		
 		// プロジェクトの略称をプレフィックスとして使用
 		const prefix = "CTLD";
+		
+		// 環境名をリソース名に含める
+		const resourcePrefix = `${prefix}-${environment}`;
 
 		// DynamoDBテーブルの作成
-		const table = new dynamodb.Table(this, `${prefix}-Table`, {
-			tableName: `${prefix}-Table`,
+		const table = new dynamodb.Table(this, `${resourcePrefix}-Table`, {
+			tableName: `${resourcePrefix}-Table`,
 			partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
 			sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
 			billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.DESTROY, // cdk destroyで削除できるように設定
 		});
 
+		// 環境ごとの設定
+		const envConfig = {
+			dev: {
+				honoMemorySize: 512,
+				honoTimeout: 30,
+				remixMemorySize: 256
+			},
+			prod: {
+				honoMemorySize: 1024,
+				honoTimeout: 60,
+				remixMemorySize: 512
+			}
+		};
+
+		// 環境に応じた設定を取得
+		const config = envConfig[environment as keyof typeof envConfig] || envConfig.dev;
+
 		// Hono API Lambda関数の作成
 		const honoDockerImageFunction = new DockerImageFunction(
 			this,
-			`${prefix}HonoDockerImageFunction`,
+			`${resourcePrefix}HonoDockerImageFunction`,
 			{
 				code: DockerImageCode.fromImageAsset(
 					path.join(__dirname, "..", "apps", "hono-api"),
 				),
-				functionName: `${prefix}HonoDockerImageFunction`,
+				functionName: `${resourcePrefix}HonoDockerImageFunction`,
 				architecture: Architecture.ARM_64,
-				memorySize: 512, // メモリを増やす
-				timeout: cdk.Duration.seconds(30), // タイムアウトを増やす
+				memorySize: config.honoMemorySize, // 環境に応じたメモリサイズ
+				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
+				environment: {
+					ENVIRONMENT: environment // 環境名を環境変数として渡す
+				}
 			},
 		);
 
-		const honoHttpApi = new HttpApi(this, `${prefix}HonoHttpApi`);
+		const honoHttpApi = new HttpApi(this, `${resourcePrefix}HonoHttpApi`);
 		const honoHttpLambdaIntegration = new HttpLambdaIntegration(
-			`${prefix}HonoHttpLambdaIntegration`,
+			`${resourcePrefix}HonoHttpLambdaIntegration`,
 			honoDockerImageFunction,
 		);
 
@@ -70,20 +96,24 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 		// Remix Lambda関数の作成
 		const remixLambda = new DockerImageFunction(
 			this,
-			`${prefix}RemixDockerImageFunction`,
+			`${resourcePrefix}RemixDockerImageFunction`,
 			{
 				code: DockerImageCode.fromImageAsset(
 					path.join(__dirname, "..", "apps", "remix"),
 				),
-				functionName: `${prefix}RemixDockerImageFunction`,
+				functionName: `${resourcePrefix}RemixDockerImageFunction`,
 				architecture: Architecture.ARM_64,
-				memorySize: 256,
+				memorySize: config.remixMemorySize, // 環境に応じたメモリサイズ
+				environment: {
+					ENVIRONMENT: environment, // 環境名を環境変数として渡す
+					NODE_ENV: environment === 'prod' ? 'production' : 'development'
+				}
 			},
 		);
 
-		const remixHttpApi = new HttpApi(this, `${prefix}RemixHttpApi`);
+		const remixHttpApi = new HttpApi(this, `${resourcePrefix}RemixHttpApi`);
 		const remixHttpLambdaIntegration = new HttpLambdaIntegration(
-			`${prefix}RemixHttpLambdaIntegration`,
+			`${resourcePrefix}RemixHttpLambdaIntegration`,
 			remixLambda,
 		);
 
@@ -96,7 +126,7 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 		// Remix用のAPI Gatewayの作成
 		const remixDockerImageFunctionLambdaRestApi = new apigateway.LambdaRestApi(
 			this,
-			`${prefix}-RemixApiGateway`,
+			`${resourcePrefix}-RemixApiGateway`,
 			{
 				handler: remixLambda,
 				proxy: true,
@@ -109,24 +139,33 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 		table.grantReadWriteData(remixLambda);
 
 		// API GatewayのエンドポイントURLを出力
-		new cdk.CfnOutput(this, `${prefix}HonoApiEndpoint`, {
+		new cdk.CfnOutput(this, `${resourcePrefix}HonoApiEndpoint`, {
 			value: honoHttpApi.apiEndpoint,
-			description: "Hono API Endpoint URL",
+			description: `Hono API Endpoint URL (${environment})`,
+			exportName: `${resourcePrefix}HonoApiEndpoint`
 		});
 
-		new cdk.CfnOutput(this, `${prefix}RemixApiEndpoint`, {
+		new cdk.CfnOutput(this, `${resourcePrefix}RemixApiEndpoint`, {
 			value: remixHttpApi.apiEndpoint,
-			description: "Remix API Endpoint URL",
+			description: `Remix API Endpoint URL (${environment})`,
+			exportName: `${resourcePrefix}RemixApiEndpoint`
+		});
+
+		// DynamoDBテーブル名を出力
+		new cdk.CfnOutput(this, `${resourcePrefix}TableName`, {
+			value: table.tableName,
+			description: `DynamoDB Table Name (${environment})`,
+			exportName: `${resourcePrefix}TableName`
 		});
 
 		/*
-		new CfnOutput(this, `${prefix}HonoLambdaRestApiUrl`, {
+		new CfnOutput(this, `${resourcePrefix}HonoLambdaRestApiUrl`, {
 			value: honoDockerImageFunctionRestApi.url,
-			description: "Hono Lambda REST API URL",
+			description: `Hono Lambda REST API URL (${environment})`,
 		});
-		new CfnOutput(this, `${prefix}RemixLambdaRestApiUrl`, {
+		new CfnOutput(this, `${resourcePrefix}RemixLambdaRestApiUrl`, {
 			value: remixDockerImageFunctionLambdaRestApi.url,
-			description: "Remix Lambda REST API URL",
+			description: `Remix Lambda REST API URL (${environment})`,
 		});
 		*/
 	}

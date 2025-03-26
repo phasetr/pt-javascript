@@ -12,11 +12,13 @@
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
-    "build:hono": "node scripts/build-hono.js",
-    "build:remix": "node scripts/build-remix.js",
-    "build:all": "npm run build && npm run build:hono",
-    "deploy": "npm run build:all && cdk deploy",
-    "destroy": "cdk destroy"
+    "deploy:dev": "cdk deploy --context env=dev",
+    "deploy:prod": "cdk deploy --context env=prod",
+    "deploy:all": "cdk deploy --context env=dev --context env=prod",
+    "destroy": "cdk destroy",
+    "destroy:dev": "cdk destroy --context env=dev",
+    "destroy:prod": "cdk destroy --context env=prod",
+    "destroy:all": "cdk destroy --context env=dev --context env=prod"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.774.0",

@@ -13,10 +13,12 @@ const client = new DynamoDBClient({
 
 // プロジェクトの略称をプレフィックスとして使用
 const prefix = 'CTLD';
+// 環境名をリソース名に含める
+const resourcePrefix = `${prefix}-dev`;
 
 // テーブル作成コマンド
 const createTableCommand = new CreateTableCommand({
-  TableName: `${prefix}-Table`,
+  TableName: `${resourcePrefix}-Table`,
   KeySchema: [
     { AttributeName: 'PK', KeyType: 'HASH' },
     { AttributeName: 'SK', KeyType: 'RANGE' },
@@ -35,9 +37,9 @@ async function createTable() {
     console.log('テーブルが正常に作成されました:', response);
   } catch (error) {
     if (error.name === 'ResourceInUseException') {
-      console.log(`テーブル ${prefix}-Table はすでに存在します`);
+      console.log(`テーブル${resourcePrefix}-Tableはすでに存在します`);
     } else {
-      console.error('テーブル作成中にエラーが発生しました:', error);
+      console.error(`テーブル${resourcePrefix}-Table作成中にエラーが発生しました:`, error);
     }
   }
 }
