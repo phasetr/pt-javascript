@@ -27,8 +27,8 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 		const resourcePrefix = `${prefix}-${environment}`;
 
 		// DynamoDBテーブルの作成
-		const table = new dynamodb.Table(this, `${resourcePrefix}-Table`, {
-			tableName: `${resourcePrefix}-Table`,
+		const table = new dynamodb.Table(this, `${resourcePrefix}-DDB`, {
+			tableName: `${resourcePrefix}-DDB`,
 			partitionKey: { name: "PK", type: dynamodb.AttributeType.STRING },
 			sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
 			billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

@@ -13,8 +13,8 @@ const client = new DynamoDBClient({
 
 // プロジェクトの略称をプレフィックスとして使用
 const prefix = 'CTLD';
-// 環境名（デフォルトはdev）
-const env = process.env.ENV || 'dev';
+// 環境名（デフォルトはlocal）
+const env = process.env.ENV || 'local';
 // リソース名のプレフィックス
 const resourcePrefix = `${prefix}-${env}`;
 
@@ -22,7 +22,7 @@ const resourcePrefix = `${prefix}-${env}`;
 const tables = [
   // 単一テーブル（ユーザーとタスクの両方を格納）
   {
-    TableName: `${resourcePrefix}-Table`,
+    TableName: `${resourcePrefix}-DDB`,
     KeySchema: [
       { AttributeName: 'PK', KeyType: 'HASH' },
       { AttributeName: 'SK', KeyType: 'RANGE' },

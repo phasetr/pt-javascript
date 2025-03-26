@@ -20,6 +20,7 @@
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
+    "dynamodb:seed:local": "node scripts/seed-data.js",
     "deploy:dev": "npm run build:all && cdk deploy --context env=dev",
     "deploy:prod": "npm run build:all && cdk deploy --context env=prod",
     "deploy:all": "npm run build:all && cdk deploy --context env=dev && cdk deploy --context env=prod",

@@ -41,6 +41,83 @@ docker compose down
 docker compose stop dynamodb-local
 ```
 
+### コマンドによるユーザーの確認
+
+基本的なユーザー一覧取得コマンド:
+
+```sh
+aws dynamodb scan \
+  --table-name CTLD-local-DDB \
+  --filter-expression "SK = :profile" \
+  --expression-attribute-values '{":profile": {"S": "PROFILE"}}' \
+  --endpoint-url http://localhost:8000
+```
+
+適当なユーザ一名だけを取得する
+
+```sh
+aws dynamodb scan \
+  --table-name CTLD-local-DDB \
+  --filter-expression "SK = :profile" \
+  --expression-attribute-values '{":profile": {"S": "PROFILE"}}' \
+  --query "Items[].{PK: PK.S, Name: name.S, Email: email.S}" \
+  --limit 1 \
+  --endpoint-url http://localhost:8000
+
+aws dynamodb scan \
+  --table-name CTLD-local-DDB \
+  --filter-expression "SK = :profile" \
+  --expression-attribute-values '{":profile": {"S": "PROFILE"}}' \
+  --query "Items[].{UserId: userId.S}" \
+  --limit 1 \
+  --endpoint-url http://localhost:8000
+```
+
+見やすいテーブル形式で表示する
+
+```sh
+aws dynamodb scan \
+  --table-name CTLD-local-DDB \
+  --filter-expression "SK = :profile" \
+  --expression-attribute-values '{":profile": {"S": "PROFILE"}}' \
+  --query "Items[].{UserId: userId.S}" \
+  --output table \
+  --endpoint-url http://localhost:8000
+```
+
+特定のユーザーを検索する（メールアドレスで検索）
+
+```sh
+aws dynamodb query \
+  --table-name CTLD-local-DDB \
+  --index-name EmailIndex \
+  --key-condition-expression "email = :email" \
+  --expression-attribute-values '{":email": {"S": "example@email.com"}}' \
+  --endpoint-url http://localhost:8000
+```
+
+特定のユーザーを検索する（ユーザーIDで検索）
+
+```sh
+aws dynamodb query \
+  --table-name CTLD-local-DDB \
+  --key-condition-expression "PK = :pk AND SK = :sk" \
+  --expression-attribute-values '{":pk": {"S": "USER#userId"}, ":sk": {"S": "PROFILE"}}' \
+  --endpoint-url http://localhost:8000
+```
+
+JSON形式で出力してファイルに保存
+
+```sh
+aws dynamodb scan \
+  --table-name CTLD-local-DDB \
+  --filter-expression "SK = :profile" \
+  --expression-attribute-values '{":profile": {"S": "PROFILE"}}' \
+  --query "Items[].{userId: userId.S, name: name.S, email: email.S}" \
+  --output json \
+  --endpoint-url http://localhost:8000 > users.json
+```
+
 ## サーバーの動作確認
 
 ### `Hono`

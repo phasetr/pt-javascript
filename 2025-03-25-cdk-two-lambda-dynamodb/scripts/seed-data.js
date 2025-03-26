@@ -34,12 +34,12 @@ const docClient = DynamoDBDocumentClient.from(client, {
 // プロジェクトの略称をプレフィックスとして使用
 const prefix = 'CTLD';
 // 環境名（デフォルトはdev）
-const env = process.env.ENV || 'dev';
+const env = process.env.ENV || 'local';
 // リソース名のプレフィックス
 const resourcePrefix = `${prefix}-${env}`;
 
 // テーブル名（シングルテーブル設計）
-const tableName = `${resourcePrefix}-Table`;
+const tableName = `${resourcePrefix}-DDB`;
 
 // タスクステータス
 const TASK_STATUSES = ['TODO', 'IN_PROGRESS', 'DONE'];
