@@ -40,12 +40,14 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 			dev: {
 				honoMemorySize: 512,
 				honoTimeout: 30,
-				remixMemorySize: 256
+				remixMemorySize: 256,
+				remixTimeout: 30
 			},
 			prod: {
-				honoMemorySize: 1024,
+				honoMemorySize: 512,
 				honoTimeout: 60,
-				remixMemorySize: 512
+				remixMemorySize: 256,
+				remixTimeout: 60
 			}
 		};
 
@@ -104,9 +106,10 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 				functionName: `${resourcePrefix}RemixDockerImageFunction`,
 				architecture: Architecture.ARM_64,
 				memorySize: config.remixMemorySize, // 環境に応じたメモリサイズ
+				timeout: cdk.Duration.seconds(config.remixTimeout), // 環境に応じたタイムアウト
 				environment: {
 					ENVIRONMENT: environment, // 環境名を環境変数として渡す
-					NODE_ENV: environment === 'prod' ? 'production' : 'development'
+					NODE_ENV: 'production' // Lambda環境では常にproductionモードで実行
 				}
 			},
 		);

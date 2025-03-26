@@ -1,5 +1,7 @@
 # README
 
+AI向け注意：作業を進めるときはまず`.clinerules`を読むこと。
+
 ## プロジェクト概要
 
 - `Deno`は一切使わずに`Node.js`だけを利用する
@@ -57,6 +59,8 @@ curl $(aws cloudformation describe-stacks \
 
 Macでの確認法：
 
+開発環境
+
 ```sh
 open $(aws cloudformation describe-stacks \
   --stack-name CdkTwoLambdaDynamodbStack-Dev \
@@ -64,8 +68,18 @@ open $(aws cloudformation describe-stacks \
   --output text)
 ```
 
-結果：`Remix`の画面が見られるかどうか。
-環境情報を表示するようにしているため、そこまできちんと確認する。
+結果：`Remix`の画面が見られ、画面中央`Remix`の下に`in dev`と表示される。
+
+本番環境
+
+```sh
+open $(aws cloudformation describe-stacks \
+  --stack-name CdkTwoLambdaDynamodbStack-Prod \
+  --query "Stacks[0].Outputs[?OutputKey=='CTLDprodRemixApiEndpoint'].OutputValue" \
+  --output text)
+```
+
+結果：`Remix`の画面が見られ、画面中央`Remix`の下に`in prod`と表示される。
 
 ## 作業手順
 
