@@ -3,7 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"dev": "tsx watch src/index.dev.ts",
+		"dev": "tsx watch src/index.ts",
 		"start": "node build/index.js"
 	},
 	"dependencies": {
