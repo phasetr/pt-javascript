@@ -42,12 +42,19 @@ CIIC(Cdk Iam Identity Center)
    どちらもスペックとしては最低限でよい.
    指定した構成でAWSにデプロイする.
 5. `Hono`で`DynamoDB`にアクセスする処理を書く
-6. `CDK`でこのプロジェクト用の`IAM Identity Center`アカウントを設定し、`CDK`で適切に権限を設定する
-7. AWSへのデプロイ用コマンドをルートの`package.json`に設定する
-8. ローカル・AWS上の環境に対する結合テストを書く
+6. ローカル・AWS上の環境に対する結合テストを書く
+7. `CDK`でこのプロジェクト用の`IAM Identity Center`アカウントを設定し、`CDK`で適切に権限を設定する
+8. AWSへのデプロイ用コマンドをルートの`package.json`に設定する
 9. 全体のテストコマンドをルートの`package.json`に設定する
+10. ここまでの対応を受けてテストをやり直し、
+    必要に応じてローカル・AWS上の環境に対する結合テストを書き直す
 
 ### 自分用(都度消す)
+
+Clineへの定型文：まず.clinerulesを読んでください。
+いまREADME.mdの作業手順に関して進めたステップを確認し,
+次のステップを進めでください。
+ワンステップだけ対応して、二つ以上のステップを一気に進めないでください。
 
 ```sh
 corepack enable && corepack prepare pnpm@latest --activate

@@ -8,19 +8,27 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "verify-iam-identity-center": "ts-node scripts/verify-iam-identity-center.ts",
+    "test-permissions": "ts-node scripts/test-permissions.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
+    "aws-cdk": "2.1005.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
-    "aws-cdk": "2.1005.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.6.3"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.181.1",
+    "@aws-sdk/client-cloudwatch-logs": "^3.775.0",
+    "@aws-sdk/client-dynamodb": "^3.775.0",
+    "@aws-sdk/client-identitystore": "^3.775.0",
+    "@aws-sdk/client-lambda": "^3.775.0",
+    "@aws-sdk/client-sso": "^3.775.0",
+    "@aws-sdk/client-sso-admin": "^3.775.0",
+    "aws-cdk-lib": "^2.181.1",
     "constructs": "^10.0.0"
   }
 }
