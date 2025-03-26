@@ -4,16 +4,24 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsx watch src/index.ts",
-		"start": "node build/index.js"
+		"start": "node build/index.js",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"dependencies": {
+		"@ctld/db-lib": "0.1.0",
 		"@hono/node-server": "^1.14.0",
-		"hono": "^4.7.5"
+		"@hono/zod-validator": "^0.2.0",
+		"hono": "^4.7.5",
+		"uuid": "^11.1.0",
+		"zod": "^3.22.4"
 	},
 	"devDependencies": {
 		"@types/node": "^20.11.17",
+		"@types/uuid": "^9.0.8",
 		"tsx": "^4.7.1",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.2",
+		"vitest": "^1.4.0"
 	},
 	"engines": {
 		"node": ">=20.0.0"
