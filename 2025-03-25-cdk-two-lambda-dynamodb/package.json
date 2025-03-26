@@ -14,7 +14,7 @@
     "dynamodb:init": "node scripts/init-dynamodb.js",
     "deploy:dev": "cdk deploy --context env=dev",
     "deploy:prod": "cdk deploy --context env=prod",
-    "deploy:all": "cdk deploy --context env=dev --context env=prod",
+    "deploy:all": "cdk deploy --context env=dev && cdk deploy --context env=prod",
     "destroy": "cdk destroy",
     "destroy:dev": "cdk destroy --context env=dev",
     "destroy:prod": "cdk destroy --context env=prod",
