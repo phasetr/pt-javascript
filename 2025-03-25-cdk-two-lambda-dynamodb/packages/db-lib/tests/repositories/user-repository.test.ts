@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { UserRepository } from '../../src/repositories/user-repository';
-import { createMockDynamoDBDocumentClient } from '../utils/dynamodb-mock-new';
+import { createMockDynamoDBDocumentClient } from '../utils/dynamodb-mock';
 import { createUserPK, USER_SK } from '../../src/models/user';
 
 describe('UserRepository', () => {

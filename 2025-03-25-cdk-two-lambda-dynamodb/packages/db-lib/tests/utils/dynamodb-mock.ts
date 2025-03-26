@@ -4,6 +4,7 @@
  * テスト用にDynamoDBクライアントをモックするためのユーティリティ関数を提供します。
  */
 
+import { vi } from 'vitest';
 import { type DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 // モックデータを保持するためのインメモリストア
@@ -16,14 +17,10 @@ export interface MockStore {
 /**
  * DynamoDBドキュメントクライアントのモックを作成
  */
-export async function createMockDynamoDBDocumentClient(initialData: MockStore = {}): Promise<{
+export function createMockDynamoDBDocumentClient(initialData: MockStore = {}): {
   client: DynamoDBDocumentClient;
   store: MockStore;
-}> {
-  // vitestをdynamic importで読み込む
-  const vitest = await import('vitest');
-  const vi = vitest.vi;
-
+} {
   // インメモリストアの初期化
   const store: MockStore = { ...initialData };
 
@@ -39,8 +36,11 @@ export async function createMockDynamoDBDocumentClient(initialData: MockStore = 
 
     // GetCommandの処理
     if (command instanceof GetCommand) {
-      const pk = command.input.Key.PK;
-      const sk = command.input.Key.SK;
+      const pk = command.input.Key?.PK;
+      const sk = command.input.Key?.SK;
+      if (!pk || !sk) {
+        throw new Error('PK and SK are required');
+      }
       const key = `${pk}#${sk}`;
       const item = store[tableName][key];
       
@@ -52,8 +52,14 @@ export async function createMockDynamoDBDocumentClient(initialData: MockStore = 
     // PutCommandの処理
     if (command instanceof PutCommand) {
       const item = command.input.Item;
+      if (!item) {
+        throw new Error('Item is required');
+      }
       const pk = item.PK;
       const sk = item.SK;
+      if (!pk || !sk) {
+        throw new Error('PK and SK are required');
+      }
       const key = `${pk}#${sk}`;
       
       // 条件式のチェック
@@ -75,8 +81,11 @@ export async function createMockDynamoDBDocumentClient(initialData: MockStore = 
     
     // DeleteCommandの処理
     if (command instanceof DeleteCommand) {
-      const pk = command.input.Key.PK;
-      const sk = command.input.Key.SK;
+      const pk = command.input.Key?.PK;
+      const sk = command.input.Key?.SK;
+      if (!pk || !sk) {
+        throw new Error('PK and SK are required');
+      }
       const key = `${pk}#${sk}`;
       
       delete store[tableName][key];

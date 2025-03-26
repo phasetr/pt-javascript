@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskRepository } from '../../src/repositories/task-repository';
-import { createMockDynamoDBDocumentClient } from '../utils/dynamodb-mock-new';
+import { createMockDynamoDBDocumentClient } from '../utils/dynamodb-mock';
 import { createTaskPK, createTaskSK, TaskStatus } from '../../src/models/task';
 
 describe('TaskRepository', () => {
