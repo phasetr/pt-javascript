@@ -149,7 +149,7 @@ export function createMockDynamoDBDocumentClient(initialData: MockStore = {}): {
             store.EntityIndex = {};
             for (const key in store[tableName]) {
               const item = store[tableName][key];
-              if (item && item.entity) {
+              if (item?.entity) {
                 store.EntityIndex[`${item.entity}#${item.id}`] = item;
               }
             }
