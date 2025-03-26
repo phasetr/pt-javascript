@@ -1,20 +1,28 @@
 {
   "name": "cdk-two-lambda-dynamodb",
   "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "bin": {
     "cdk-two-lambda-dynamodb": "bin/cdk-two-lambda-dynamodb.js"
   },
   "scripts": {
     "build": "tsc",
+    "build:all": "npm run build && npm run build:packages && npm run build:apps",
+    "build:packages": "npm run build -w packages/db-lib",
+    "build:apps": "npm run build -w apps/hono-api && npm run build -w apps/remix",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
-    "deploy:dev": "cdk deploy --context env=dev",
-    "deploy:prod": "cdk deploy --context env=prod",
-    "deploy:all": "cdk deploy --context env=dev && cdk deploy --context env=prod",
+    "deploy:dev": "npm run build:all && cdk deploy --context env=dev",
+    "deploy:prod": "npm run build:all && cdk deploy --context env=prod",
+    "deploy:all": "npm run build:all && cdk deploy --context env=dev && cdk deploy --context env=prod",
     "destroy": "cdk destroy",
     "destroy:dev": "cdk destroy --context env=dev",
     "destroy:prod": "cdk destroy --context env=prod",

@@ -1,6 +1,7 @@
 *.js
 !jest.config.js
 *.d.ts
+*.d.ts.map
 node_modules
 
 # CDK asset staging directory
@@ -8,6 +9,7 @@ node_modules
 cdk.out
 
 dynamodb-data
+tsconfig.tsbuildinfo
 
 !scripts/*.js
 !apps/remix/server.js
