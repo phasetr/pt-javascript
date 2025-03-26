@@ -57,7 +57,7 @@ export function createUser(params: {
  */
 export function updateUser(
 	user: User,
-	updates: Partial<Omit<User, "PK" | "SK" | "id" | "createdAt">>,
+	updates: Partial<Omit<User, "PK" | "SK" | "id" | "entity" | "createdAt">>,
 ): User {
 	// 現在時刻を取得（テスト用に引数で渡せるようにする）
 	const now = new Date().toISOString();

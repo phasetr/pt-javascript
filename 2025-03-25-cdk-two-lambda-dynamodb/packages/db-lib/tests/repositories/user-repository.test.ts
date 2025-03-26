@@ -6,7 +6,7 @@ import { createUserPK, USER_SK, USER_ENTITY } from "../../src/models/user";
 describe("UserRepository", () => {
 	const TABLE_NAME = "TestUsers";
 	let userRepository: UserRepository;
-	let mockStore: any;
+	let mockStore: Record<string, Record<string, any>>;
 
 	beforeEach(() => {
 		const { client, store } = createMockDynamoDBDocumentClient();
@@ -214,6 +214,15 @@ describe("UserRepository", () => {
 				await userRepository.createUser(userData);
 			}
 
+			// Mock the GSI query response
+			mockStore.EntityIndex = {};
+			for (const key in mockStore[TABLE_NAME]) {
+				const user = mockStore[TABLE_NAME][key] as any;
+				if (typeof user === 'object' && user !== null && 'entity' in user && user.entity === USER_ENTITY) {
+					mockStore.EntityIndex[`${user.entity}#${user.id}`] = user;
+				}
+			}
+
 			// Act
 			const result = await userRepository.listAllUsers();
 
@@ -254,6 +263,15 @@ describe("UserRepository", () => {
 			// Create users
 			for (const userData of userDataList) {
 				await userRepository.createUser(userData);
+			}
+
+			// Mock the GSI query response
+			mockStore.EntityIndex = {};
+			for (const key in mockStore[TABLE_NAME]) {
+				const user = mockStore[TABLE_NAME][key] as any;
+				if (typeof user === 'object' && user !== null && 'entity' in user && user.entity === USER_ENTITY) {
+					mockStore.EntityIndex[`${user.entity}#${user.id}`] = user;
+				}
 			}
 
 			// Act

@@ -94,11 +94,11 @@ taskRouter.post('/', zValidator('json', createTaskSchema), async (c) => {
     // タスクを作成
     const task = await taskRepository.createTask({
       userId,
-      taskId,
+      id: taskId,
       title,
       description,
       dueDate
-    });
+    } as any);
     
     return c.json(task, 201);
   } catch (error) {

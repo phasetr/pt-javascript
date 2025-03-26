@@ -80,10 +80,10 @@ userRouter.post('/', zValidator('json', createUserSchema), async (c) => {
     
     // ユーザーを作成
     const user = await userRepository.createUser({
-      userId,
+      id: userId,
       email,
       name
-    });
+    } as any);
     
     return c.json(user, 201);
   } catch (error) {

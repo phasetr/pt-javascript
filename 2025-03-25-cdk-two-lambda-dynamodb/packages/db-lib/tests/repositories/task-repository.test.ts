@@ -6,7 +6,7 @@ import { createTaskPK, createTaskSK, TaskStatus, TASK_ENTITY } from '../../src/m
 describe('TaskRepository', () => {
   const TABLE_NAME = 'TestTasks';
   let taskRepository: TaskRepository;
-  let mockStore: any;
+  let mockStore: Record<string, Record<string, unknown>>;
 
   beforeEach(() => {
     const { client, store } = createMockDynamoDBDocumentClient();
@@ -291,6 +291,15 @@ describe('TaskRepository', () => {
         await taskRepository.createTask(taskData);
       }
 
+      // Mock the GSI query response
+      mockStore.EntityIndex = {};
+      for (const key in mockStore[TABLE_NAME]) {
+        const task = mockStore[TABLE_NAME][key];
+        if (typeof task === 'object' && task !== null && 'entity' in task && task.entity === TASK_ENTITY) {
+          mockStore.EntityIndex[`${task.entity}#${(task as any).id}`] = task;
+        }
+      }
+
       // Act
       const result = await taskRepository.listAllTasks();
 
@@ -327,6 +336,15 @@ describe('TaskRepository', () => {
       // Create tasks
       for (const taskData of taskDataList) {
         await taskRepository.createTask(taskData);
+      }
+
+      // Mock the GSI query response
+      mockStore.EntityIndex = {};
+      for (const key in mockStore[TABLE_NAME]) {
+        const task = mockStore[TABLE_NAME][key];
+        if (typeof task === 'object' && task !== null && 'entity' in task && task.entity === TASK_ENTITY) {
+          mockStore.EntityIndex[`${task.entity}#${(task as any).id}`] = task;
+        }
       }
 
       // Act

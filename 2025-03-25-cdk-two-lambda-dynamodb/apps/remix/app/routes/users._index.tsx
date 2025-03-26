@@ -91,9 +91,9 @@ export default function UsersIndex() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {data.users.map((user) => (
-              <tr key={user.userId}>
+              <tr key={(user as any).id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {user.userId}
+                  {(user as any).id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {user.name}
@@ -103,13 +103,13 @@ export default function UsersIndex() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Link 
-                    to={`/users/${user.userId}`} 
+                    to={`/users/${(user as any).id}`} 
                     className="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     詳細
                   </Link>
                   <Link 
-                    to={`/users/${user.userId}/tasks`} 
+                    to={`/users/${(user as any).id}/tasks`} 
                     className="text-green-600 hover:text-green-900"
                   >
                     タスク

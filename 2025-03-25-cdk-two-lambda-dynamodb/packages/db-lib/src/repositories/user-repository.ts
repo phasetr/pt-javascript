@@ -39,27 +39,28 @@ export class UserRepository {
   /**
    * ユーザーを作成
    */
-  async createUser(params: {
+  async createUser(user: User | {
     id: string;
     email: string;
     name: string;
   }): Promise<User> {
-    const user = createUser(params);
+    // ユーザーオブジェクトを作成
+    const userItem = 'PK' in user ? user : createUser(user);
     
     const command = new PutCommand({
       TableName: this.tableName,
-      Item: user,
+      Item: userItem,
       ConditionExpression: 'attribute_not_exists(PK)'
     });
 
     await this.client.send(command);
-    return user;
+    return userItem;
   }
 
   /**
    * ユーザーを更新
    */
-  async updateUser(id: string, updates: Partial<Omit<User, 'PK' | 'SK' | 'id' | 'createdAt'>>): Promise<User> {
+  async updateUser(id: string, updates: Partial<Omit<User, 'PK' | 'SK' | 'id' | 'entity' | 'createdAt'>>): Promise<User> {
     const user = await this.getUser(id);
     if (!user) {
       throw new Error(`User not found: ${id}`);

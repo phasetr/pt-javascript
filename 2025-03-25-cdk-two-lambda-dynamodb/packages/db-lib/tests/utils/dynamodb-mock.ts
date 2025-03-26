@@ -99,6 +99,8 @@ export function createMockDynamoDBDocumentClient(initialData: MockStore = {}): {
       const expressionValues = command.input.ExpressionAttributeValues || {};
       const filterExpression = command.input.FilterExpression;
       const expressionNames = command.input.ExpressionAttributeNames || {};
+      const indexName = command.input.IndexName;
+      const limit = command.input.Limit || 100;
       
       // 簡易的なKeyConditionExpressionの解析
       if (keyCondition) {
@@ -136,6 +138,47 @@ export function createMockDynamoDBDocumentClient(initialData: MockStore = {}): {
             if (item.email === email) {
               items.push(item);
             }
+          }
+        }
+        // entity = :entity のようなパターンを処理（EntityIndex GSIクエリ）
+        else if (keyCondition.includes('entity = :entity') && indexName === 'EntityIndex') {
+          const entity = expressionValues[':entity'];
+          
+          // EntityIndexのモックデータがない場合は作成
+          if (!store.EntityIndex) {
+            store.EntityIndex = {};
+            for (const key in store[tableName]) {
+              const item = store[tableName][key];
+              if (item && item.entity) {
+                store.EntityIndex[`${item.entity}#${item.id}`] = item;
+              }
+            }
+          }
+          
+          // EntityIndexからエンティティに一致するアイテムを取得
+          const matchingItems = [];
+          for (const key in store.EntityIndex) {
+            const item = store.EntityIndex[key];
+            if (item.entity === entity) {
+              matchingItems.push(item);
+            }
+          }
+          
+          // limitに基づいてアイテムを制限
+          items.push(...matchingItems.slice(0, limit));
+          
+          // LastEvaluatedKeyの設定
+          if (matchingItems.length > limit) {
+            const lastItem = items[items.length - 1];
+            return {
+              Items: items,
+              LastEvaluatedKey: {
+                entity: lastItem.entity,
+                id: lastItem.id,
+                PK: lastItem.PK,
+                SK: lastItem.SK
+              }
+            };
           }
         }
       }

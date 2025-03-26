@@ -71,7 +71,7 @@ export function createTask(params: {
 /**
  * タスクオブジェクトを更新
  */
-export function updateTask(task: Task, updates: Partial<Omit<Task, 'PK' | 'SK' | 'userId' | 'id' | 'createdAt'>>): Task {
+export function updateTask(task: Task, updates: Partial<Omit<Task, 'PK' | 'SK' | 'userId' | 'id' | 'entity' | 'createdAt'>>): Task {
   // 現在時刻を取得（テスト用に引数で渡せるようにする）
   const now = new Date().toISOString();
   

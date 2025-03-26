@@ -53,24 +53,25 @@ export class TaskRepository {
 	/**
 	 * タスクを作成
 	 */
-	async createTask(params: {
+	async createTask(task: Task | {
 		userId: string;
 		id: string;
 		title: string;
 		description?: string;
 		dueDate?: string;
 	}): Promise<Task> {
-		const task = createTask(params);
+		// タスクオブジェクトを作成
+		const taskItem = 'PK' in task ? task : createTask(task);
 
 		const command = new PutCommand({
 			TableName: this.tableName,
-			Item: task,
+			Item: taskItem,
 			ConditionExpression:
 				"attribute_not_exists(PK) AND attribute_not_exists(SK)",
 		});
 
 		await this.client.send(command);
-		return task;
+		return taskItem;
 	}
 
 	/**
@@ -80,7 +81,7 @@ export class TaskRepository {
 		userId: string,
 		id: string,
 		updates: Partial<
-			Omit<Task, "PK" | "SK" | "userId" | "id" | "createdAt">
+			Omit<Task, "PK" | "SK" | "userId" | "id" | "entity" | "createdAt">
 		>,
 	): Promise<Task> {
 		const task = await this.getTask(userId, id);
@@ -156,7 +157,7 @@ export class TaskRepository {
 	/**
 	 * 全てのタスクを取得
 	 * 
-	 * 注: このメソッドはGSI（TaskEntityIndex）を使用して、entityがTASKのアイテムを取得します。
+	 * 注: このメソッドはGSI（EntityIndex）を使用して、entityがTASKのアイテムを取得します。
 	 * 
 	 * @param limit 取得する最大件数（デフォルト: 100）
 	 * @param lastEvaluatedKey 前回のレスポンスから取得した続きのキー
@@ -167,13 +168,13 @@ export class TaskRepository {
 		lastEvaluatedKey?: Record<string, unknown>;
 	}> {
 		// デバッグ情報を出力
-		console.log(`Querying TaskEntityIndex with entity=${TASK_ENTITY} and limit: ${limit}`);
+		console.log(`Querying EntityIndex with entity=${TASK_ENTITY} and limit: ${limit}`);
 		console.log(`Last evaluated key: ${JSON.stringify(lastEvaluatedKey)}`);
 		
 		// クエリコマンドを作成
 		const command = new QueryCommand({
 			TableName: this.tableName,
-			IndexName: "TaskEntityIndex",
+			IndexName: "EntityIndex",
 			KeyConditionExpression: "entity = :entity",
 			ExpressionAttributeValues: {
 				":entity": TASK_ENTITY
