@@ -41,6 +41,10 @@ CIIC(Cdk Iam Identity Center)
    指定した構成でAWSにデプロイする.
 5. `Hono`で`DynamoDB`にアクセスする処理を書く
 6. ローカル・サーバーに対する結合テストを書く
+7. `CDK`でこのプロジェクト用の`IAM Identity Center`アカウントを設定し、`CDK`で適切に権限を設定する
+8. AWSへのデプロイ用コマンドをルートの`package.json`に設定する
+9. 全体のテストコマンドをルートの`package.json`に設定する
+10. AWS上の環境に対する結合テストを書いて実行する
 
 ### 自分用(都度消す)
 
