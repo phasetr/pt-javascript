@@ -97,4 +97,5 @@ open $(aws cloudformation describe-stacks \
    `cdk deploy`の結果も変わらないか確認する.
 4. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
    それらに対するCRUD操作とテストを書く。
+   テストのライブラリは`Vitest`を利用する。
 5. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。

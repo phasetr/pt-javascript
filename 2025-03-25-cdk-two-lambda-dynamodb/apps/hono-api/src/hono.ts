@@ -13,7 +13,9 @@ app.get("/", (c) => {
 	console.log(`${now} SERVER LOG for root '/'`);
 	// 環境変数から環境情報を取得
 	const environment = process.env.ENVIRONMENT || "local";
-	return c.text(`${now} Hello Lambda in Hono! Environment: ${environment}`);
+	return c.text(
+		`TEST ${now} Hello Lambda in Hono! Environment: ${environment}`,
+	);
 });
 
 // 環境情報を返すエンドポイントを追加

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { DynamoDBClient, CreateTableCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, CreateTableCommand, ListTablesCommand } = require('@aws-sdk/client-dynamodb');
 
 // DynamoDBクライアントの設定
 const client = new DynamoDBClient({
@@ -13,35 +13,109 @@ const client = new DynamoDBClient({
 
 // プロジェクトの略称をプレフィックスとして使用
 const prefix = 'CTLD';
-// 環境名をリソース名に含める
-const resourcePrefix = `${prefix}-dev`;
+// 環境名（デフォルトはdev）
+const env = process.env.ENV || 'dev';
+// リソース名のプレフィックス
+const resourcePrefix = `${prefix}-${env}`;
 
-// テーブル作成コマンド
-const createTableCommand = new CreateTableCommand({
-  TableName: `${resourcePrefix}-Table`,
-  KeySchema: [
-    { AttributeName: 'PK', KeyType: 'HASH' },
-    { AttributeName: 'SK', KeyType: 'RANGE' },
-  ],
-  AttributeDefinitions: [
-    { AttributeName: 'PK', AttributeType: 'S' },
-    { AttributeName: 'SK', AttributeType: 'S' },
-  ],
-  BillingMode: 'PAY_PER_REQUEST',
-});
+// テーブル定義
+const tables = [
+  // ユーザーテーブル
+  {
+    TableName: `${resourcePrefix}-Users`,
+    KeySchema: [
+      { AttributeName: 'PK', KeyType: 'HASH' },
+      { AttributeName: 'SK', KeyType: 'RANGE' },
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'PK', AttributeType: 'S' },
+      { AttributeName: 'SK', AttributeType: 'S' },
+      { AttributeName: 'email', AttributeType: 'S' },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: 'EmailIndex',
+        KeySchema: [
+          { AttributeName: 'email', KeyType: 'HASH' },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5,
+          WriteCapacityUnits: 5,
+        },
+      },
+    ],
+    BillingMode: 'PROVISIONED',
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5,
+    },
+  },
+  // タスクテーブル
+  {
+    TableName: `${resourcePrefix}-Tasks`,
+    KeySchema: [
+      { AttributeName: 'PK', KeyType: 'HASH' },
+      { AttributeName: 'SK', KeyType: 'RANGE' },
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'PK', AttributeType: 'S' },
+      { AttributeName: 'SK', AttributeType: 'S' },
+      { AttributeName: 'status', AttributeType: 'S' },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: 'StatusIndex',
+        KeySchema: [
+          { AttributeName: 'PK', KeyType: 'HASH' },
+          { AttributeName: 'status', KeyType: 'RANGE' },
+        ],
+        Projection: {
+          ProjectionType: 'ALL',
+        },
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 5,
+          WriteCapacityUnits: 5,
+        },
+      },
+    ],
+    BillingMode: 'PROVISIONED',
+    ProvisionedThroughput: {
+      ReadCapacityUnits: 5,
+      WriteCapacityUnits: 5,
+    },
+  },
+];
 
 // テーブル作成の実行
-async function createTable() {
+async function createTables() {
   try {
-    const response = await client.send(createTableCommand);
-    console.log('テーブルが正常に作成されました:', response);
-  } catch (error) {
-    if (error.name === 'ResourceInUseException') {
-      console.log(`テーブル${resourcePrefix}-Tableはすでに存在します`);
-    } else {
-      console.error(`テーブル${resourcePrefix}-Table作成中にエラーが発生しました:`, error);
+    // 既存のテーブル一覧を取得
+    const listTablesResponse = await client.send(new ListTablesCommand({}));
+    const existingTables = listTablesResponse.TableNames || [];
+    
+    // 各テーブルを作成
+    for (const tableDefinition of tables) {
+      const tableName = tableDefinition.TableName;
+      
+      // テーブルが既に存在するかチェック
+      if (existingTables.includes(tableName)) {
+        console.log(`テーブル ${tableName} は既に存在します`);
+        continue;
+      }
+      
+      // テーブル作成コマンドを実行
+      const createTableCommand = new CreateTableCommand(tableDefinition);
+      const response = await client.send(createTableCommand);
+      console.log(`テーブル ${tableName} が正常に作成されました:`, response.TableDescription.TableStatus);
     }
+    
+    console.log('すべてのテーブルの作成が完了しました');
+  } catch (error) {
+    console.error('テーブル作成中にエラーが発生しました:', error);
   }
 }
 
-createTable();
+createTables();
