@@ -8,5 +8,9 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**']
     }
+  },
+  resolve: {
+    // This is needed to make vitest work with CommonJS modules
+    conditions: ['node']
   }
 });
