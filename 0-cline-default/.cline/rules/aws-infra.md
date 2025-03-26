@@ -406,3 +406,6 @@ aws ecs update-service \
 
 - `Partition Key`の名前は必ず`PK`,
   `Sort Key`の名前は必ず`SK`にする.
+- テーブルはシングルテーブル設計を基本とする.
+- テーブル名は「<プロジェクト名>-<環境名>-DDB」とする.
+  環境名は`local`, `dev`, `prod`などが入る想定である.
