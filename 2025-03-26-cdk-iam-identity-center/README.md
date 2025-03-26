@@ -33,24 +33,24 @@ CIIC(Cdk Iam Identity Center)
 確認用のコマンドと得られるべき結果を明記して`steps`ディレクトリに`日時-日付-step.md`に記録してください.
 
 1. (手動)：workspace内で`cdk init`する
-2. pnpm workspace化する.
-3. 今のコードベースで`CDK`コードを書き換える.
+2. (手動)：`packages/hono-api`に`Lambda`用の`Hono`を初期化しておく
+3. pnpm workspace化する.
+4. 今のコードベースで`CDK`コードを書き換える.
    環境としては`dev`と`prod`を作る.
    どちらもスペックとしては最低限でよい.
    指定した構成でAWSにデプロイする.
-4. `CDK`を修正して`dev`と`prod`版をリリースできるようにする.
-   workspace化してもローカル環境で元の動作が再現できるか確認する.
-   `cdk deploy`の結果も変わらないか確認する.
-5. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
-   それらに対するCRUD操作とテストを書く。
-6. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
+5. `Hono`で`DynamoDB`にアクセスする処理を書く
+6. ローカル・サーバーに対する結合テストを書く
 
 ### 自分用(都度消す)
 
 ```sh
-corepack enable
-corepack prepare pnpm@latest --activate
+corepack enable && corepack prepare pnpm@latest --activate
+asdf reshim nodejs
 pnpm -v
 mkdir -p packages/CIIC
+cd packages/CIIC
 cdk init sample-app --language typescript
+cd ../../
+pnpm create hono@latest packages/hono-api
 ```
