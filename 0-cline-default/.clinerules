@@ -564,6 +564,14 @@ type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
 
 
+## データベース
+
+### `pnpm workspace`利用時
+
+データベースのパッケージ名は`db`とする.
+
+
+
 ## Deno の使い方について
 
 ### npm 互換モード
