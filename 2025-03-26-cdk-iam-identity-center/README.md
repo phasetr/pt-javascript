@@ -5,6 +5,8 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 自分用備忘録：IAM Identity Center自体の理解をもっと深めないと何もわからないのがわかった。
 現時点ではこれは忘れて、
 このプロジェクトはLambda+DynamoDB+pnpm構成のサンプルとして対応する。
+途中で嫌になったため、かなり半端なままで放置する。
+`2025-03-25-cdk-two-lambda-dynamodb`を見ること.
 
 ## プロジェクト概要
 
@@ -38,7 +40,7 @@ CIIC(Cdk Iam Identity Center)
 日時のように都度得られるべき結果が変わる場合は適切な比較対象を設定してください.
 最後にステップごとの内容は`steps`ディレクトリに`日時-日付-step.md`として記録してください.
 
-1. (手動)：workspace内で`cdk init`する
+1. (手動)：workspace内で`packages/CIIC`に`cdk init`する
 2. (手動)：`packages/hono-api`に`Lambda`用の`Hono`を初期化しておく
 3. pnpm workspace化する.
 4. 今のコードベースで`CDK`コードを書き換える.

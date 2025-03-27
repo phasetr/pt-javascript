@@ -32,19 +32,34 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 日時のように都度得られるべき結果が変わる場合は適切な比較対象を設定してください.
 最後にステップごとの内容は`steps`ディレクトリに`日時-日付-step.md`として記録してください.
 
-1. 今のコードベースで`CDK`コードを書き換え,
-   指定した構成でAWSにデプロイして動作確認する。
-2. `CDK`を修正して`dev`と`prod`版をリリースできるようにする.
-3. npm workspace化する.
-   workspace化してもローカル環境で元の動作が再現できるか確認する.
-   `cdk deploy`の結果も変わらないか確認する.
-4. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
+1. (手動)：workspace内で`packages/<プロジェクトの略称>`に`cdk init`する
+2. (手動)：`apps/hono-api`で`Hono`を初期化する
+3. (手動)：`apps/remix`で`Remix`を初期化する
+4. pnpm workspace化する.
+5. 今のコードベースで`CDK`コードを書き換える.
+   環境としては`dev`と`prod`を作る.
+   どちらもスペックとしては最低限でよい.
+   指定した構成でAWSにデプロイする.
+6. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
    それらに対するCRUD操作とテストを書く。
-5. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
+7. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
+8. ローカル・AWS上の開発環境に対する簡易結合テストを作成する。
+   APIは全てを一通り叩いて結果が返るか確認する。
+   環境指定で`local`・`dev`・`prod`を選べるようにし、適切な環境を指定して簡易結合テストできるようにする.
+   この指定がない場合は自動的に`local`になるとする。
 
 ### 自分用(都度消す)
 
+Clineへの定型文：まず.clinerulesを読んでください。
+いまREADME.mdの作業手順に関して進めたステップを確認し,
+次のステップの作業を始めてください。
+ワンステップだけ対応して、二つ以上のステップを一気に進めないでください。
+
 ```sh
+corepack enable && corepack prepare pnpm@latest --activate
+asdf reshim nodejs
+pnpm -v
+
 cdk init sample-app --language typescript
 npm create hono@latest apps/hono
 npx create-remix@latest apps/remix
@@ -58,6 +73,5 @@ npx create-remix@latest apps/remix
 
 1. `deno doc`など`npm`前提の状況でも使え,
    適切な代替が存在しない対象は`deno`の機構をそのまま利用する
-2. テストは`vitest`を利用する
-3. ビルド結果の記述のような`js`であるべき部分を除き,
+2. ビルド結果の記述のような`js`であるべき部分を除き,
    原則として`ts`を利用する

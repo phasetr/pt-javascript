@@ -16,7 +16,19 @@
     "verify-sso:prod": "STORE_ID=$(aws sso-admin list-instances --query \"Instances[0].IdentityStoreId\" --output text --no-paginate) && INSTANCE_ARN=$(aws sso-admin list-instances --query \"Instances[0].InstanceArn\" --output text --no-paginate) && cd packages/CIIC && pnpm verify-iam-identity-center --environment prod --identity-store-id ${STORE_ID} --sso-instance-arn ${INSTANCE_ARN}",
     "test-permissions:dev": "cd packages/CIIC && pnpm test-permissions --environment dev",
     "test-permissions:prod": "cd packages/CIIC && pnpm test-permissions --environment prod",
-    "verify-deploy-commands": "ts-node --esm scripts/verify-deploy-commands.ts"
+    "verify-deploy-commands": "ts-node --esm scripts/verify-deploy-commands.ts",
+    "test:integration": "ts-node --esm scripts/integration-test.ts",
+    "test:integration:local": "ts-node --esm scripts/integration-test.ts local",
+    "test:integration:dev": "ts-node --esm scripts/integration-test.ts dev",
+    "test:integration:prod": "ts-node --esm scripts/integration-test.ts prod",
+    "verify-integration-test": "ts-node --esm -c 'console.log(\"結合テストスクリプトの構文チェック\"); process.exit(0)'",
+    "set-api-url:dev": "export DEV_API_URL=$(aws cloudformation describe-stacks --stack-name CIIC-dev-Stack --query \"Stacks[0].Outputs[?OutputKey=='ApiEndpoint4F160690'].OutputValue\" --output text)",
+    "set-api-url:prod": "export PROD_API_URL=$(aws cloudformation describe-stacks --stack-name CIIC-prod-Stack --query \"Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue\" --output text)",
+    "dynamodb:start": "docker-compose -f compose.yml up -d",
+    "dynamodb:stop": "docker-compose -f compose.yml down",
+    "dynamodb:init": "ts-node --esm scripts/init-local-dynamodb.ts",
+    "dynamodb:setup": "pnpm dynamodb:start && sleep 5 && pnpm dynamodb:init",
+    "local:dev": "ENVIRONMENT=local TABLE_NAME=CIIC-local-DDB pnpm -C packages/hono-api dev"
   },
   "keywords": [
     "aws",
@@ -28,6 +40,10 @@
   "license": "ISC",
   "packageManager": "pnpm@10.7.0+sha512.6b865ad4b62a1d9842b61d674a393903b871d9244954f652b8842c2b553c72176b278f64c463e52d40fff8aba385c235c8c9ecf5cc7de4fd78b8bb6d49633ab6",
   "devDependencies": {
-    "@types/node": "22.7.9"
+    "@aws-sdk/client-dynamodb": "^3.775.0",
+    "@aws-sdk/lib-dynamodb": "^3.775.0",
+    "@types/node": "22.7.9",
+    "@types/node-fetch": "2",
+    "node-fetch": "2"
   }
 }

@@ -27,3 +27,5 @@ node_modules
 .env
 .env.local
 .dev.vars
+
+dynamodb-data
