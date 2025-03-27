@@ -3,9 +3,20 @@
   "version": "1.0.0",
   "description": "IAM Identity Center with CDK project",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "deploy:dev": "cd packages/CIIC && pnpm cdk deploy CIIC-dev-Stack --context environment=dev",
+    "deploy:prod": "cd packages/CIIC && pnpm cdk deploy CIIC-prod-Stack --context environment=prod",
+    "deploy:dev:with-sso": "STORE_ID=$(aws sso-admin list-instances --query \"Instances[0].IdentityStoreId\" --output text --no-paginate) && INSTANCE_ARN=$(aws sso-admin list-instances --query \"Instances[0].InstanceArn\" --output text --no-paginate) && cd packages/CIIC && pnpm cdk deploy CIIC-dev-Stack --context environment=dev --context identityStoreId=${STORE_ID} --context ssoInstanceArn=${INSTANCE_ARN}",
+    "deploy:prod:with-sso": "STORE_ID=$(aws sso-admin list-instances --query \"Instances[0].IdentityStoreId\" --output text --no-paginate) && INSTANCE_ARN=$(aws sso-admin list-instances --query \"Instances[0].InstanceArn\" --output text --no-paginate) && cd packages/CIIC && pnpm cdk deploy CIIC-prod-Stack --context environment=prod --context identityStoreId=${STORE_ID} --context ssoInstanceArn=${INSTANCE_ARN}",
+    "get-sso-info": "aws sso-admin list-instances --query \"Instances[0].[IdentityStoreId, InstanceArn]\" --output text --no-paginate",
+    "verify-sso:dev": "STORE_ID=$(aws sso-admin list-instances --query \"Instances[0].IdentityStoreId\" --output text --no-paginate) && INSTANCE_ARN=$(aws sso-admin list-instances --query \"Instances[0].InstanceArn\" --output text --no-paginate) && cd packages/CIIC && pnpm verify-iam-identity-center --environment dev --identity-store-id ${STORE_ID} --sso-instance-arn ${INSTANCE_ARN}",
+    "verify-sso:prod": "STORE_ID=$(aws sso-admin list-instances --query \"Instances[0].IdentityStoreId\" --output text --no-paginate) && INSTANCE_ARN=$(aws sso-admin list-instances --query \"Instances[0].InstanceArn\" --output text --no-paginate) && cd packages/CIIC && pnpm verify-iam-identity-center --environment prod --identity-store-id ${STORE_ID} --sso-instance-arn ${INSTANCE_ARN}",
+    "test-permissions:dev": "cd packages/CIIC && pnpm test-permissions --environment dev",
+    "test-permissions:prod": "cd packages/CIIC && pnpm test-permissions --environment prod",
+    "verify-deploy-commands": "ts-node --esm scripts/verify-deploy-commands.ts"
   },
   "keywords": [
     "aws",
@@ -15,5 +26,8 @@
   ],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.7.0+sha512.6b865ad4b62a1d9842b61d674a393903b871d9244954f652b8842c2b553c72176b278f64c463e52d40fff8aba385c235c8c9ecf5cc7de4fd78b8bb6d49633ab6"
+  "packageManager": "pnpm@10.7.0+sha512.6b865ad4b62a1d9842b61d674a393903b871d9244954f652b8842c2b553c72176b278f64c463e52d40fff8aba385c235c8c9ecf5cc7de4fd78b8bb6d49633ab6",
+  "devDependencies": {
+    "@types/node": "22.7.9"
+  }
 }
