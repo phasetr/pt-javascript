@@ -9,6 +9,7 @@ RUN cat package.json | grep -v "@ctld/db-lib" > temp-package.json && \
 # Copy and install dependencies
 COPY package-lock.json .
 RUN npm install
+RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/util-dynamodb
 
 # Copy the rest of the app
 COPY . .

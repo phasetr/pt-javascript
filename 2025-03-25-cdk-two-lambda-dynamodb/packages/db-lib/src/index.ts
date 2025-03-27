@@ -8,7 +8,7 @@
 export const VERSION = '0.1.0';
 
 // クライアント
-export * from './client';
+export { createDynamoDBClient, createDynamoDBDocumentClient, type DynamoDBConfig } from './client';
 
 // モデル
 export * from './models';
