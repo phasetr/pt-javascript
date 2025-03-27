@@ -187,7 +187,7 @@ open $(aws cloudformation describe-stacks \
 
 1. 今のコードベースで`CDK`コードを書き換えてAWSにデプロイして動作確認する。
 2. `dev`と`prod`版をリリースできるようにする.
-3. npm workspace化する.
+3. pnpm workspace化する.
    workspace化してもローカル環境で元の動作が再現できるか確認する.
    `cdk deploy`の結果も変わらないか確認する.
 4. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
