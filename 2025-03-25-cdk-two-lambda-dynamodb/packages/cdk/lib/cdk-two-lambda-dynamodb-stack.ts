@@ -34,6 +34,21 @@ export class CdkTwoLambdaDynamodbStack extends Stack {
 			removalPolicy: RemovalPolicy.DESTROY, // cdk destroyで削除できるように設定
 		});
 
+		// エンティティ用のGSIを追加
+		table.addGlobalSecondaryIndex({
+			indexName: 'EntityIndex',
+			partitionKey: { name: 'entity', type: dynamodb.AttributeType.STRING },
+			sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
+			projectionType: dynamodb.ProjectionType.ALL
+		});
+
+		// メールアドレス用のGSIを追加
+		table.addGlobalSecondaryIndex({
+			indexName: 'EmailIndex',
+			partitionKey: { name: 'email', type: dynamodb.AttributeType.STRING },
+			projectionType: dynamodb.ProjectionType.ALL
+		});
+
 		// 環境ごとの設定
 		const envConfig = {
 			dev: {
