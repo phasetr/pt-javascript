@@ -7,6 +7,8 @@
 		"CTLD",
 		"dynamodblocal",
 		"isbot",
+		"nodenext",
+		"unmarshall",
 		"uuidv"
 	]
 }

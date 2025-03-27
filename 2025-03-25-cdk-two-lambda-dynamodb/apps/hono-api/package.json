@@ -4,13 +4,13 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsx watch src/index.ts",
-		"dev:with-db": "cd ../.. && npm run build -w packages/db-lib && cd apps/hono-api && tsx watch src/index.ts",
+		"dev:with-db": "pnpm --filter db-lib build && tsx watch src/index.ts",
 		"start": "node build/index.js",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},
 	"dependencies": {
-		"@ctld/db-lib": "0.1.0",
+		"@ctld/db-lib": "workspace:*",
 		"@hono/node-server": "^1.14.0",
 		"@hono/zod-validator": "^0.2.0",
 		"hono": "^4.7.5",

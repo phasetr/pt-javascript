@@ -1,50 +1,30 @@
 {
-  "name": "cdk-two-lambda-dynamodb",
+  "name": "cdk-two-lambda-dynamodb-root",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "bin": {
-    "cdk-two-lambda-dynamodb": "bin/cdk-two-lambda-dynamodb.js"
-  },
   "scripts": {
-    "build": "tsc",
-    "build:all": "npm run build && npm run build:packages && npm run build:apps",
-    "build:packages": "npm run build -w packages/db-lib",
-    "build:apps": "npm run build -w apps/hono-api && npm run build -w apps/remix",
-    "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk",
-    "dev:hono": "npm run build -w packages/db-lib && npm run dev -w apps/hono-api",
-    "dev:remix": "npm run build -w packages/db-lib && npm run dev -w apps/remix",
+    "build:all": "pnpm -r build",
+    "build:packages": "pnpm --filter db-lib build",
+    "build:apps": "pnpm --filter hono-api build && pnpm --filter remix build",
+    "build:cdk": "pnpm --filter cdk-two-lambda-dynamodb build",
+    "test": "pnpm -r test",
+    "dev:hono": "pnpm --filter db-lib build && pnpm --filter hono-api dev",
+    "dev:remix": "pnpm --filter db-lib build && pnpm --filter remix dev",
     "dynamodb:start": "docker compose up -d",
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
     "dynamodb:seed:local": "node scripts/seed-data.js",
-    "deploy:dev": "npm run build:all && cdk deploy --context env=dev",
-    "deploy:prod": "npm run build:all && cdk deploy --context env=prod",
-    "deploy:all": "npm run build:all && cdk deploy --context env=dev && cdk deploy --context env=prod",
-    "destroy": "cdk destroy",
-    "destroy:dev": "cdk destroy --context env=dev",
-    "destroy:prod": "cdk destroy --context env=prod",
-    "destroy:all": "cdk destroy --context env=dev --context env=prod"
+    "deploy:dev": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:dev",
+    "deploy:prod": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:prod",
+    "deploy:all": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:all",
+    "destroy:dev": "pnpm --filter cdk-two-lambda-dynamodb destroy:dev",
+    "destroy:prod": "pnpm --filter cdk-two-lambda-dynamodb destroy:prod",
+    "destroy:all": "pnpm --filter cdk-two-lambda-dynamodb destroy:all"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.774.0",
     "@faker-js/faker": "^9.6.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "22.7.9",
-    "aws-cdk": "2.1005.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
-    "typescript": "~5.6.3",
     "uuid": "^11.1.0"
   },
-  "dependencies": {
-    "aws-cdk-lib": "2.181.1",
-    "constructs": "^10.0.0"
-  }
+  "packageManager": "pnpm@10.7.0+sha512.6b865ad4b62a1d9842b61d674a393903b871d9244954f652b8842c2b553c72176b278f64c463e52d40fff8aba385c235c8c9ecf5cc7de4fd78b8bb6d49633ab6"
 }

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "dev:with-db": "cd ../.. && npm run build -w packages/db-lib && cd apps/remix && remix vite:dev",
+    "dev:with-db": "pnpm --filter db-lib build && remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
     "typecheck": "tsc",
@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@ctld/db-lib": "0.1.0",
+    "@ctld/db-lib": "workspace:*",
     "@remix-run/node": "^2.16.2",
     "@remix-run/react": "^2.16.2",
     "@remix-run/serve": "^2.16.2",

@@ -10,6 +10,6 @@ cdk.out
 
 dynamodb-data
 tsconfig.tsbuildinfo
-
+*.mjs
 !scripts/*.js
 !apps/remix/server.js
