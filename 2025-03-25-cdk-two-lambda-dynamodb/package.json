@@ -14,9 +14,10 @@
     "dynamodb:stop": "docker compose down",
     "dynamodb:init": "node scripts/init-dynamodb.js",
     "dynamodb:seed:local": "node scripts/seed-data.js",
-    "deploy:dev": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:dev",
-    "deploy:prod": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:prod",
-    "deploy:all": "pnpm build:all && pnpm --filter cdk-two-lambda-dynamodb deploy:all",
+    "prepare:deploy": "node scripts/prepare-deploy.js",
+    "deploy:dev": "pnpm build:all && pnpm prepare:deploy && pnpm --filter cdk-two-lambda-dynamodb deploy:dev",
+    "deploy:prod": "pnpm build:all && pnpm prepare:deploy && pnpm --filter cdk-two-lambda-dynamodb deploy:prod",
+    "deploy:all": "pnpm build:all && pnpm prepare:deploy && pnpm --filter cdk-two-lambda-dynamodb deploy:all",
     "destroy:dev": "pnpm --filter cdk-two-lambda-dynamodb destroy:dev",
     "destroy:prod": "pnpm --filter cdk-two-lambda-dynamodb destroy:prod",
     "destroy:all": "pnpm --filter cdk-two-lambda-dynamodb destroy:all"
