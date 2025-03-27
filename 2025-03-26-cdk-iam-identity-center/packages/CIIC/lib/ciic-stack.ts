@@ -107,13 +107,6 @@ export class CiicStack extends Stack {
     });
 
     // 2. Developer permission set (can invoke Lambda and read/write to DynamoDB)
-    const developerPermissionSet = new sso.CfnPermissionSet(this, 'DeveloperPermissionSet', {
-      name: `${prefix}-${env}-Developer`,
-      description: `Developer access for ${prefix} ${env} environment`,
-      instanceArn: ssoInstanceArn,
-      sessionDuration: 'PT12H', // 12 hour session
-    });
-
     // Create custom policy for developer permissions
     const developerPolicy = new iam.PolicyDocument({
       statements: [
@@ -157,19 +150,15 @@ export class CiicStack extends Stack {
       ],
     });
 
-    // Attach inline policy to developer permission set
-    developerPermissionSet.inlinePolicy = {
-      document: developerPolicy.toJSON(),
-    };
-
-    // 3. Admin permission set (full access to project resources)
-    const adminPermissionSet = new sso.CfnPermissionSet(this, 'AdminPermissionSet', {
-      name: `${prefix}-${env}-Admin`,
-      description: `Admin access for ${prefix} ${env} environment`,
+    const developerPermissionSet = new sso.CfnPermissionSet(this, 'DeveloperPermissionSet', {
+      name: `${prefix}-${env}-Developer`,
+      description: `Developer access for ${prefix} ${env} environment`,
       instanceArn: ssoInstanceArn,
       sessionDuration: 'PT12H', // 12 hour session
+      inlinePolicy: developerPolicy.toJSON(),
     });
 
+    // 3. Admin permission set (full access to project resources)
     // Create custom policy for admin permissions
     const adminPolicy = new iam.PolicyDocument({
       statements: [
@@ -217,10 +206,13 @@ export class CiicStack extends Stack {
       ],
     });
 
-    // Attach inline policy to admin permission set
-    adminPermissionSet.inlinePolicy = {
-      document: adminPolicy.toJSON(),
-    };
+    const adminPermissionSet = new sso.CfnPermissionSet(this, 'AdminPermissionSet', {
+      name: `${prefix}-${env}-Admin`,
+      description: `Admin access for ${prefix} ${env} environment`,
+      instanceArn: ssoInstanceArn,
+      sessionDuration: 'PT12H', // 12 hour session
+      inlinePolicy: adminPolicy.toJSON(),
+    });
 
     // Note: In a real-world scenario, you would assign these permission sets to specific
     // users or groups in your IAM Identity Center directory. This requires knowing the
