@@ -12,6 +12,7 @@ export { createDynamoDBClient, createDynamoDBDocumentClient, type DynamoDBConfig
 
 // モデル
 export * from './models';
+export { TaskStatus } from './models/task';
 
 // リポジトリ
 export * from './repositories';

@@ -10,7 +10,7 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
-		"@ctld/db-lib": "0.1.0",
+		"@ctld/db-lib": "workspace:*",
 		"@hono/node-server": "^1.14.0",
 		"@hono/zod-validator": "^0.2.0",
 		"hono": "^4.7.5",
