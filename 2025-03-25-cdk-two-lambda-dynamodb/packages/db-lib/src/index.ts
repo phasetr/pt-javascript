@@ -8,22 +8,22 @@
 export const VERSION = '0.1.0';
 
 // クライアント
-export { createDynamoDBClient, createDynamoDBDocumentClient, type DynamoDBConfig } from './client';
+export { createDynamoDBClient, createDynamoDBDocumentClient, type DynamoDBConfig } from './client.js';
 
 // モデル
-export * from './models';
-export { TaskStatus } from './models/task';
+export * from './models/index.js';
+export { TaskStatus } from './models/task.js';
 
 // リポジトリ
-export * from './repositories';
+export * from './repositories/index.js';
 
 // テーブル定義
-export * from './tables';
+export * from './tables.js';
 
 // ファクトリ関数
-import { createDynamoDBDocumentClient } from './client';
-import { UserRepository } from './repositories/user-repository';
-import { TaskRepository } from './repositories/task-repository';
+import { createDynamoDBDocumentClient } from './client.js';
+import { UserRepository } from './repositories/user-repository.js';
+import { TaskRepository } from './repositories/task-repository.js';
 
 export interface DbFactoryConfig {
   userTableName: string;

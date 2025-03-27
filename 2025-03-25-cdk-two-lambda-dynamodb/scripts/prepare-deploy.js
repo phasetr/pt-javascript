@@ -28,9 +28,23 @@ execSync('pnpm --filter db-lib build', { stdio: 'inherit' });
 
 // Copy db-lib to apps
 console.log('Copying db-lib to hono-api...');
-execSync(`cp -r ${dbLibDir} ${honoApiNodeModulesDir}/db-lib`, { stdio: 'inherit' });
+// Clean up existing directories if they exist
+if (fs.existsSync(`${honoApiNodeModulesDir}/db-lib`)) {
+  execSync(`rm -rf ${honoApiNodeModulesDir}/db-lib`, { stdio: 'inherit' });
+}
+// Create directories and copy files
+execSync(`mkdir -p ${honoApiNodeModulesDir}/db-lib/dist`, { stdio: 'inherit' });
+execSync(`cp -r ${dbLibDir}/dist/* ${honoApiNodeModulesDir}/db-lib/dist/`, { stdio: 'inherit' });
+execSync(`cp ${dbLibDir}/package.json ${honoApiNodeModulesDir}/db-lib/`, { stdio: 'inherit' });
 
 console.log('Copying db-lib to remix...');
-execSync(`cp -r ${dbLibDir} ${remixNodeModulesDir}/db-lib`, { stdio: 'inherit' });
+// Clean up existing directories if they exist
+if (fs.existsSync(`${remixNodeModulesDir}/db-lib`)) {
+  execSync(`rm -rf ${remixNodeModulesDir}/db-lib`, { stdio: 'inherit' });
+}
+// Create directories and copy files
+execSync(`mkdir -p ${remixNodeModulesDir}/db-lib/dist`, { stdio: 'inherit' });
+execSync(`cp -r ${dbLibDir}/dist/* ${remixNodeModulesDir}/db-lib/dist/`, { stdio: 'inherit' });
+execSync(`cp ${dbLibDir}/package.json ${remixNodeModulesDir}/db-lib/`, { stdio: 'inherit' });
 
 console.log('Done!');

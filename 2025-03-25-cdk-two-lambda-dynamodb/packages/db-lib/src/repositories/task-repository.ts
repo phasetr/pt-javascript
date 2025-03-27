@@ -19,7 +19,7 @@ import {
 	updateTask,
 	type TaskStatus,
 	TASK_ENTITY,
-} from "../models/task";
+} from "../models/task.js";
 
 export interface TaskRepositoryConfig {
 	tableName: string;

@@ -5,7 +5,7 @@
  */
 
 import { type DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { type User, createUserPK, USER_SK, createUser, updateUser, USER_ENTITY } from '../models/user';
+import { type User, createUserPK, USER_SK, createUser, updateUser, USER_ENTITY } from '../models/user.js';
 
 export interface UserRepositoryConfig {
   tableName: string;

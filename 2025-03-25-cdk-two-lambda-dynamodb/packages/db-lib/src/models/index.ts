@@ -2,5 +2,5 @@
  * モデル定義のエクスポート
  */
 
-export * from './user';
-export * from './task';
+export * from './user.js';
+export * from './task.js';
