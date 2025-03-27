@@ -415,3 +415,9 @@ aws ecs update-service \
   各テーブルに対して`ID`を持たせる場合,
   `userId`のようにモデル名は持たせず,
   単に`id`とする.
+
+## Lambdaに対する注意
+
+少なくとも2025-03時点で`Lambda`は`commonjs`形式を基本としているため,
+`Lambda`でリリースするアプリケーションは`package.json`には`type: commonjs`を,
+`tsconfig.json`には`compilerOptions.module: commonjs`を設定すること.
