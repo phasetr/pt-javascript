@@ -21,8 +21,6 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 
 ### AI用
 
-## 作業手順
-
 各ステップごとに人手で目視・手動で確認します.
 必ず次の手順で作業し,
 各ステップで止めてください.
@@ -32,10 +30,11 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 日時のように都度得られるべき結果が変わる場合は適切な比較対象を設定してください.
 最後にステップごとの内容は`steps`ディレクトリに`日時-日付-step.md`として記録してください.
 
-1. (手動)：workspace内で`packages/<プロジェクトの略称>`に`cdk init`する
-2. (手動)：`apps/hono-api`で`Hono`を初期化する
-3. (手動)：`apps/remix`で`Remix`を初期化する
-4. pnpm workspace化する.
+1. (手動)：`pnpm workspace`化する.
+    - ルート直下に`package.json`と`pnpm-workspace.yml`をコピーする
+2. (手動)：workspace内で`packages/<プロジェクトの略称>`に`cdk init`する
+3. (手動)：`packages/hono-api`で`Hono`を初期化する
+4. (手動)：`packages/remix`で`Remix`を初期化する
 5. 今のコードベースで`CDK`コードを書き換える.
    環境としては`dev`と`prod`を作る.
    どちらもスペックとしては最低限でよい.
@@ -59,6 +58,7 @@ Clineへの定型文：まず.clinerulesを読んでください。
 corepack enable && corepack prepare pnpm@latest --activate
 asdf reshim nodejs
 pnpm -v
+pnpm init
 
 cdk init sample-app --language typescript
 npm create hono@latest apps/hono

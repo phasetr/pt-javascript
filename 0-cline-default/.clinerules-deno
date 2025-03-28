@@ -435,12 +435,16 @@ aws ecs update-service \
   各テーブルに対して`ID`を持たせる場合,
   `userId`のようにモデル名は持たせず,
   単に`id`とする.
+- ローカル開発環境用に`dynamodb-local`と`dynamodb-admin`を導入する.
+  これらは`docker compose`で導入するべくルートに適切に設定した`compose.yml`を作成する.
 
 ## Lambdaに対する注意
 
 少なくとも2025-03時点で`Lambda`は`commonjs`形式を基本としているため,
 `Lambda`でリリースするアプリケーションは`package.json`には`type: commonjs`を,
 `tsconfig.json`には`compilerOptions.module: commonjs`を設定すること.
+ライブラリは`ESM`で問題ないようだが,
+問題があれば都度修正すること.
 
 
 
