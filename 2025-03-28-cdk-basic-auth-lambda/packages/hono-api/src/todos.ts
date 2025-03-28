@@ -10,7 +10,7 @@ import {
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { v4 as uuidv4 } from "uuid";
-import { docClient } from "../../db/src/client.js";
+import { docClient } from "@cbal/db";
 
 type ExpressionAttributeValues = { [key: string]: string | number | boolean | null };
 type ExpressionAttributeNames = { [key: string]: string };

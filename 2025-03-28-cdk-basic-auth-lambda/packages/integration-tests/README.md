@@ -6,17 +6,17 @@
 
 1. `.env.sample`をコピーして`.env`ファイルを作成します：
 
-```bash
-cp .env.sample .env
-```
+    ```bash
+    cp .env.sample .env
+    ```
 
 2. `.env`ファイルを編集して、各環境の認証情報とAPIエンドポイントを設定します。
 
 3. 依存関係をインストールします：
 
-```bash
-pnpm install
-```
+    ```bash
+    pnpm install
+    ```
 
 ## テストの実行
 
