@@ -16,7 +16,9 @@ console.log(`Running integration tests in ${env} environment...`);
 
 try {
   // Run tests with the specified environment
-  execSync(`ENV=${env} npx vitest run`, { stdio: 'inherit' });
+  // NODE_ENVを設定してテストを実行
+  const nodeEnv = env === 'prod' ? 'production' : (env === 'dev' ? 'development' : 'test');
+  execSync(`NODE_ENV=${nodeEnv} npx vitest run --env=${env}`, { stdio: 'inherit' });
   console.log(`Integration tests completed successfully in ${env} environment.`);
 } catch (error) {
   console.error(`Integration tests failed in ${env} environment.`);
