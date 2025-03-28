@@ -1,0 +1,33 @@
+{
+  "name": "integration-tests",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:local": "ENV=local vitest run",
+    "test:dev": "ENV=dev vitest run",
+    "test:prod": "ENV=prod vitest run",
+    "test:watch": "vitest",
+    "build": "tsc",
+    "start": "tsx src/run-tests.ts",
+    "start:local": "tsx src/run-tests.ts --env=local",
+    "start:dev": "tsx src/run-tests.ts --env=dev",
+    "start:prod": "tsx src/run-tests.ts --env=prod",
+    "test:connection": "tsx src/test-connection.ts",
+    "test:connection:local": "ENV=local tsx src/test-connection.ts",
+    "test:connection:dev": "ENV=dev tsx src/test-connection.ts",
+    "test:connection:prod": "ENV=prod tsx src/test-connection.ts"
+  },
+  "bin": {
+    "run-integration-tests": "./dist/run-tests.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  }
+}
