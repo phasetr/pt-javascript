@@ -6,6 +6,7 @@ import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { Duration, Stack, type StackProps } from "aws-cdk-lib";
 import * as dotenv from "dotenv";
+import path = require("node:path");
 
 dotenv.config();
 
@@ -13,12 +14,34 @@ export class CbalStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
 
-    // プロジェクトの略称をプレフィックスとして使用
+		// プロジェクトの略称をプレフィックスとして使用
 		const prefix = "CTLD";
+
+		// 環境名を取得（デフォルトは 'dev'）
+		const environment = this.node.tryGetContext("environment") || "dev";
+
+		// 環境ごとの設定
+		const envConfig = {
+			dev: {
+				honoMemorySize: 512,
+				honoTimeout: 30,
+				remixMemorySize: 256,
+				remixTimeout: 30,
+			},
+			prod: {
+				honoMemorySize: 512,
+				honoTimeout: 60,
+				remixMemorySize: 256,
+				remixTimeout: 60,
+			},
+		};
+		// 環境に応じた設定を取得
+		const config =
+			envConfig[environment as keyof typeof envConfig] || envConfig.dev;
 
 		// DynamoDBテーブルの作成
 		const todosTable = new dynamodb.Table(this, `${prefix}TodosTable`, {
-			tableName: "Todos",
+			tableName: `${prefix}Todos`,
 			partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
 			billingMode: dynamodb.BillingMode.PROVISIONED,
 			// Sampleのため1
@@ -28,35 +51,37 @@ export class CbalStack extends Stack {
 
 		// ユーザーIDによるグローバルセカンダリインデックスの追加
 		todosTable.addGlobalSecondaryIndex({
-			indexName: "UserIdIndex",
+			indexName: `${prefix}UserIdIndex`,
 			partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
 			projectionType: dynamodb.ProjectionType.ALL,
 		});
 
-		const honoLambda = new NodejsFunction(this, "lambda", {
-			entry: "lambda/index.ts",
-			handler: "handler",
-			runtime: lambda.Runtime.NODEJS_20_X,
-			environment: {
-				ENV: process.env.ENV ? process.env.ENV : "",
-				BASIC_USERNAME: process.env.BASIC_USERNAME
-					? process.env.BASIC_USERNAME
-					: "",
-				BASIC_PASSWORD: process.env.BASIC_PASSWORD
-					? process.env.BASIC_PASSWORD
-					: "",
+		const honoLambda = new lambda.DockerImageFunction(
+			this,
+			`${prefix}HonoDockerImageFunction`,
+			{
+				code: lambda.DockerImageCode.fromImageAsset(
+					path.join(__dirname, "..", "hono-api"),
+				),
+				functionName: `${prefix}HonoDockerImageFunction`,
+				architecture: lambda.Architecture.ARM_64,
+				memorySize: config.honoMemorySize, // 環境に応じたメモリサイズ
+				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
+				environment: {
+					ENVIRONMENT: environment, // 環境名を環境変数として渡す
+				},
 			},
-		});
+		);
 
 		// Lambda関数にDynamoDBへのアクセス権限を付与
 		todosTable.grantReadWriteData(honoLambda);
 
-		const apiGw = new apigw.LambdaRestApi(this, "honoApi", {
+		const apiGw = new apigw.LambdaRestApi(this, `${prefix}honoApi`, {
 			handler: honoLambda,
 		});
 
 		// API GatewayのエンドポイントURLを出力
-		new cdk.CfnOutput(this, "ApiEndpoint", {
+		new cdk.CfnOutput(this, `${prefix}ApiEndpoint`, {
 			value: apiGw.url,
 			description: "API Gateway endpoint URL",
 		});
