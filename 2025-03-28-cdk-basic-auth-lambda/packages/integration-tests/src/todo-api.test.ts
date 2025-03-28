@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { apiClient, type Todo, type CreateTodoRequest, type UpdateTodoRequest } from './api-client.js';
 import { getEnvironment } from './config.js';
+
+// Vitestのシリアライズエラーを防ぐためのモックは削除
 
 // Test user ID
 const TEST_USER_ID = 'test-user-123';

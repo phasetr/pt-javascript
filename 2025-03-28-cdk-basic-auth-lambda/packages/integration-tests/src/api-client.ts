@@ -113,7 +113,7 @@ export class ApiClient {
     const config = getConfig();
     
     // リクエストの設定
-    const requestConfig: AxiosRequestConfig = {
+    const requestConfig = {
       auth: {
         username: config.auth.username,
         password: config.auth.password,
@@ -122,8 +122,13 @@ export class ApiClient {
     
     console.log(`Using auth credentials for request: ${config.auth.username}:${config.auth.password}`);
     
-    const response = await this.client.post<CreateTodoResponse>('/api/todos', todo, requestConfig);
-    return response.data;
+    try {
+      const response = await this.client.post<CreateTodoResponse>('/api/todos', todo, requestConfig);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating todo:', error);
+      throw error;
+    }
   }
 
   // Get all Todos for a user
@@ -134,15 +139,20 @@ export class ApiClient {
     const config = getConfig();
     
     // リクエストの設定
-    const requestConfig: AxiosRequestConfig = {
+    const requestConfig = {
       auth: {
         username: config.auth.username,
         password: config.auth.password,
       },
     };
     
-    const response = await this.client.get<Todo[]>(`/api/todos/user/${userId}`, requestConfig);
-    return response.data;
+    try {
+      const response = await this.client.get<Todo[]>(`/api/todos/user/${userId}`, requestConfig);
+      return response.data;
+    } catch (error) {
+      console.error(`Error getting todos for user ${userId}:`, error);
+      throw error;
+    }
   }
 
   // Get a Todo by ID
@@ -153,15 +163,20 @@ export class ApiClient {
     const config = getConfig();
     
     // リクエストの設定
-    const requestConfig: AxiosRequestConfig = {
+    const requestConfig = {
       auth: {
         username: config.auth.username,
         password: config.auth.password,
       },
     };
     
-    const response = await this.client.get<Todo>(`/api/todos/${id}`, requestConfig);
-    return response.data;
+    try {
+      const response = await this.client.get<Todo>(`/api/todos/${id}`, requestConfig);
+      return response.data;
+    } catch (error) {
+      console.error(`Error getting todo ${id}:`, error);
+      throw error;
+    }
   }
 
   // Update a Todo
@@ -172,15 +187,20 @@ export class ApiClient {
     const config = getConfig();
     
     // リクエストの設定
-    const requestConfig: AxiosRequestConfig = {
+    const requestConfig = {
       auth: {
         username: config.auth.username,
         password: config.auth.password,
       },
     };
     
-    const response = await this.client.put<Todo>(`/api/todos/${id}`, todo, requestConfig);
-    return response.data;
+    try {
+      const response = await this.client.put<Todo>(`/api/todos/${id}`, todo, requestConfig);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating todo ${id}:`, error);
+      throw error;
+    }
   }
 
   // Delete a Todo
@@ -191,15 +211,20 @@ export class ApiClient {
     const config = getConfig();
     
     // リクエストの設定
-    const requestConfig: AxiosRequestConfig = {
+    const requestConfig = {
       auth: {
         username: config.auth.username,
         password: config.auth.password,
       },
     };
     
-    const response = await this.client.delete<DeleteTodoResponse>(`/api/todos/${id}`, requestConfig);
-    return response.data;
+    try {
+      const response = await this.client.delete<DeleteTodoResponse>(`/api/todos/${id}`, requestConfig);
+      return response.data;
+    } catch (error) {
+      console.error(`Error deleting todo ${id}:`, error);
+      throw error;
+    }
   }
 }
 
