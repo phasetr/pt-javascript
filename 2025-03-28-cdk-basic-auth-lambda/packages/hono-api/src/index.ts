@@ -1,15 +1,5 @@
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { handle } from "hono/aws-lambda";
+import app from "./app.js";
 
-const app = new Hono()
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+// index.ts で定義された純粋なHTTPサーバをAWS Lambda用のアダプタでラップしてハンドラとしてエクスポート
+export const handler = handle(app);

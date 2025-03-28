@@ -1,8 +1,8 @@
 {
-  "name": "cbul",
+  "name": "cbal",
   "version": "0.1.0",
   "bin": {
-    "cbul": "bin/cbul.js"
+    "cbal": "bin/cbal.js"
   },
   "scripts": {
     "build": "tsc",

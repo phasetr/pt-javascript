@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { CbulStack } from '../lib/cbul-stack';
+import { CbalStack } from '../lib/cbal-stack';
 
 const app = new cdk.App();
-new CbulStack(app, 'CbulStack');
+new CbalStack(app, 'CbalStack');

@@ -4,15 +4,15 @@ import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 
-export class CbulStack extends Stack {
+export class CbalStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'CbulQueue', {
+    const queue = new sqs.Queue(this, 'CbalQueue', {
       visibilityTimeout: Duration.seconds(300)
     });
 
-    const topic = new sns.Topic(this, 'CbulTopic');
+    const topic = new sns.Topic(this, 'CbalTopic');
 
     topic.addSubscription(new subs.SqsSubscription(queue));
   }
