@@ -9,7 +9,7 @@
     "destroy:dev": "pnpm --filter cbal destroy:dev",
     "dev:hono": "pnpm --filter db build && pnpm prepare:deploy && pnpm --filter=hono-api dev",
     "prepare:deploy": "node scripts/prepare-deploy.js",
-    "test:integration:connection": "pnpm --filter integration-tests test:connection",
+    "test:integration:connection:local": "pnpm --filter integration-tests test:connection",
     "test:integration:connection:dev": "ENV=dev pnpm --filter integration-tests test:connection",
     "test:integration:local": "pnpm --filter integration-tests test:local",
     "test:integration:dev": "pnpm --filter integration-tests test:dev"
