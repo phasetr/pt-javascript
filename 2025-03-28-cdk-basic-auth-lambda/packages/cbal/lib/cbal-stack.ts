@@ -73,8 +73,8 @@ export class CbalStack extends Stack {
 				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
 				environment: {
 					ENV: environment, // 環境名を環境変数として渡す
-					BASIC_USERNAME: process.env.BASIC_USERNAME || "admin", // Basic認証のユーザー名
-					BASIC_PASSWORD: process.env.BASIC_PASSWORD || "password", // Basic認証のパスワード
+					BASIC_USERNAME: process.env.BASIC_USERNAME || "admin", // Basic認証のユーザー名：実際のプロダクトではSecret Managerなどで管理
+					BASIC_PASSWORD: process.env.BASIC_PASSWORD || "password", // Basic認証のパスワード：実際のプロダクトではSecret Managerなどで管理
 				},
 			},
 		);
