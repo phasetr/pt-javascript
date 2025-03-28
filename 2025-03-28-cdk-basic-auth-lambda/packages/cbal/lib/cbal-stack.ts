@@ -4,6 +4,7 @@ import type { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigw from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Duration, Stack, type StackProps } from "aws-cdk-lib";
 import * as dotenv from "dotenv";
 import path = require("node:path");
@@ -60,6 +61,35 @@ export class CbalStack extends Stack {
 			projectionType: dynamodb.ProjectionType.ALL,
 		});
 
+		// Secrets Managerの作成 - アプリケーション設定
+		const appConfigSecret = new secretsmanager.Secret(this, `${resourcePrefix}AppConfigSecret`, {
+			secretName: `${resourcePrefix}/AppConfig`,
+			description: 'アプリケーション設定',
+			generateSecretString: {
+				secretStringTemplate: JSON.stringify({
+					environment: environment, // 環境名
+					region: this.region,
+					stage: environment === 'prod' ? 'production' : 'development'
+				}),
+				generateStringKey: 'key'
+			},
+			removalPolicy: cdk.RemovalPolicy.DESTROY // cdk destroyでシークレットも削除する
+		});
+
+		// Secrets Managerの作成 - Basic認証情報
+		const basicAuthSecret = new secretsmanager.Secret(this, `${resourcePrefix}BasicAuthSecret`, {
+			secretName: `${resourcePrefix}/BasicAuth`,
+			description: 'Basic認証の認証情報',
+			generateSecretString: {
+				secretStringTemplate: JSON.stringify({
+					username: 'admin',
+					password: 'password'
+				}),
+				generateStringKey: 'key'
+			},
+			removalPolicy: cdk.RemovalPolicy.DESTROY // cdk destroyでシークレットも削除する
+		});
+
 		const honoLambda = new lambda.DockerImageFunction(
 			this,
 			`${resourcePrefix}HonoDockerImageFunction`,
@@ -72,12 +102,16 @@ export class CbalStack extends Stack {
 				memorySize: config.honoMemorySize, // 環境に応じたメモリサイズ
 				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
 				environment: {
-					ENV: environment, // 環境名を環境変数として渡す
-					BASIC_USERNAME: process.env.BASIC_USERNAME || "admin", // Basic認証のユーザー名：実際のプロダクトではSecret Managerなどで管理
-					BASIC_PASSWORD: process.env.BASIC_PASSWORD || "password", // Basic認証のパスワード：実際のプロダクトではSecret Managerなどで管理
+					// 環境変数はSecrets Managerのシークレット名のみ
+					APP_CONFIG_SECRET_NAME: appConfigSecret.secretName,
+					BASIC_AUTH_SECRET_NAME: basicAuthSecret.secretName,
 				},
 			},
 		);
+
+		// Lambda関数にSecrets Managerへのアクセス権限を付与
+		appConfigSecret.grantRead(honoLambda);
+		basicAuthSecret.grantRead(honoLambda);
 
 		// Lambda関数にDynamoDBへのアクセス権限を付与
 		todosTable.grantReadWriteData(honoLambda);
