@@ -1,10 +1,22 @@
 #!/usr/bin/env node
 import { apiClient } from './api-client.js';
 import { getEnvironment } from './config.js';
+import { getApiUrl } from './aws-utils.js';
 
 async function checkApiConnection() {
   try {
-    console.log(`Testing API connection in ${getEnvironment()} environment...`);
+    const environment = getEnvironment();
+    console.log(`Testing API connection in ${environment} environment...`);
+    
+    // ローカル環境以外の場合はAPI URLを動的に取得
+    if (environment !== 'local') {
+      try {
+        const apiUrl = await getApiUrl();
+        console.log(`Using dynamically retrieved API URL: ${apiUrl}`);
+      } catch (error) {
+        console.warn('Failed to get API URL dynamically, using configured URL:', error);
+      }
+    }
     
     // Create a test todo
     const createResponse = await apiClient.createTodo({

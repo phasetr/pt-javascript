@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
-import { getConfig } from './config.js';
+import { getConfig, updateApiUrl } from './config.js';
+import { getApiUrl } from './aws-utils.js';
 
 // Todo type definition
 export interface Todo {
@@ -41,6 +42,7 @@ export interface DeleteTodoResponse {
 // API client class
 export class ApiClient {
   private client: AxiosInstance;
+  private initialized = false;
 
   constructor() {
     const config = getConfig();
@@ -58,33 +60,145 @@ export class ApiClient {
     });
   }
 
+  /**
+   * APIクライアントを初期化する
+   * AWS環境の場合はAPI URLを動的に取得する
+   */
+  private async initialize(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    try {
+      // API URLを取得
+      const apiUrl = await getApiUrl();
+      
+      // 設定を更新
+      updateApiUrl(apiUrl);
+      
+      // 環境に応じた認証情報を取得
+      const config = getConfig();
+      
+      // クライアントの設定を更新
+      this.client.defaults.baseURL = apiUrl;
+      this.client.defaults.auth = {
+        username: config.auth.username,
+        password: config.auth.password,
+      };
+      
+      console.log(`API URL initialized: ${apiUrl}`);
+      console.log(`Using auth credentials: ${config.auth.username}:${config.auth.password}`);
+      this.initialized = true;
+    } catch (error) {
+      console.warn('Failed to initialize API URL dynamically:', error);
+      // エラーが発生した場合は初期化済みとしてマーク
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * リクエストを実行する前に初期化を確認する
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+  }
+
   // Create a new Todo
   async createTodo(todo: CreateTodoRequest): Promise<CreateTodoResponse> {
-    const response = await this.client.post<CreateTodoResponse>('/api/todos', todo);
+    await this.ensureInitialized();
+    
+    // 環境に応じた認証情報を取得
+    const config = getConfig();
+    
+    // リクエストの設定
+    const requestConfig: AxiosRequestConfig = {
+      auth: {
+        username: config.auth.username,
+        password: config.auth.password,
+      },
+    };
+    
+    console.log(`Using auth credentials for request: ${config.auth.username}:${config.auth.password}`);
+    
+    const response = await this.client.post<CreateTodoResponse>('/api/todos', todo, requestConfig);
     return response.data;
   }
 
   // Get all Todos for a user
   async getTodosByUserId(userId: string): Promise<Todo[]> {
-    const response = await this.client.get<Todo[]>(`/api/todos/user/${userId}`);
+    await this.ensureInitialized();
+    
+    // 環境に応じた認証情報を取得
+    const config = getConfig();
+    
+    // リクエストの設定
+    const requestConfig: AxiosRequestConfig = {
+      auth: {
+        username: config.auth.username,
+        password: config.auth.password,
+      },
+    };
+    
+    const response = await this.client.get<Todo[]>(`/api/todos/user/${userId}`, requestConfig);
     return response.data;
   }
 
   // Get a Todo by ID
   async getTodoById(id: string): Promise<Todo> {
-    const response = await this.client.get<Todo>(`/api/todos/${id}`);
+    await this.ensureInitialized();
+    
+    // 環境に応じた認証情報を取得
+    const config = getConfig();
+    
+    // リクエストの設定
+    const requestConfig: AxiosRequestConfig = {
+      auth: {
+        username: config.auth.username,
+        password: config.auth.password,
+      },
+    };
+    
+    const response = await this.client.get<Todo>(`/api/todos/${id}`, requestConfig);
     return response.data;
   }
 
   // Update a Todo
   async updateTodo(id: string, todo: UpdateTodoRequest): Promise<Todo> {
-    const response = await this.client.put<Todo>(`/api/todos/${id}`, todo);
+    await this.ensureInitialized();
+    
+    // 環境に応じた認証情報を取得
+    const config = getConfig();
+    
+    // リクエストの設定
+    const requestConfig: AxiosRequestConfig = {
+      auth: {
+        username: config.auth.username,
+        password: config.auth.password,
+      },
+    };
+    
+    const response = await this.client.put<Todo>(`/api/todos/${id}`, todo, requestConfig);
     return response.data;
   }
 
   // Delete a Todo
   async deleteTodo(id: string): Promise<DeleteTodoResponse> {
-    const response = await this.client.delete<DeleteTodoResponse>(`/api/todos/${id}`);
+    await this.ensureInitialized();
+    
+    // 環境に応じた認証情報を取得
+    const config = getConfig();
+    
+    // リクエストの設定
+    const requestConfig: AxiosRequestConfig = {
+      auth: {
+        username: config.auth.username,
+        password: config.auth.password,
+      },
+    };
+    
+    const response = await this.client.delete<DeleteTodoResponse>(`/api/todos/${id}`, requestConfig);
     return response.data;
   }
 }

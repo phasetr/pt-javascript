@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { resolve } from 'node:path';
 
 // Load environment variables from .env file
-dotenv.config({ path: resolve(process.cwd(), '../../.env') });
+dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 // Environment type
 export type Environment = 'local' | 'dev' | 'prod';
@@ -14,7 +14,7 @@ export const getEnvironment = (): Environment => {
 };
 
 // API configuration for different environments
-interface ApiConfig {
+export interface ApiConfig {
   baseUrl: string;
   auth: {
     username: string;
@@ -50,5 +50,25 @@ const config: Record<Environment, ApiConfig> = {
 // Get configuration for current environment
 export const getConfig = (): ApiConfig => {
   const env = getEnvironment();
+  
+  // 環境に応じた認証情報を取得
+  if (env === 'dev') {
+    // dev環境の場合は、DEV_BASIC_USERNAMEとDEV_BASIC_PASSWORDを使用
+    config[env].auth.username = process.env.DEV_BASIC_USERNAME || 'admin';
+    config[env].auth.password = process.env.DEV_BASIC_PASSWORD || 'password';
+  } else if (env === 'prod') {
+    // prod環境の場合は、PROD_BASIC_USERNAMEとPROD_BASIC_PASSWORDを使用
+    config[env].auth.username = process.env.PROD_BASIC_USERNAME || '';
+    config[env].auth.password = process.env.PROD_BASIC_PASSWORD || '';
+  }
+  
   return config[env];
+};
+
+// Update API URL in config
+export const updateApiUrl = (url: string): void => {
+  const env = getEnvironment();
+  if (env !== 'local') {
+    config[env].baseUrl = url;
+  }
 };

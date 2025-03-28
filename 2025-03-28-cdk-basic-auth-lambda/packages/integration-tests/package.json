@@ -21,6 +21,8 @@
     "run-integration-tests": "./dist/run-tests.js"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.777.0",
+    "@aws-sdk/client-lambda": "^3.777.0",
     "axios": "^1.6.7"
   },
   "devDependencies": {
