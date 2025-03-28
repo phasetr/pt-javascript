@@ -3,22 +3,15 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:local": "ENV=local vitest run",
-    "test:dev": "ENV=dev vitest run",
-    "test:prod": "ENV=prod vitest run",
+    "test:local": "TEST_ENV=local vitest run",
+    "test:dev": "TEST_ENV=dev vitest run",
+    "test:prod": "TEST_ENV=prod vitest run",
     "test:watch": "vitest",
     "build": "tsc",
-    "start": "tsx src/run-tests.ts",
-    "start:local": "tsx src/run-tests.ts --env=local",
-    "start:dev": "tsx src/run-tests.ts --env=dev",
-    "start:prod": "tsx src/run-tests.ts --env=prod",
     "test:connection": "tsx src/test-connection.ts",
-    "test:connection:local": "ENV=local tsx src/test-connection.ts",
-    "test:connection:dev": "ENV=dev tsx src/test-connection.ts",
-    "test:connection:prod": "ENV=prod tsx src/test-connection.ts"
-  },
-  "bin": {
-    "run-integration-tests": "./dist/run-tests.js"
+    "test:connection:local": "TEST_ENV=local tsx src/test-connection.ts",
+    "test:connection:dev": "TEST_ENV=dev tsx src/test-connection.ts",
+    "test:connection:prod": "TEST_ENV=prod tsx src/test-connection.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "^3.777.0",
