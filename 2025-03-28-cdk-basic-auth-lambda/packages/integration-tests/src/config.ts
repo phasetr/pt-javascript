@@ -33,7 +33,7 @@ const config: Record<Environment, ApiConfig> = {
   },
   dev: {
     // AWS SDKを使って動的に取得するため、初期値はダミー
-    baseUrl: 'https://dev-api.example.com',
+    baseUrl: 'https://dev-api.example.com', // この値は実際には使用されず、CloudFormationから取得される
     auth: {
       username: process.env.DEV_BASIC_USERNAME || '',
       password: process.env.DEV_BASIC_PASSWORD || '',
@@ -41,7 +41,7 @@ const config: Record<Environment, ApiConfig> = {
   },
   prod: {
     // AWS SDKを使って動的に取得するため、初期値はダミー
-    baseUrl: 'https://api.example.com',
+    baseUrl: 'https://api.example.com', // この値は実際には使用されず、CloudFormationから取得される
     auth: {
       username: process.env.PROD_BASIC_USERNAME || '',
       password: process.env.PROD_BASIC_PASSWORD || '',
@@ -75,10 +75,7 @@ export const getConfig = async (): Promise<ApiConfig> => {
       }
     } catch (error) {
       console.warn('Failed to get dev API URL from CloudFormation:', error);
-      // 環境変数からURLを取得（フォールバック）
-      if (process.env.DEV_API_URL) {
-        config[env].baseUrl = process.env.DEV_API_URL;
-      }
+      // CloudFormationからの取得に失敗した場合はデフォルト値を使用
     }
   } else if (env === 'prod') {
     // prod環境の場合は、PROD_BASIC_USERNAMEとPROD_BASIC_PASSWORDを使用
@@ -94,10 +91,7 @@ export const getConfig = async (): Promise<ApiConfig> => {
       }
     } catch (error) {
       console.warn('Failed to get prod API URL from CloudFormation:', error);
-      // 環境変数からURLを取得（フォールバック）
-      if (process.env.PROD_API_URL) {
-        config[env].baseUrl = process.env.PROD_API_URL;
-      }
+      // CloudFormationからの取得に失敗した場合はデフォルト値を使用
     }
   }
   
@@ -137,12 +131,6 @@ export const getApiUrl = async (): Promise<string> => {
     console.warn(`Failed to get ${env} API URL from CloudFormation:`, error);
   }
   
-  // CloudFormationからの取得に失敗した場合は環境変数のURLを使用
-  const envVarName = env === 'dev' ? 'DEV_API_URL' : 'PROD_API_URL';
-  if (process.env[envVarName]) {
-    return process.env[envVarName] as string;
-  }
-  
-  // 環境変数も設定されていない場合は設定ファイルのURLを使用
+  // CloudFormationからの取得に失敗した場合は設定ファイルのURLを使用
   return config[env].baseUrl;
 };
