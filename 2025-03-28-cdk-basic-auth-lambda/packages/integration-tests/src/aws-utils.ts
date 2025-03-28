@@ -94,19 +94,8 @@ export async function getLambdaUrl(functionName?: string): Promise<string> {
 			const region = arnParts[3];
 			const accountId = arnParts[4];
 
-			// Lambda関数からAPI GatewayのURLを推測する
-			// 例: https://{api-id}.execute-api.{region}.amazonaws.com/{stage}/
-			// 実際にはこの推測は難しいため、CloudFormationからの取得を優先する
-			
-			// dev環境の場合は、既知のURLを使用（一時的な対応）
-			if (environment === "dev") {
-				const defaultUrl =
-					"https://tmpi104l8f.execute-api.ap-northeast-1.amazonaws.com/prod/";
-				console.log(`Using default API URL for dev environment: ${defaultUrl}`);
-				return defaultUrl;
-			}
-
-			// 推測できない場合はエラー
+			// Lambda関数からAPI GatewayのURLを推測することは難しいため、
+			// CloudFormationからの取得を優先し、それが失敗した場合はエラーとする
 			throw new Error(
 				`Failed to determine API Gateway URL for Lambda function: ${lambdaFunctionName}`,
 			);
