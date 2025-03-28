@@ -10,13 +10,18 @@ import {
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { v4 as uuidv4 } from "uuid";
+// ESMモジュールをインポート
 import { docClient } from "@cbal/db";
 
 type ExpressionAttributeValues = { [key: string]: string | number | boolean | null };
 type ExpressionAttributeNames = { [key: string]: string };
 
-const TABLE_NAME = "Todos";
-const USER_ID_INDEX = "UserIdIndex";
+// 環境に応じたテーブル名を取得
+const prefix = "CBAL";
+const env = process.env.ENV || "local";
+const TABLE_NAME = `${prefix}-${env}Todos`;
+// 環境に応じたインデックス名
+const USER_ID_INDEX = `${prefix}-${env}UserIdIndex`;
 
 // カスタムZodスキーマ for YYYY-MM-DD形式の日付
 const dateSchema = z.string().refine(

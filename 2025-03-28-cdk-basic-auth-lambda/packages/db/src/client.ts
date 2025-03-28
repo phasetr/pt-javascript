@@ -1,10 +1,10 @@
-import {
-	DynamoDBClient,
-	ListTablesCommand,
-	CreateTableCommand,
-	KeyType,
-	ScalarAttributeType,
-	ProjectionType,
+import { 
+  DynamoDBClient, 
+  ListTablesCommand, 
+  CreateTableCommand, 
+  KeyType, 
+  ScalarAttributeType, 
+  ProjectionType 
 } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
@@ -25,10 +25,17 @@ const client = new DynamoDBClient(
 
 const docClient = DynamoDBDocumentClient.from(client);
 
+// 環境に応じたテーブル名を取得
+const getTableName = () => {
+	const prefix = "CBAL";
+	const env = process.env.ENV || "local";
+	return `${prefix}-${env}Todos`;
+};
+
 // テーブルとGSIを作成
 const createTodosTable = async () => {
 	const params = {
-		TableName: "Todos",
+		TableName: getTableName(),
 		KeySchema: [{ AttributeName: "id", KeyType: KeyType.HASH }],
 		AttributeDefinitions: [
 			{ AttributeName: "id", AttributeType: ScalarAttributeType.S },
@@ -63,13 +70,14 @@ const createTodosTable = async () => {
 const initializeDynamoDB = async () => {
 	if (process.env.ENV === "local") {
 		try {
+			const tableName = getTableName();
 			const { TableNames } = await client.send(new ListTablesCommand({}));
-			if (TableNames && !TableNames.includes("Todos")) {
+			if (TableNames && !TableNames.includes(tableName)) {
 				await createTodosTable();
 			} else if (TableNames) {
-				console.log("Todos table already exists");
+				console.log(`${tableName} table already exists`);
 			} else {
-				console.log("Unable to list tables, creating Todos table");
+				console.log(`Unable to list tables, creating ${tableName} table`);
 				await createTodosTable();
 			}
 		} catch (err) {
@@ -81,4 +89,8 @@ const initializeDynamoDB = async () => {
 // テーブル初期化を実行
 initializeDynamoDB();
 
-export { docClient };
+// getTableName関数もエクスポート
+export {
+  docClient,
+  getTableName
+};

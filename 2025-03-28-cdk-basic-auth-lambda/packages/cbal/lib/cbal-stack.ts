@@ -18,9 +18,9 @@ export class CbalStack extends Stack {
 		const environment = this.node.tryGetContext("environment") || "dev";
 
 		// プロジェクトの略称をプレフィックスとして使用
-		const prefix = "CTLD";
+		const prefix = "CBAL";
 		// 環境名をリソース名に含める
-		const resourcePrefix = `${resourcePrefix}-${environment}`;
+		const resourcePrefix = `${prefix}-${environment}`;
 
 		// 環境ごとの設定
 		const envConfig = {
@@ -49,6 +49,8 @@ export class CbalStack extends Stack {
 			// Sampleのため1
 			readCapacity: 1,
 			writeCapacity: 1,
+			// cdk destroyでテーブルも削除する
+			removalPolicy: cdk.RemovalPolicy.DESTROY,
 		});
 
 		// ユーザーIDによるグローバルセカンダリインデックスの追加
@@ -63,14 +65,16 @@ export class CbalStack extends Stack {
 			`${resourcePrefix}HonoDockerImageFunction`,
 			{
 				code: lambda.DockerImageCode.fromImageAsset(
-					path.join(__dirname, "..", "hono-api"),
+					path.join(__dirname, "..", "..", "hono-api"),
 				),
 				functionName: `${resourcePrefix}HonoDockerImageFunction`,
 				architecture: lambda.Architecture.ARM_64,
 				memorySize: config.honoMemorySize, // 環境に応じたメモリサイズ
 				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
 				environment: {
-					ENVIRONMENT: environment, // 環境名を環境変数として渡す
+					ENV: environment, // 環境名を環境変数として渡す
+					BASIC_USERNAME: process.env.BASIC_USERNAME || "admin", // Basic認証のユーザー名
+					BASIC_PASSWORD: process.env.BASIC_PASSWORD || "password", // Basic認証のパスワード
 				},
 			},
 		);

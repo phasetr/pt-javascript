@@ -1,2 +1,6 @@
 ddb-data
+dist
+node_modules
 *.d.ts
+*.tsbuildinfo
+*.d.ts.map

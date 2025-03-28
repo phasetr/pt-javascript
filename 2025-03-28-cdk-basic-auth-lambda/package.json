@@ -7,7 +7,7 @@
     "test": "pnpm -r test",
     "deploy:dev": "pnpm build && pnpm --filter cbal deploy:dev",
     "destroy:dev": "pnpm --filter cbal destroy:dev",
-    "dev:hono": "pnpm --filter db-lib build && pnpm --filter=hono-api dev",
+    "dev:hono": "pnpm --filter db build && pnpm --filter=hono-api dev",
     "test:integration:connection": "pnpm --filter integration-tests test:connection",
     "test:integration:local": "pnpm --filter integration-tests test:local"
   },
