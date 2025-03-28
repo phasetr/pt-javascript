@@ -1,5 +1,5 @@
 {
-  "name": "db",
+  "name": "@cbal/db",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -7,5 +7,12 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.777.0",
+    "@aws-sdk/lib-dynamodb": "^3.777.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14"
   }
 }

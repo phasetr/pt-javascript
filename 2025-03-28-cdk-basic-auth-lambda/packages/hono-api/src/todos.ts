@@ -96,9 +96,8 @@ const todos = new Hono()
 			const data = await docClient.send(new GetCommand(params));
 			if (data.Item) {
 				return c.json(data.Item);
-			} else {
-				return c.json({ error: "Todo not found" }, 404);
 			}
+			return c.json({ error: "Todo not found" }, 404);
 		} catch (error) {
 			console.log(error);
 			return c.json({ error: "Failed to retrieve todo" }, 500);
