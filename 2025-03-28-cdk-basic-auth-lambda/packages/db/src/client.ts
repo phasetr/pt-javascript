@@ -32,6 +32,13 @@ const getTableName = () => {
 	return `${prefix}-${env}Todos`;
 };
 
+// 環境に応じたインデックス名を取得
+const getIndexName = () => {
+	const prefix = "CBAL";
+	const env = process.env.ENV || "local";
+	return `${prefix}-${env}UserIdIndex`;
+};
+
 // テーブルとGSIを作成
 const createTodosTable = async () => {
 	const params = {
@@ -47,7 +54,7 @@ const createTodosTable = async () => {
 		},
 		GlobalSecondaryIndexes: [
 			{
-				IndexName: "UserIdIndex",
+				IndexName: getIndexName(), // 環境に応じたインデックス名を使用
 				KeySchema: [{ AttributeName: "userId", KeyType: KeyType.HASH }],
 				Projection: { ProjectionType: ProjectionType.ALL },
 				ProvisionedThroughput: {
@@ -89,8 +96,9 @@ const initializeDynamoDB = async () => {
 // テーブル初期化を実行
 initializeDynamoDB();
 
-// getTableName関数もエクスポート
+// getTableName関数とgetIndexName関数もエクスポート
 export {
   docClient,
-  getTableName
+  getTableName,
+  getIndexName
 };

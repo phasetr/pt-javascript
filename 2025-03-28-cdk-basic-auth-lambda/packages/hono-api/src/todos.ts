@@ -20,7 +20,7 @@ type ExpressionAttributeNames = { [key: string]: string };
 const prefix = "CBAL";
 const env = process.env.ENV || "local";
 const TABLE_NAME = `${prefix}-${env}Todos`;
-// 環境に応じたインデックス名
+// 環境に応じたインデックス名を取得
 const USER_ID_INDEX = `${prefix}-${env}UserIdIndex`;
 
 // カスタムZodスキーマ for YYYY-MM-DD形式の日付

@@ -2,6 +2,11 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { apiClient, type Todo, type CreateTodoRequest, type UpdateTodoRequest } from './api-client.js';
 import { getEnvironment } from './config.js';
 
+// 現在の環境を取得
+const currentEnv = getEnvironment();
+// ローカル環境かどうかを判定
+const isLocalEnv = currentEnv === 'local';
+
 // Vitestのシリアライズエラーを防ぐためのモックは削除
 
 // Test user ID
