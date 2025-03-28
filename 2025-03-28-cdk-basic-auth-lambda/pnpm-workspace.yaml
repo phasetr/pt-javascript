@@ -1,0 +1,3 @@
+packages:
+  # packages配下のすべてのディレクトリをワークスペースとして扱う
+  - 'packages/*'
