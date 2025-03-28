@@ -11,8 +11,10 @@ app.use("*", logger());
 app.use(
 	"*",
 	basicAuth({
-		username: process.env.BASIC_USERNAME ? process.env.BASIC_USERNAME : "dummy",
-		password: process.env.BASIC_PASSWORD ? process.env.BASIC_PASSWORD : "dummy",
+		// ローカル環境では固定でdummy/dummyを使用
+		// それ以外の環境では環境変数から取得
+		username: process.env.ENV === 'local' ? 'dummy' : (process.env.BASIC_USERNAME || 'dummy'),
+		password: process.env.ENV === 'local' ? 'dummy' : (process.env.BASIC_PASSWORD || 'dummy'),
 	}),
 );
 
