@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { apiClient, type Todo, type CreateTodoRequest, type UpdateTodoRequest } from './api-client.js';
-import { getEnvironment } from './config.js';
+import { getEnvironment, getApiUrl } from './config.js';
 
 // 現在の環境を取得
 const currentEnv = getEnvironment();
@@ -24,8 +24,18 @@ const createTodoData: CreateTodoRequest = {
 let createdTodo: Todo;
 
 describe('Todo API Integration Tests', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     console.log(`Running tests in ${getEnvironment()} environment`);
+    
+    // 非ローカル環境の場合はAPI URLを表示
+    if (getEnvironment() !== 'local') {
+      try {
+        const apiUrl = await getApiUrl();
+        console.log(`Using API URL: ${apiUrl}`);
+      } catch (error) {
+        console.warn('Failed to get API URL:', error);
+      }
+    }
   });
 
   it('should create a new todo', async () => {

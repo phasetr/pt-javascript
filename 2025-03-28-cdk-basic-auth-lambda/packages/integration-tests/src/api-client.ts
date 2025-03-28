@@ -1,6 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
-import { getConfig, updateApiUrl } from './config.js';
-import { getApiUrl } from './aws-utils.js';
+import { getConfig, updateApiUrl, getApiUrl } from './config.js';
 
 // Todo type definition
 export interface Todo {
@@ -45,15 +44,9 @@ export class ApiClient {
   private initialized = false;
 
   constructor() {
-    const config = getConfig();
-    
-    // Create axios instance with base URL and auth
+    // 初期設定でクライアントを作成（後で初期化時に更新）
     this.client = axios.create({
-      baseURL: config.baseUrl,
-      auth: {
-        username: config.auth.username,
-        password: config.auth.password,
-      },
+      baseURL: 'http://localhost:3000', // 仮のベースURL（初期化時に更新）
       headers: {
         'Content-Type': 'application/json',
       },
@@ -77,7 +70,7 @@ export class ApiClient {
       updateApiUrl(apiUrl);
       
       // 環境に応じた認証情報を取得
-      const config = getConfig();
+      const config = await getConfig();
       
       // クライアントの設定を更新
       this.client.defaults.baseURL = apiUrl;
@@ -110,7 +103,7 @@ export class ApiClient {
     await this.ensureInitialized();
     
     // 環境に応じた認証情報を取得
-    const config = getConfig();
+    const config = await getConfig();
     
     // リクエストの設定
     const requestConfig = {
@@ -136,7 +129,7 @@ export class ApiClient {
     await this.ensureInitialized();
     
     // 環境に応じた認証情報を取得
-    const config = getConfig();
+    const config = await getConfig();
     
     // リクエストの設定
     const requestConfig = {
@@ -160,7 +153,7 @@ export class ApiClient {
     await this.ensureInitialized();
     
     // 環境に応じた認証情報を取得
-    const config = getConfig();
+    const config = await getConfig();
     
     // リクエストの設定
     const requestConfig = {
@@ -184,7 +177,7 @@ export class ApiClient {
     await this.ensureInitialized();
     
     // 環境に応じた認証情報を取得
-    const config = getConfig();
+    const config = await getConfig();
     
     // リクエストの設定
     const requestConfig = {
@@ -208,7 +201,7 @@ export class ApiClient {
     await this.ensureInitialized();
     
     // 環境に応じた認証情報を取得
-    const config = getConfig();
+    const config = await getConfig();
     
     // リクエストの設定
     const requestConfig = {

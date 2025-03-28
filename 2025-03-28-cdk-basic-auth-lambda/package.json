@@ -9,12 +9,8 @@
     "destroy:dev": "pnpm --filter cbal destroy:dev",
     "dev:hono": "pnpm --filter db build && pnpm prepare:deploy && pnpm --filter=hono-api dev",
     "prepare:deploy": "node scripts/prepare-deploy.js",
-    "test:integration:connection:all": "pnpm test:integration:connection:local && pnpm test:integration:connection:dev",
-    "test:integration:connection:local": "pnpm --filter integration-tests test:connection",
-    "test:integration:connection:dev": "ENV=dev pnpm --filter integration-tests test:connection",
-    "test:integration:all": "pnpm test:integration:local && pnpm test:integration:dev",
-    "test:integration:local": "pnpm --filter integration-tests test:local",
-    "test:integration:dev": "pnpm --filter integration-tests test:dev"
+    "test:integration:local": "pnpm --filter integration-tests test:connection:local && pnpm --filter integration-tests test:local",
+    "test:integration:dev": "pnpm --filter integration-tests test:connection:dev && pnpm --filter integration-tests test:dev"
   },
   "packageManager": "pnpm@10.7.0"
 }

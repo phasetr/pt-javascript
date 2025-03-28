@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
-import { getEnvironment } from './config.js';
+import { getEnvironment, getConfig } from './config.js';
 
 /**
  * CloudFormationスタックの情報を取得して表示する
  */
 async function checkStack() {
+  // 環境設定を取得
+  const config = await getConfig();
   try {
     // 環境に応じたスタック名を生成
     const environment = getEnvironment();
@@ -37,12 +39,12 @@ async function checkStack() {
       // スタックの出力を表示
       if (stack.Outputs && stack.Outputs.length > 0) {
         console.log('Stack Outputs:');
-        stack.Outputs.forEach(output => {
+        for (const output of stack.Outputs) {
           console.log(`  ${output.OutputKey}: ${output.OutputValue}`);
           if (output.Description) {
             console.log(`    Description: ${output.Description}`);
           }
-        });
+        }
         
         // API Endpointの出力を検索
         const apiEndpointOutput = stack.Outputs.find(output => 

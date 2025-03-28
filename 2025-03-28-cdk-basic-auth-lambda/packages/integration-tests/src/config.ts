@@ -32,14 +32,16 @@ const config: Record<Environment, ApiConfig> = {
     },
   },
   dev: {
-    baseUrl: process.env.DEV_API_URL || 'https://dev-api.example.com',
+    // AWS SDKを使って動的に取得するため、初期値はダミー
+    baseUrl: 'https://dev-api.example.com',
     auth: {
       username: process.env.DEV_BASIC_USERNAME || '',
       password: process.env.DEV_BASIC_PASSWORD || '',
     },
   },
   prod: {
-    baseUrl: process.env.PROD_API_URL || 'https://api.example.com',
+    // AWS SDKを使って動的に取得するため、初期値はダミー
+    baseUrl: 'https://api.example.com',
     auth: {
       username: process.env.PROD_BASIC_USERNAME || '',
       password: process.env.PROD_BASIC_PASSWORD || '',
@@ -47,8 +49,11 @@ const config: Record<Environment, ApiConfig> = {
   },
 };
 
+// AWS SDKを使ってAPIのURLを取得
+import { getApiUrlFromCloudFormation } from './aws-utils.js';
+
 // Get configuration for current environment
-export const getConfig = (): ApiConfig => {
+export const getConfig = async (): Promise<ApiConfig> => {
   const env = getEnvironment();
   
   // 環境に応じた認証情報を取得
@@ -60,10 +65,40 @@ export const getConfig = (): ApiConfig => {
     // dev環境の場合は、DEV_BASIC_USERNAMEとDEV_BASIC_PASSWORDを使用
     config[env].auth.username = process.env.DEV_BASIC_USERNAME || 'admin';
     config[env].auth.password = process.env.DEV_BASIC_PASSWORD || 'password';
+    
+    // AWS SDKを使ってdev環境のAPIのURLを取得
+    try {
+      const stackName = process.env.DEV_STACK_NAME || 'CbalStack-dev';
+      const apiUrl = await getApiUrlFromCloudFormation(stackName);
+      if (apiUrl) {
+        config[env].baseUrl = apiUrl;
+      }
+    } catch (error) {
+      console.warn('Failed to get dev API URL from CloudFormation:', error);
+      // 環境変数からURLを取得（フォールバック）
+      if (process.env.DEV_API_URL) {
+        config[env].baseUrl = process.env.DEV_API_URL;
+      }
+    }
   } else if (env === 'prod') {
     // prod環境の場合は、PROD_BASIC_USERNAMEとPROD_BASIC_PASSWORDを使用
     config[env].auth.username = process.env.PROD_BASIC_USERNAME || '';
     config[env].auth.password = process.env.PROD_BASIC_PASSWORD || '';
+    
+    // AWS SDKを使ってprod環境のAPIのURLを取得
+    try {
+      const stackName = process.env.PROD_STACK_NAME || 'CbalStack-prod';
+      const apiUrl = await getApiUrlFromCloudFormation(stackName);
+      if (apiUrl) {
+        config[env].baseUrl = apiUrl;
+      }
+    } catch (error) {
+      console.warn('Failed to get prod API URL from CloudFormation:', error);
+      // 環境変数からURLを取得（フォールバック）
+      if (process.env.PROD_API_URL) {
+        config[env].baseUrl = process.env.PROD_API_URL;
+      }
+    }
   }
   
   return config[env];
@@ -75,4 +110,39 @@ export const updateApiUrl = (url: string): void => {
   if (env !== 'local') {
     config[env].baseUrl = url;
   }
+};
+
+// Get API URL for current environment
+export const getApiUrl = async (): Promise<string> => {
+  const env = getEnvironment();
+  
+  // ローカル環境の場合は設定ファイルのURLを使用
+  if (env === 'local') {
+    return config[env].baseUrl;
+  }
+  
+  // dev/prod環境の場合はAWS SDKを使ってAPIのURLを取得
+  try {
+    const stackName = env === 'dev' 
+      ? (process.env.DEV_STACK_NAME || 'CbalStack-dev')
+      : (process.env.PROD_STACK_NAME || 'CbalStack-prod');
+    
+    const apiUrl = await getApiUrlFromCloudFormation(stackName);
+    if (apiUrl) {
+      // 取得したURLを設定に反映
+      config[env].baseUrl = apiUrl;
+      return apiUrl;
+    }
+  } catch (error) {
+    console.warn(`Failed to get ${env} API URL from CloudFormation:`, error);
+  }
+  
+  // CloudFormationからの取得に失敗した場合は環境変数のURLを使用
+  const envVarName = env === 'dev' ? 'DEV_API_URL' : 'PROD_API_URL';
+  if (process.env[envVarName]) {
+    return process.env[envVarName] as string;
+  }
+  
+  // 環境変数も設定されていない場合は設定ファイルのURLを使用
+  return config[env].baseUrl;
 };
