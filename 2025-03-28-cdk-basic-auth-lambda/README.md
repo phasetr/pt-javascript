@@ -50,6 +50,11 @@ CBAL(Cdk Basic Auth Lambda)
 
 - `AWS`
 
+## 実行時の注意
+
+ルート・`packages/hono-api`配下にある`.env.sample`をコピーして`.env`を作成。
+ローカルで`ENV`は`local`に設定すること。
+
 ## 作業手順
 
 ### AI用

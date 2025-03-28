@@ -11,11 +11,14 @@ app.use("*", logger());
 app.use(
 	"*",
 	basicAuth({
-		username: process.env.BASIC_USERNAME ? process.env.BASIC_USERNAME : "",
-		password: process.env.BASIC_PASSWORD ? process.env.BASIC_PASSWORD : "",
+		username: process.env.BASIC_USERNAME ? process.env.BASIC_USERNAME : "dummy",
+		password: process.env.BASIC_PASSWORD ? process.env.BASIC_PASSWORD : "dummy",
 	}),
 );
 
+app.get("/", (c) => {
+	return c.text("Hello Hono!");
+});
 app.route("/api/todos", todos);
 
 export default app;

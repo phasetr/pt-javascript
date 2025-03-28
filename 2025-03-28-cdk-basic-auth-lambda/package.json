@@ -5,7 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "dev:hono": "pnpm --filter=hono-api dev"
+    "dev:hono": "pnpm --filter db-lib build && pnpm --filter=hono-api dev"
   },
   "packageManager": "pnpm@10.7.0"
 }

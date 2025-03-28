@@ -20,7 +20,7 @@ const devConfig = {
 };
 
 const client = new DynamoDBClient(
-	process.env.ENV === "development" ? devConfig : {},
+	process.env.ENV === "local" ? devConfig : {},
 );
 
 const docClient = DynamoDBDocumentClient.from(client);
@@ -61,7 +61,7 @@ const createTodosTable = async () => {
 
 // ローカルデータベース内にテーブル作成
 const initializeDynamoDB = async () => {
-	if (process.env.ENV === "development") {
+	if (process.env.ENV === "local") {
 		try {
 			const { TableNames } = await client.send(new ListTablesCommand({}));
 			if (TableNames && !TableNames.includes("Todos")) {

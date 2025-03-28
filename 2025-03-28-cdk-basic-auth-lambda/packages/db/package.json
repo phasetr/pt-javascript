@@ -5,6 +5,13 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
+  "main": "src/client.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": "./src/client.js",
+    "./src/client": "./src/client.js",
+    "./src/client.js": "./src/client.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

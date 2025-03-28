@@ -10,9 +10,9 @@ import {
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { v4 as uuidv4 } from "uuid";
-import { docClient } from "@cbal/db/client";
+import { docClient } from "../../db/src/client.js";
 
-type ExpressionAttributeValues = { [key: string]: any };
+type ExpressionAttributeValues = { [key: string]: string | number | boolean | null };
 type ExpressionAttributeNames = { [key: string]: string };
 
 const TABLE_NAME = "Todos";
@@ -111,11 +111,11 @@ const todos = new Hono()
 		const expressionAttributeValues: ExpressionAttributeValues = {};
 		const expressionAttributeNames: ExpressionAttributeNames = {};
 
-		Object.entries(validatedData).forEach(([key, value]) => {
+		for (const [key, value] of Object.entries(validatedData)) {
 			updateExpressions.push(`#${key} = :${key}`);
 			expressionAttributeValues[`:${key}`] = value;
 			expressionAttributeNames[`#${key}`] = key;
-		});
+		}
 
 		// 更新日時を追加
 		updateExpressions.push("#updatedAt = :updatedAt");
