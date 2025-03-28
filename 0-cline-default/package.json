@@ -5,7 +5,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "dev": "pnpm --filter=@cbul/hono-api dev"
+    "dev:hono": "pnpm --filter=hono-api dev",
+    "dev:remix": "pnpm --filter=remix dev"
   },
   "packageManager": "pnpm@10.7.0"
 }

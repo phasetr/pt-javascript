@@ -31,8 +31,8 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 最後にステップごとの内容は`steps`ディレクトリに`日時-日付-step.md`として記録してください.
 
 1. (手動)：`pnpm workspace`化する.
-    - ルート直下に`package.json`と`pnpm-workspace.yml`をコピーする
-2. (手動)：workspace内で`packages/<プロジェクトの略称>`に`cdk init`する
+    - ルート直下に`package.json`と`pnpm-workspace.yaml`をコピーする
+2. (手動)：`packages/<プロジェクトの略称>`に`cdk init`する
 3. (手動)：`packages/hono-api`で`Hono`を初期化する
 4. (手動)：`packages/remix`で`Remix`を初期化する
 5. 今のコードベースで`CDK`コードを書き換える.
@@ -60,9 +60,10 @@ asdf reshim nodejs
 pnpm -v
 pnpm init
 
+mkdir -p packages/<proj-name>
 cdk init sample-app --language typescript
-npm create hono@latest apps/hono
-npx create-remix@latest apps/remix
+npm create hono@latest packages/hono-api
+npx create-remix@latest packages/remix
 ```
 
 ## `cline/roomodes`更新時の対処
