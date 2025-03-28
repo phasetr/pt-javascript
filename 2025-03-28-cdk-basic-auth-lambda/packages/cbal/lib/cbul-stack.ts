@@ -14,11 +14,13 @@ export class CbalStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
 
-		// プロジェクトの略称をプレフィックスとして使用
-		const prefix = "CTLD";
-
 		// 環境名を取得（デフォルトは 'dev'）
 		const environment = this.node.tryGetContext("environment") || "dev";
+
+		// プロジェクトの略称をプレフィックスとして使用
+		const prefix = "CTLD";
+		// 環境名をリソース名に含める
+		const resourcePrefix = `${resourcePrefix}-${environment}`;
 
 		// 環境ごとの設定
 		const envConfig = {
@@ -40,8 +42,8 @@ export class CbalStack extends Stack {
 			envConfig[environment as keyof typeof envConfig] || envConfig.dev;
 
 		// DynamoDBテーブルの作成
-		const todosTable = new dynamodb.Table(this, `${prefix}TodosTable`, {
-			tableName: `${prefix}Todos`,
+		const todosTable = new dynamodb.Table(this, `${resourcePrefix}TodosTable`, {
+			tableName: `${resourcePrefix}Todos`,
 			partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
 			billingMode: dynamodb.BillingMode.PROVISIONED,
 			// Sampleのため1
@@ -51,19 +53,19 @@ export class CbalStack extends Stack {
 
 		// ユーザーIDによるグローバルセカンダリインデックスの追加
 		todosTable.addGlobalSecondaryIndex({
-			indexName: `${prefix}UserIdIndex`,
+			indexName: `${resourcePrefix}UserIdIndex`,
 			partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
 			projectionType: dynamodb.ProjectionType.ALL,
 		});
 
 		const honoLambda = new lambda.DockerImageFunction(
 			this,
-			`${prefix}HonoDockerImageFunction`,
+			`${resourcePrefix}HonoDockerImageFunction`,
 			{
 				code: lambda.DockerImageCode.fromImageAsset(
 					path.join(__dirname, "..", "hono-api"),
 				),
-				functionName: `${prefix}HonoDockerImageFunction`,
+				functionName: `${resourcePrefix}HonoDockerImageFunction`,
 				architecture: lambda.Architecture.ARM_64,
 				memorySize: config.honoMemorySize, // 環境に応じたメモリサイズ
 				timeout: cdk.Duration.seconds(config.honoTimeout), // 環境に応じたタイムアウト
@@ -76,12 +78,12 @@ export class CbalStack extends Stack {
 		// Lambda関数にDynamoDBへのアクセス権限を付与
 		todosTable.grantReadWriteData(honoLambda);
 
-		const apiGw = new apigw.LambdaRestApi(this, `${prefix}honoApi`, {
+		const apiGw = new apigw.LambdaRestApi(this, `${resourcePrefix}honoApi`, {
 			handler: honoLambda,
 		});
 
 		// API GatewayのエンドポイントURLを出力
-		new cdk.CfnOutput(this, `${prefix}ApiEndpoint`, {
+		new cdk.CfnOutput(this, `${resourcePrefix}ApiEndpoint`, {
 			value: apiGw.url,
 			description: "API Gateway endpoint URL",
 		});
