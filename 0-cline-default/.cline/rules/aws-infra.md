@@ -425,3 +425,8 @@ aws ecs update-service \
 `tsconfig.json`には`compilerOptions.module: commonjs`を設定すること.
 ライブラリは`ESM`で問題ないようだが,
 問題があれば都度修正すること.
+
+LambdaによるAPIでHonoを利用するとき,
+本体ロジック用に`hono.ts`、
+`Lambda`用の受け口として`index.ts`、
+ローカル開発用に`index.local.ts`を用意してローカル開発しやすくする.
