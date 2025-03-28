@@ -9,7 +9,7 @@ RUN cat package.json | grep -v "@cbal/db" > temp-package.json && \
 # Copy and install dependencies
 COPY package-lock.json .
 RUN npm install
-RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/util-dynamodb
+RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/util-dynamodb typescript
 
 # Copy the rest of the app
 COPY . .
@@ -34,8 +34,8 @@ WORKDIR /app
 
 # Copy only the necessary files
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/build ./build
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 
 # Direct node execution
-CMD ["node", "build/index.js"]
+CMD ["node", "dist/index.js"]

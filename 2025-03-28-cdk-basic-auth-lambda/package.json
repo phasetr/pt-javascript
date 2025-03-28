@@ -7,7 +7,8 @@
     "test": "pnpm -r test",
     "deploy:dev": "pnpm build && pnpm --filter cbal deploy:dev",
     "destroy:dev": "pnpm --filter cbal destroy:dev",
-    "dev:hono": "pnpm --filter db build && pnpm --filter=hono-api dev",
+    "dev:hono": "pnpm --filter db build && pnpm prepare:deploy && pnpm --filter=hono-api dev",
+    "prepare:deploy": "node scripts/prepare-deploy.js",
     "test:integration:connection": "pnpm --filter integration-tests test:connection",
     "test:integration:local": "pnpm --filter integration-tests test:local"
   },
