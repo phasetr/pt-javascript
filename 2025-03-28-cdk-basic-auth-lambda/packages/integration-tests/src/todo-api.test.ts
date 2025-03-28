@@ -7,8 +7,6 @@ const currentEnv = getEnvironment();
 // ローカル環境かどうかを判定
 const isLocalEnv = currentEnv === 'local';
 
-// Vitestのシリアライズエラーを防ぐためのモックは削除
-
 // Test user ID
 const TEST_USER_ID = 'test-user-123';
 

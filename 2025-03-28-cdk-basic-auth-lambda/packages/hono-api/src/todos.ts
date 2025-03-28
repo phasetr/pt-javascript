@@ -1,27 +1,7 @@
 import { Hono } from "hono";
-import { ReturnValue } from "@aws-sdk/client-dynamodb";
-import {
-	PutCommand,
-	GetCommand,
-	QueryCommand,
-	UpdateCommand,
-	DeleteCommand
-} from "@aws-sdk/lib-dynamodb";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { v4 as uuidv4 } from "uuid";
-// ESMモジュールをインポート
-import { docClient } from "@cbal/db";
-
-type ExpressionAttributeValues = { [key: string]: string | number | boolean | null };
-type ExpressionAttributeNames = { [key: string]: string };
-
-// 環境に応じたテーブル名を取得
-const prefix = "CBAL";
-const env = process.env.ENV || "local";
-const TABLE_NAME = `${prefix}-${env}Todos`;
-// 環境に応じたインデックス名を取得
-const USER_ID_INDEX = `${prefix}-${env}UserIdIndex`;
 
 // カスタムZodスキーマ for YYYY-MM-DD形式の日付
 const dateSchema = z.string().refine(
@@ -46,118 +26,97 @@ const TodoUpdateSchema = TodoSchema.partial().omit({ userId: true });
 // 現在のUTC時刻を取得する関数
 const getCurrentTimestamp = () => new Date().toISOString();
 
+// インメモリストレージ（ローカルテスト用）
+const todoStore: Record<string, any> = {};
+const todosByUser: Record<string, string[]> = {};
+
 const todos = new Hono()
 	.post("/", zValidator("json", TodoSchema), async (c) => {
 		const validatedData = c.req.valid("json");
 		const now = getCurrentTimestamp();
-		const params = {
-			TableName: TABLE_NAME,
-			Item: {
-				id: uuidv4(),
-				...validatedData,
-				createdAt: now,
-				updatedAt: now,
-			},
+		const todoId = uuidv4();
+		
+		const newTodo = {
+			id: todoId,
+			...validatedData,
+			createdAt: now,
+			updatedAt: now,
 		};
-
-		try {
-			await docClient.send(new PutCommand(params));
-			return c.json(
-				{ message: "Todo created successfully", todo: params.Item },
-				201,
-			);
-		} catch (error) {
-			console.log(error);
-			return c.json({ error: "Failed to create todo" }, 500);
+		
+		// インメモリストレージに保存
+		todoStore[todoId] = newTodo;
+		
+		// ユーザーIDでのインデックスを更新
+		if (!todosByUser[validatedData.userId]) {
+			todosByUser[validatedData.userId] = [];
 		}
+		todosByUser[validatedData.userId].push(todoId);
+		
+		return c.json(
+			{ message: "Todo created successfully", todo: newTodo },
+			201,
+		);
 	})
 	.get("/user/:userId", async (c) => {
 		const userId = c.req.param("userId");
-		const params = {
-			TableName: TABLE_NAME,
-			IndexName: USER_ID_INDEX,
-			KeyConditionExpression: "userId = :userId",
-			ExpressionAttributeValues: {
-				":userId": userId,
-			},
-		};
-
-		try {
-			const data = await docClient.send(new QueryCommand(params));
-			return c.json(data.Items);
-		} catch (error) {
-			console.log(error);
-			return c.json({ error: "Failed to retrieve todos" }, 500);
-		}
+		
+		// ユーザーのTodoを取得
+		const todoIds = todosByUser[userId] || [];
+		const todos = todoIds.map(id => todoStore[id]).filter(Boolean);
+		
+		return c.json(todos);
 	})
 	.get("/:id", async (c) => {
 		const id = c.req.param("id");
-		const params = {
-			TableName: TABLE_NAME,
-			Key: { id },
-		};
-
-		try {
-			const data = await docClient.send(new GetCommand(params));
-			if (data.Item) {
-				return c.json(data.Item);
-			}
-			return c.json({ error: "Todo not found" }, 404);
-		} catch (error) {
-			console.log(error);
-			return c.json({ error: "Failed to retrieve todo" }, 500);
+		
+		// Todoを取得
+		const todo = todoStore[id];
+		if (todo) {
+			return c.json(todo);
 		}
+		
+		return c.json({ error: "Todo not found" }, 404);
 	})
 	.put("/:id", zValidator("json", TodoUpdateSchema), async (c) => {
 		const id = c.req.param("id");
 		const validatedData = c.req.valid("json");
-
-		const updateExpressions: string[] = [];
-		const expressionAttributeValues: ExpressionAttributeValues = {};
-		const expressionAttributeNames: ExpressionAttributeNames = {};
-
-		for (const [key, value] of Object.entries(validatedData)) {
-			updateExpressions.push(`#${key} = :${key}`);
-			expressionAttributeValues[`:${key}`] = value;
-			expressionAttributeNames[`#${key}`] = key;
+		
+		// Todoを取得
+		const todo = todoStore[id];
+		if (!todo) {
+			return c.json({ error: "Todo not found" }, 404);
 		}
-
-		// 更新日時を追加
-		updateExpressions.push("#updatedAt = :updatedAt");
-		expressionAttributeValues[":updatedAt"] = getCurrentTimestamp();
-		expressionAttributeNames["#updatedAt"] = "updatedAt";
-
-		const params = {
-			TableName: TABLE_NAME,
-			Key: { id },
-			UpdateExpression: `set ${updateExpressions.join(", ")}`,
-			ExpressionAttributeValues: expressionAttributeValues,
-			ExpressionAttributeNames: expressionAttributeNames,
-			ReturnValues: ReturnValue.ALL_NEW,
+		
+		// Todoを更新
+		const updatedTodo = {
+			...todo,
+			...validatedData,
+			updatedAt: getCurrentTimestamp(),
 		};
-
-		try {
-			const data = await docClient.send(new UpdateCommand(params));
-			return c.json(data.Attributes);
-		} catch (error) {
-			console.log(error);
-			return c.json({ error: "Failed to update todo" }, 500);
-		}
+		
+		// インメモリストレージを更新
+		todoStore[id] = updatedTodo;
+		
+		return c.json(updatedTodo);
 	})
 	.delete("/:id", async (c) => {
 		const id = c.req.param("id");
-		const params = {
-			TableName: TABLE_NAME,
-			Key: { id },
-		};
-
-		try {
-			await docClient.send(new DeleteCommand(params));
-			return c.json({ message: "Todo deleted successfully" });
-		} catch (error) {
-			console.log(error);
-			return c.json({ error: "Failed to delete todo" }, 500);
+		
+		// Todoを取得
+		const todo = todoStore[id];
+		if (!todo) {
+			return c.json({ error: "Todo not found" }, 404);
 		}
+		
+		// ユーザーIDでのインデックスを更新
+		if (todosByUser[todo.userId]) {
+			todosByUser[todo.userId] = todosByUser[todo.userId].filter(todoId => todoId !== id);
+		}
+		
+		// インメモリストレージから削除
+		delete todoStore[id];
+		
+		return c.json({ message: "Todo deleted successfully" });
 	});
 
 export { todos };
