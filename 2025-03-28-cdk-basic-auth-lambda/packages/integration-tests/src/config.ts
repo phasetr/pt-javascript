@@ -52,7 +52,11 @@ export const getConfig = (): ApiConfig => {
   const env = getEnvironment();
   
   // 環境に応じた認証情報を取得
-  if (env === 'dev') {
+  if (env === 'local') {
+    // ローカル環境の場合は、認証情報を固定値に設定
+    config[env].auth.username = 'dummy';
+    config[env].auth.password = 'dummy';
+  } else if (env === 'dev') {
     // dev環境の場合は、DEV_BASIC_USERNAMEとDEV_BASIC_PASSWORDを使用
     config[env].auth.username = process.env.DEV_BASIC_USERNAME || 'admin';
     config[env].auth.password = process.env.DEV_BASIC_PASSWORD || 'password';
