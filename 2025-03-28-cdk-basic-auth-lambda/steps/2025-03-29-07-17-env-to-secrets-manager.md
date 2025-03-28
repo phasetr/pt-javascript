@@ -135,7 +135,7 @@ if (!isLocalEnvironment()) {
 
 .envファイルと.env.sampleファイルからENVを削除しました。
 
-```
+```txt
 # 環境変数は不要になりました
 # AWS環境ではSecrets Managerからアプリケーション設定と認証情報を取得します
 # ローカル環境では固定値を使用します
