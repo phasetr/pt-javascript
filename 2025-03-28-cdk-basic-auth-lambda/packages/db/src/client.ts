@@ -1,10 +1,10 @@
-import { 
-  DynamoDBClient, 
-  ListTablesCommand, 
-  CreateTableCommand, 
-  KeyType, 
-  ScalarAttributeType, 
-  ProjectionType 
+import {
+  DynamoDBClient,
+  ListTablesCommand,
+  CreateTableCommand,
+  KeyType,
+  ScalarAttributeType,
+  ProjectionType
 } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 

@@ -5,7 +5,7 @@ import {
 	GetCommand,
 	QueryCommand,
 	UpdateCommand,
-	DeleteCommand,
+	DeleteCommand
 } from "@aws-sdk/lib-dynamodb";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";

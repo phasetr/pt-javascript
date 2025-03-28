@@ -14,6 +14,9 @@ RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/util-dyn
 # Copy the rest of the app
 COPY . .
 
+# Create a minimal tsconfig.json file
+RUN echo '{ "compilerOptions": { "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext", "outDir": "dist", "esModuleInterop": true, "skipLibCheck": true } }' > /app/tsconfig.json
+
 # Create db directory and copy the compiled files
 WORKDIR /app/node_modules/@cbal
 RUN mkdir -p db/dist
@@ -38,4 +41,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 
 # Direct node execution
-CMD ["node", "dist/index.js"]
+CMD ["node", "./dist/index.js"]

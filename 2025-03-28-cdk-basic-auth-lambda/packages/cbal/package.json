@@ -1,11 +1,12 @@
 {
   "name": "cbal",
   "version": "0.1.0",
+  "type": "commonjs",
   "bin": {
-    "cbal": "bin/cbal.js"
+    "cbal": "build/bin/cbal.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf build && tsc",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",

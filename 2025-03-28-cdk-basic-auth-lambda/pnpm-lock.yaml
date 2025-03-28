@@ -90,7 +90,7 @@ importers:
         version: 3.24.2
     devDependencies:
       '@types/node':
-        specifier: ^20.11.17
+        specifier: ^20.17.28
         version: 20.17.28
       '@types/uuid':
         specifier: ^10.0.0
