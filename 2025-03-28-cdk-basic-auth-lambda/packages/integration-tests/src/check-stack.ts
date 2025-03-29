@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
-import { getEnvironment, getConfig } from './config.js';
+import { getEnvironment, getStackInfo } from 'aws-utils';
+import { getConfig } from './config.js';
 
 /**
  * CloudFormationスタックの情報を取得して表示する
@@ -15,20 +15,8 @@ async function checkStack() {
     
     console.log(`Checking CloudFormation stack: ${stackName}`);
     
-    // AWS SDKクライアントを初期化
-    const client = new CloudFormationClient({
-      region: process.env.AWS_REGION || 'ap-northeast-1',
-    });
-    
     // スタックの情報を取得
-    const command = new DescribeStacksCommand({
-      StackName: stackName,
-    });
-    
-    const response = await client.send(command);
-    
-    // スタックの情報を表示
-    const stack = response.Stacks?.[0];
+    const stack = await getStackInfo(stackName);
     if (stack) {
       console.log('Stack found:');
       console.log(`  Name: ${stack.StackName}`);

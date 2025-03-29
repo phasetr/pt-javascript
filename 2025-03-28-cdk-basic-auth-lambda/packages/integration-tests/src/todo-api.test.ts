@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { apiClient, type Todo, type CreateTodoRequest, type UpdateTodoRequest } from './api-client.js';
-import { getEnvironment, getApiUrl } from './config.js';
+import { getEnvironment } from 'aws-utils';
+import { getApiUrl } from './config.js';
 
 // 現在の環境を取得
 const currentEnv = getEnvironment();

@@ -1,29 +1,4 @@
-// Environment type
-export type Environment = "local" | "dev" | "prod";
-
-// Get current environment from TEST_ENV variable, default to 'local'
-export const getEnvironment = (): Environment => {
-  // TEST_ENV環境変数から環境を取得
-  const testEnv = process.env.TEST_ENV as Environment;
-  if (testEnv && ['local', 'dev', 'prod'].includes(testEnv)) {
-    return testEnv;
-  }
-  
-  // NODE_ENVから環境を判定
-  const nodeEnv = process.env.NODE_ENV;
-  if (nodeEnv === 'production') {
-    // 本番環境の場合はprod
-    return 'prod';
-  }
-  
-  if (nodeEnv === 'development') {
-    // 開発環境の場合はdev
-    return 'dev';
-  }
-  
-  // デフォルトはlocal
-  return 'local';
-};
+import { getEnvironment, type Environment } from "aws-utils";
 
 // API configuration for different environments
 export interface ApiConfig {
@@ -62,11 +37,7 @@ const config: Record<Environment, ApiConfig> = {
 };
 
 // AWS SDKを使ってAPIのURLを取得
-import { getApiUrlFromCloudFormation } from "./aws-utils.js";
-import {
-	SecretsManagerClient,
-	GetSecretValueCommand,
-} from "@aws-sdk/client-secrets-manager";
+import { getApiUrlFromCloudFormation, getAuthCredentials, getApiUrl as getAwsApiUrl } from "aws-utils";
 
 // Get configuration for current environment
 export const getConfig = async (): Promise<ApiConfig> => {
@@ -80,43 +51,11 @@ export const getConfig = async (): Promise<ApiConfig> => {
 	} else {
 		// AWS環境の場合は、Secrets Managerから認証情報を取得
 		try {
-      const secretName = `CBAL-${env}/BasicAuth`;
-      const client = new SecretsManagerClient({
-        region: process.env.AWS_REGION || "ap-northeast-1",
-      });
-      
-      const command = new GetSecretValueCommand({
-        SecretId: secretName,
-      });
-      
-      const response = await client.send(command);
-      
-      if (response.SecretString) {
-        try {
-          // JSONの形式が正しくない場合があるため、エラーハンドリングを追加
-          const secretString = response.SecretString
-            .replace(/([{,])([^,:{}"]+):/g, '$1"$2":') // キーを引用符で囲む
-            .replace(/,(?=\s*[},])/g, '') // 余分なカンマを削除
-            .replace(/([^\\])\\([^\\"])/g, '$1\\\\$2'); // エスケープされていないバックスラッシュをエスケープ
-          
-          const secret = JSON.parse(secretString);
-          if (secret.username && secret.password) {
-            console.log(`Using credentials from Secrets Manager: ${secret.username}:${secret.password}`);
-            config[env].auth.username = secret.username;
-            config[env].auth.password = secret.password;
-          } else {
-            console.warn(`Secret does not contain username and password: ${secretString}`);
-          }
-        } catch (parseError) {
-          console.error(`Failed to parse secret: ${response.SecretString}`, parseError);
-          // JSONのパースに失敗した場合は、固定値を使用
-          config[env].auth.username = "admin";
-          config[env].auth.password = "password";
-          console.log(`Using hardcoded credentials: ${config[env].auth.username}:${config[env].auth.password}`);
-        }
-      } else {
-        console.warn(`Secret does not contain SecretString: ${secretName}`);
-      }
+			const secretName = `CBAL-${env}/BasicAuth`;
+			const credentials = await getAuthCredentials(secretName);
+			config[env].auth.username = credentials.username;
+			config[env].auth.password = credentials.password;
+			console.log(`Using credentials from Secrets Manager: ${credentials.username}:${credentials.password}`);
 		} catch (error) {
 			console.warn(
 				`Failed to get auth credentials from Secrets Manager for ${env} environment:`,
@@ -162,24 +101,20 @@ export const getApiUrl = async (): Promise<string> => {
 		return config[env].baseUrl;
 	}
 
-	// dev/prod環境の場合はAWS SDKを使ってAPIのURLを取得
+	// AWS SDKを使ってAPIのURLを取得
 	try {
-		// 環境に応じたスタック名を使用
-		const stackName = `CbalStack-${env}`;
-		console.log(`Looking for API URL in CloudFormation stack: ${stackName}`);
-
-		const apiUrl = await getApiUrlFromCloudFormation(stackName);
+		const apiUrl = await getAwsApiUrl(config[env].baseUrl);
 		if (apiUrl) {
 			// 取得したURLを設定に反映
 			config[env].baseUrl = apiUrl;
-			console.log(`Found API URL in CloudFormation: ${apiUrl}`);
+			console.log(`Found API URL: ${apiUrl}`);
 			return apiUrl;
 		}
 	} catch (error) {
-		console.warn(`Failed to get ${env} API URL from CloudFormation:`, error);
+		console.warn(`Failed to get API URL:`, error);
 	}
 
-	// CloudFormationからの取得に失敗した場合は設定ファイルのURLを使用
+	// 取得に失敗した場合は設定ファイルのURLを使用
 	console.log(`Using default API URL from config: ${config[env].baseUrl}`);
 	return config[env].baseUrl;
 };

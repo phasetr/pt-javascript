@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { apiClient } from './api-client.js';
-import { getEnvironment, getApiUrl } from './config.js';
+import { getEnvironment } from 'aws-utils';
+import { getApiUrl } from './config.js';
 
 async function checkApiConnection() {
   try {

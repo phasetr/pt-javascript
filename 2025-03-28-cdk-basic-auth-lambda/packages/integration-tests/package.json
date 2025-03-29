@@ -14,9 +14,7 @@
     "test:connection:prod": "TEST_ENV=prod tsx src/test-connection.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.777.0",
-    "@aws-sdk/client-lambda": "^3.777.0",
-    "@aws-sdk/client-secrets-manager": "^3.777.0",
+    "aws-utils": "workspace:*",
     "axios": "^1.6.7"
   },
   "devDependencies": {
