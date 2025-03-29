@@ -1,0 +1,17 @@
+{
+  "auto_approve_commands": [
+    "npm",
+    "pnpm",
+    "node",
+    "ls",
+    "cat",
+    "git",
+    "aws",
+    "cdk",
+    "vitest",
+    "jest",
+    "tsc",
+    "docker",
+    "docker-compose"
+  ]
+}
