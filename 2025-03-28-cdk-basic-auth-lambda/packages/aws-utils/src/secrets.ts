@@ -41,17 +41,11 @@ export async function getAuthCredentials(
 				// 正しいJSON形式が前提
 				const secret = JSON.parse(response.SecretString);
 				if (secret.username && secret.password) {
-					console.log(
-						`Using credentials from Secrets Manager: ${secret.username}:${secret.password}`,
-					);
 					return {
 						username: secret.username,
 						password: secret.password,
 					};
 				}
-				console.warn(
-					`Secret does not contain username and password: ${response.SecretString}`,
-				);
 				// デフォルト値を返す
 				return {
 					username: "admin",
@@ -69,7 +63,6 @@ export async function getAuthCredentials(
 				};
 			}
 		} else {
-			console.warn(`Secret does not contain SecretString: ${secretId}`);
 			// デフォルト値を返す
 			return {
 				username: "admin",
@@ -77,11 +70,6 @@ export async function getAuthCredentials(
 			};
 		}
 	} catch (error) {
-		console.warn(
-			`Failed to get auth credentials from Secrets Manager for ${environment} environment:`,
-			error,
-		);
-		// Secrets Managerからの取得に失敗した場合はデフォルト値を返す
 		return {
 			username: "admin",
 			password: "password",

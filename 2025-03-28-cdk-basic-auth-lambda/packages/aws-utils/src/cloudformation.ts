@@ -39,28 +39,16 @@ export async function getApiUrlFromCloudFormation(
 		// スタックの出力からAPI GatewayのURLを取得
 		const stack = response.Stacks?.[0];
 		if (stack?.Outputs) {
-			// API Endpointの出力を検索
-			// 出力キーは「CBALdevApiEndpoint」のような形式
-			console.log(
-				`Searching for API endpoint in stack outputs for environment: ${environment}`,
-			);
-			console.log("Stack outputs:", JSON.stringify(stack.Outputs, null, 2));
-
 			// 環境に応じた出力キーを検索
 			const apiEndpointOutput = stack.Outputs.find((output) => {
 				const isMatch =
 					output.OutputKey === `CBAL${environment}ApiEndpoint` ||
 					output.OutputKey?.includes("ApiEndpoint") ||
 					output.Description?.includes("API Gateway endpoint URL");
-
-				console.log(
-					`Checking output key: ${output.OutputKey} match: ${isMatch}`,
-				);
 				return isMatch;
 			});
 
 			if (apiEndpointOutput?.OutputValue) {
-				console.log(`Found API endpoint: ${apiEndpointOutput.OutputValue}`);
 				// APIエンドポイントが見つかった場合、環境に応じたパスを追加
 				let apiUrl = apiEndpointOutput.OutputValue;
 				// URLの末尾が/で終わっていない場合は追加
@@ -81,8 +69,6 @@ export async function getApiUrlFromCloudFormation(
 						console.log(`Modified API URL for prod environment: ${apiUrl}`);
 					}
 				}
-
-				console.log(`Found API URL in CloudFormation: ${apiUrl}`);
 				return apiUrl;
 			}
 		}
