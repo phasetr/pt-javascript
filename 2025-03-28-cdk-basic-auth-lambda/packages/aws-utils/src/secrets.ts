@@ -44,7 +44,8 @@ export async function getAuthCredentials(
 					'$1"$2":',
 				) // キーを引用符で囲む
 					.replace(/,(?=\s*[},])/g, "") // 余分なカンマを削除
-					.replace(/([^\\])\\([^\\"])/g, "$1\\\\$2"); // エスケープされていないバックスラッシュをエスケープ
+					.replace(/([^\\])\\([^\\"])/g, "$1\\\\$2") // エスケープされていないバックスラッシュをエスケープ
+					.replace(/(["}])(["{])/g, '$1,$2'); // 値と次のキーの間にカンマを追加
 
 				const secret = JSON.parse(secretString);
 				if (secret.username && secret.password) {

@@ -19,10 +19,12 @@
   },
   "dependencies": {
     "aws-utils": "workspace:*",
-    "axios": "^1.6.7"
+    "axios": "^1.6.7",
+    "node-fetch": "2"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "@types/node-fetch": "^2.6.12",
     "dotenv": "^16.4.5",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",

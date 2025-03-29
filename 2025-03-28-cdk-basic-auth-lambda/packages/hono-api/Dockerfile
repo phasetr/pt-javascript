@@ -9,7 +9,7 @@ RUN cat package.json | grep -v "@cbal/db" | grep -v "aws-utils" > temp-package.j
 # Copy and install dependencies
 COPY package-lock.json .
 RUN npm install
-RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/client-secrets-manager @aws-sdk/util-dynamodb typescript
+RUN npm install @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/client-secrets-manager @aws-sdk/client-cloudformation @aws-sdk/client-lambda @aws-sdk/util-dynamodb typescript
 
 # Copy the rest of the app
 COPY . .

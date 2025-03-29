@@ -103,15 +103,17 @@ export const getApiUrl = async (): Promise<string> => {
 
 	// AWS SDKを使ってAPIのURLを取得
 	try {
-		const apiUrl = await getAwsApiUrl(config[env].baseUrl);
+		// 環境に応じたスタック名を使用
+		const stackName = `CbalStack-${env}`;
+		const apiUrl = await getApiUrlFromCloudFormation(stackName);
 		if (apiUrl) {
 			// 取得したURLを設定に反映
 			config[env].baseUrl = apiUrl;
-			console.log(`Found API URL: ${apiUrl}`);
+			console.log(`Found API URL from CloudFormation: ${apiUrl}`);
 			return apiUrl;
 		}
 	} catch (error) {
-		console.warn(`Failed to get API URL:`, error);
+		console.warn("Failed to get API URL from CloudFormation:", error);
 	}
 
 	// 取得に失敗した場合は設定ファイルのURLを使用

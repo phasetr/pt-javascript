@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
+import fetch from "node-fetch";
 import { getConfig, updateApiUrl, getApiUrl } from "./config.js";
 
 // Todo type definition
@@ -107,54 +108,44 @@ export class ApiClient {
 		// 環境に応じた認証情報を取得
 		const config = await getConfig();
 
-		// リクエストの設定
-		const requestConfig = {
-			auth: {
-				username: config.auth.username,
-				password: config.auth.password,
-			},
-		};
-
 		console.log(
 			`Using auth credentials for request: ${config.auth.username}:${config.auth.password}`,
 		);
 
 		try {
-			// JSONデータを直接オブジェクトとして送信
-			const todoData = {
+			// 手動でJSONデータを作成
+			const jsonObj: Record<string, string | boolean> = {
 				userId: todo.userId,
 				title: todo.title,
-				completed: todo.completed,
-				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
+				completed: todo.completed
 			};
-
-			// JSONデータをオブジェクトとして作成し、JSON.stringifyを使用して正しいJSONを生成
-			const todoDataObj = {
-				userId: todo.userId,
-				title: todo.title,
-				completed: todo.completed,
-				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
-			};
-			const correctJsonData = JSON.stringify(todoDataObj);
+			if (todo.dueDate) {
+				jsonObj.dueDate = todo.dueDate;
+			}
+			const correctJsonData = JSON.stringify(jsonObj);
 			console.log(`Using correctly formatted JSON data: ${correctJsonData}`);
 			
-			// Content-Typeヘッダーを明示的に設定
-			const headers = {
-				"Content-Type": "application/json",
-			};
-
-			// リクエスト設定にヘッダーを追加
-			const configWithHeaders = {
-				...requestConfig,
-				headers,
-			};
-
-			const response = await this.client.post<CreateTodoResponse>(
-				"/api/todos",
-				correctJsonData, // 正しく整形されたJSON文字列を送信
-				configWithHeaders,
-			);
-			return response.data;
+			// node-fetchを使用してリクエストを送信
+			const apiUrl = await getApiUrl();
+			const url = `${apiUrl}/api/todos`;
+			
+			// Basic認証のヘッダーを作成
+			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
+			
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${authString}`
+				},
+				body: correctJsonData
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			return await response.json() as CreateTodoResponse;
 		} catch (error) {
 			console.error("Error creating todo:", error);
 			throw error;
@@ -168,26 +159,27 @@ export class ApiClient {
 		// 環境に応じた認証情報を取得
 		const config = await getConfig();
 
-		// Content-Typeヘッダーを明示的に設定
-		const headers = {
-			"Content-Type": "application/json",
-		};
-
-		// リクエストの設定
-		const requestConfig = {
-			auth: {
-				username: config.auth.username,
-				password: config.auth.password,
-			},
-			headers,
-		};
-
 		try {
-			const response = await this.client.get<Todo[]>(
-				`/api/todos/user/${userId}`,
-				requestConfig,
-			);
-			return response.data;
+			// node-fetchを使用してリクエストを送信
+			const apiUrl = await getApiUrl();
+			const url = `${apiUrl}/api/todos/user/${userId}`;
+			
+			// Basic認証のヘッダーを作成
+			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
+			
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${authString}`
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			return await response.json() as Todo[];
 		} catch (error) {
 			console.error(`Error getting todos for user ${userId}:`, error);
 			throw error;
@@ -201,26 +193,27 @@ export class ApiClient {
 		// 環境に応じた認証情報を取得
 		const config = await getConfig();
 
-		// Content-Typeヘッダーを明示的に設定
-		const headers = {
-			"Content-Type": "application/json",
-		};
-
-		// リクエストの設定
-		const requestConfig = {
-			auth: {
-				username: config.auth.username,
-				password: config.auth.password,
-			},
-			headers,
-		};
-
 		try {
-			const response = await this.client.get<Todo>(
-				`/api/todos/${id}`,
-				requestConfig,
-			);
-			return response.data;
+			// node-fetchを使用してリクエストを送信
+			const apiUrl = await getApiUrl();
+			const url = `${apiUrl}/api/todos/${id}`;
+			
+			// Basic認証のヘッダーを作成
+			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
+			
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${authString}`
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			return await response.json() as Todo;
 		} catch (error) {
 			console.error(`Error getting todo ${id}:`, error);
 			throw error;
@@ -234,38 +227,37 @@ export class ApiClient {
 		// 環境に応じた認証情報を取得
 		const config = await getConfig();
 
-		// Content-Typeヘッダーを明示的に設定
-		const headers = {
-			"Content-Type": "application/json",
-		};
-
-		// リクエストの設定
-		const requestConfig = {
-			auth: {
-				username: config.auth.username,
-				password: config.auth.password,
-			},
-			headers,
-		};
-
 		try {
-			// JSONデータを直接オブジェクトとして送信
-			const todoData = {
-				...(todo.title ? { title: todo.title } : {}),
-				...(todo.completed !== undefined ? { completed: todo.completed } : {}),
-				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
-			};
-
-			// JSONデータをJSON文字列に変換
-			const jsonData = JSON.stringify(todoData);
+			// 手動でJSONデータを作成
+			const jsonObj: Record<string, string | boolean> = {};
+			if (todo.title) jsonObj.title = todo.title;
+			if (todo.completed !== undefined) jsonObj.completed = todo.completed;
+			if (todo.dueDate) jsonObj.dueDate = todo.dueDate;
+			
+			const jsonData = JSON.stringify(jsonObj);
 			console.log(`Sending JSON data for update: ${jsonData}`);
-
-			const response = await this.client.put<Todo>(
-				`/api/todos/${id}`,
-				jsonData, // JSON文字列を送信
-				requestConfig,
-			);
-			return response.data;
+			
+			// node-fetchを使用してリクエストを送信
+			const apiUrl = await getApiUrl();
+			const url = `${apiUrl}/api/todos/${id}`;
+			
+			// Basic認証のヘッダーを作成
+			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
+			
+			const response = await fetch(url, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${authString}`
+				},
+				body: jsonData
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			return await response.json() as Todo;
 		} catch (error) {
 			console.error(`Error updating todo ${id}:`, error);
 			throw error;
@@ -279,27 +271,27 @@ export class ApiClient {
 		// 環境に応じた認証情報を取得
 		const config = await getConfig();
 
-		// Content-Typeヘッダーを明示的に設定
-		const headers = {
-			"Content-Type": "application/json",
-		};
-
-		// リクエストの設定
-		const requestConfig = {
-			auth: {
-				username: config.auth.username,
-				password: config.auth.password,
-			},
-			headers,
-			data: {}, // 空のデータを送信（DELETEリクエストの場合）
-		};
-
 		try {
-			const response = await this.client.delete<DeleteTodoResponse>(
-				`/api/todos/${id}`,
-				requestConfig,
-			);
-			return response.data;
+			// node-fetchを使用してリクエストを送信
+			const apiUrl = await getApiUrl();
+			const url = `${apiUrl}/api/todos/${id}`;
+			
+			// Basic認証のヘッダーを作成
+			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
+			
+			const response = await fetch(url, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Basic ${authString}`
+				}
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
+			return await response.json() as DeleteTodoResponse;
 		} catch (error) {
 			console.error(`Error deleting todo ${id}:`, error);
 			throw error;
