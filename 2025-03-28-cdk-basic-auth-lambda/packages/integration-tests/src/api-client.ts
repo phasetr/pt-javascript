@@ -1,5 +1,4 @@
-import axios, { type AxiosInstance } from "axios";
-import fetch from "node-fetch";
+import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
 import { getConfig, updateApiUrl, getApiUrl } from "./config.js";
 
 // Todo type definition
@@ -113,7 +112,7 @@ export class ApiClient {
 		);
 
 		try {
-			// 手動でJSONデータを作成
+			// JSONデータを作成
 			const jsonObj: Record<string, string | boolean> = {
 				userId: todo.userId,
 				title: todo.title,
@@ -122,30 +121,12 @@ export class ApiClient {
 			if (todo.dueDate) {
 				jsonObj.dueDate = todo.dueDate;
 			}
-			const correctJsonData = JSON.stringify(jsonObj);
-			console.log(`Using correctly formatted JSON data: ${correctJsonData}`);
+			console.log(`Using JSON data: ${JSON.stringify(jsonObj)}`);
 			
-			// node-fetchを使用してリクエストを送信
-			const apiUrl = await getApiUrl();
-			const url = `${apiUrl}/api/todos`;
+			// axiosを使用してリクエストを送信
+			const response = await this.client.post('/api/todos', jsonObj);
 			
-			// Basic認証のヘッダーを作成
-			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
-			
-			const response = await fetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${authString}`
-				},
-				body: correctJsonData
-			});
-			
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			return await response.json() as CreateTodoResponse;
+			return response.data as CreateTodoResponse;
 		} catch (error) {
 			console.error("Error creating todo:", error);
 			throw error;
@@ -156,30 +137,9 @@ export class ApiClient {
 	async getTodosByUserId(userId: string): Promise<Todo[]> {
 		await this.ensureInitialized();
 
-		// 環境に応じた認証情報を取得
-		const config = await getConfig();
-
 		try {
-			// node-fetchを使用してリクエストを送信
-			const apiUrl = await getApiUrl();
-			const url = `${apiUrl}/api/todos/user/${userId}`;
-			
-			// Basic認証のヘッダーを作成
-			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
-			
-			const response = await fetch(url, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${authString}`
-				}
-			});
-			
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			return await response.json() as Todo[];
+			const response = await this.client.get(`/api/todos/user/${userId}`);
+			return response.data as Todo[];
 		} catch (error) {
 			console.error(`Error getting todos for user ${userId}:`, error);
 			throw error;
@@ -190,30 +150,9 @@ export class ApiClient {
 	async getTodoById(id: string): Promise<Todo> {
 		await this.ensureInitialized();
 
-		// 環境に応じた認証情報を取得
-		const config = await getConfig();
-
 		try {
-			// node-fetchを使用してリクエストを送信
-			const apiUrl = await getApiUrl();
-			const url = `${apiUrl}/api/todos/${id}`;
-			
-			// Basic認証のヘッダーを作成
-			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
-			
-			const response = await fetch(url, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${authString}`
-				}
-			});
-			
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			return await response.json() as Todo;
+			const response = await this.client.get(`/api/todos/${id}`);
+			return response.data as Todo;
 		} catch (error) {
 			console.error(`Error getting todo ${id}:`, error);
 			throw error;
@@ -224,40 +163,17 @@ export class ApiClient {
 	async updateTodo(id: string, todo: UpdateTodoRequest): Promise<Todo> {
 		await this.ensureInitialized();
 
-		// 環境に応じた認証情報を取得
-		const config = await getConfig();
-
 		try {
-			// 手動でJSONデータを作成
-			const jsonObj: Record<string, string | boolean> = {};
-			if (todo.title) jsonObj.title = todo.title;
-			if (todo.completed !== undefined) jsonObj.completed = todo.completed;
-			if (todo.dueDate) jsonObj.dueDate = todo.dueDate;
+			// 更新データを準備
+			const updateData: Record<string, string | boolean> = {};
+			if (todo.title) updateData.title = todo.title;
+			if (todo.completed !== undefined) updateData.completed = todo.completed;
+			if (todo.dueDate) updateData.dueDate = todo.dueDate;
 			
-			const jsonData = JSON.stringify(jsonObj);
-			console.log(`Sending JSON data for update: ${jsonData}`);
+			console.log(`Sending JSON data for update: ${JSON.stringify(updateData)}`);
 			
-			// node-fetchを使用してリクエストを送信
-			const apiUrl = await getApiUrl();
-			const url = `${apiUrl}/api/todos/${id}`;
-			
-			// Basic認証のヘッダーを作成
-			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
-			
-			const response = await fetch(url, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${authString}`
-				},
-				body: jsonData
-			});
-			
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			return await response.json() as Todo;
+			const response = await this.client.put(`/api/todos/${id}`, updateData);
+			return response.data as Todo;
 		} catch (error) {
 			console.error(`Error updating todo ${id}:`, error);
 			throw error;
@@ -268,30 +184,9 @@ export class ApiClient {
 	async deleteTodo(id: string): Promise<DeleteTodoResponse> {
 		await this.ensureInitialized();
 
-		// 環境に応じた認証情報を取得
-		const config = await getConfig();
-
 		try {
-			// node-fetchを使用してリクエストを送信
-			const apiUrl = await getApiUrl();
-			const url = `${apiUrl}/api/todos/${id}`;
-			
-			// Basic認証のヘッダーを作成
-			const authString = Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64');
-			
-			const response = await fetch(url, {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Basic ${authString}`
-				}
-			});
-			
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			return await response.json() as DeleteTodoResponse;
+			const response = await this.client.delete(`/api/todos/${id}`);
+			return response.data as DeleteTodoResponse;
 		} catch (error) {
 			console.error(`Error deleting todo ${id}:`, error);
 			throw error;
