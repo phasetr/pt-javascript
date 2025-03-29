@@ -1,5 +1,11 @@
 // 環境設定
-export { getEnvironment, type Environment } from "./config.js";
+export { 
+  getEnvironment, 
+  isLocalEnvironment, 
+  getAppConfig, 
+  type Environment, 
+  type AppConfig 
+} from "./config.js";
 
 // CloudFormation関連
 export { getApiUrlFromCloudFormation, getStackInfo } from "./cloudformation.js";

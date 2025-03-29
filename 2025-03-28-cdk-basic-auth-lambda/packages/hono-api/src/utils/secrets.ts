@@ -1,18 +1,11 @@
 import {
-	SecretsManagerClient,
-	GetSecretValueCommand,
-} from "@aws-sdk/client-secrets-manager";
-import {
 	getEnvironment,
+	isLocalEnvironment as isLocalEnv,
+	getAppConfig as getConfig,
+	getAuthCredentials,
 	type Environment,
+	type AppConfig,
 } from "../../../aws-utils/src/index.js";
-
-// アプリケーション設定の型
-export interface AppConfig {
-	environment: Environment;
-	region: string;
-	stage: "local" | "development" | "production";
-}
 
 // Basic認証の認証情報の型
 export interface BasicAuthCredentials {
@@ -22,8 +15,8 @@ export interface BasicAuthCredentials {
 
 // 現在の環境を判定する関数
 export function isLocalEnvironment(): boolean {
-	// NODE_ENVが'production'でない場合はローカル環境と判定
-	return process.env.NODE_ENV !== "production";
+	// aws-utilsのisLocalEnvironment関数を使用
+	return isLocalEnv(process.env.NODE_ENV);
 }
 
 // 現在の環境を取得する関数
@@ -34,30 +27,8 @@ export function getCurrentEnvironment(): Environment {
 
 // アプリケーション設定を取得する関数
 export async function getAppConfig(): Promise<AppConfig> {
-	const environment = getCurrentEnvironment();
-
-	// 環境に応じた設定を返す
-	if (environment === "local") {
-		return {
-			environment: "local",
-			region: "ap-northeast-1",
-			stage: "local",
-		};
-	}
-
-	if (environment === "dev") {
-		return {
-			environment: "dev",
-			region: process.env.AWS_REGION || "ap-northeast-1",
-			stage: "development",
-		};
-	}
-
-	return {
-		environment: "prod",
-		region: process.env.AWS_REGION || "ap-northeast-1",
-		stage: "production",
-	};
+	// aws-utilsのgetAppConfig関数を使用
+	return getConfig(process.env.NODE_ENV, process.env.AWS_REGION);
 }
 
 // Basic認証の認証情報を取得する関数
@@ -72,57 +43,23 @@ export async function getBasicAuthCredentials(): Promise<BasicAuthCredentials> {
 		};
 	}
 
-	// AWS環境ではSecretsManagerから認証情報を取得
+	// AWS環境ではaws-utilsのgetAuthCredentials関数を使用
 	try {
 		const secretName = `CBAL-${environment}/BasicAuth`;
-		const client = new SecretsManagerClient({
-			region: process.env.AWS_REGION || "ap-northeast-1",
-		});
-
-		const command = new GetSecretValueCommand({
-			SecretId: secretName,
-		});
-
-		const response = await client.send(command);
-
-		if (response.SecretString) {
-			try {
-				// JSONの形式が正しくない場合があるため、エラーハンドリングを追加
-				const secretString = response.SecretString.replace(
-					/([{,])([^,:{}"]+):/g,
-					'$1"$2":',
-				) // キーを引用符で囲む
-					.replace(/,(?=\s*[},])/g, "") // 余分なカンマを削除
-					.replace(/([^\\])\\([^\\"])/g, "$1\\\\$2"); // エスケープされていないバックスラッシュをエスケープ
-
-				const secret = JSON.parse(secretString);
-				if (secret.username && secret.password) {
-					console.log(
-						`Using credentials from Secrets Manager: ${secret.username}:${secret.password}`,
-					);
-					return {
-						username: secret.username,
-						password: secret.password,
-					};
-				}
-			} catch (parseError) {
-				console.error(
-					`Failed to parse secret: ${response.SecretString}`,
-					parseError,
-				);
-			}
-		}
-
-		console.warn(
-			"Failed to get valid credentials from Secrets Manager, using default values",
+		const credentials = await getAuthCredentials(
+			secretName,
+			process.env.NODE_ENV,
+			process.env.AWS_REGION || "ap-northeast-1"
 		);
+		
+		return credentials;
 	} catch (error) {
 		console.warn("Failed to get auth credentials from Secrets Manager:", error);
+		
+		// Secrets Managerからの取得に失敗した場合はデフォルト値を使用
+		return {
+			username: "admin",
+			password: "password",
+		};
 	}
-
-	// Secrets Managerからの取得に失敗した場合はデフォルト値を使用
-	return {
-		username: "admin",
-		password: "password",
-	};
 }

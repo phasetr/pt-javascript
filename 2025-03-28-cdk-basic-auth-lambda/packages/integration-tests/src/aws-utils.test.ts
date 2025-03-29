@@ -32,6 +32,18 @@ describe('AWS Utils Integration Tests', () => {
     }
   });
 
+  describe('Config', () => {
+    it('should determine environment correctly', () => {
+      // 環境を取得
+      const env = getEnvironment(process.env.NODE_ENV);
+      
+      // 環境が有効な値であることを確認
+      expect(['local', 'dev', 'prod']).toContain(env);
+      
+      console.log(`Current environment: ${env}`);
+    });
+  });
+
   describe('API', () => {
     it('should get API URL', skipIfLocal(async () => {
       // API URLを取得
