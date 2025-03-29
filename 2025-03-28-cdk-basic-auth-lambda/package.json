@@ -6,6 +6,18 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     
+    "# === 単体テストコマンド ===": "",
+    "test:unit": "pnpm -r test",
+    "test:unit:aws-utils": "pnpm --filter aws-utils test",
+    "test:unit:integration-tests": "pnpm --filter integration-tests test",
+    "test:unit:cbal": "pnpm --filter cbal test",
+    "test:unit:watch": "pnpm -r test:watch",
+    "test:unit:aws-utils:watch": "pnpm --filter aws-utils test:watch",
+    "test:unit:integration-tests:watch": "pnpm --filter integration-tests test:watch",
+    "test:unit:coverage": "pnpm -r test:coverage",
+    "test:unit:aws-utils:coverage": "pnpm --filter aws-utils test:coverage",
+    "test:unit:integration-tests:coverage": "pnpm --filter integration-tests test:coverage",
+    
     "# === ローカル開発環境コマンド ===": "",
     "local:start": "pnpm db:start && pnpm api:start",
     "local:stop": "pnpm api:stop || true && pnpm db:stop",

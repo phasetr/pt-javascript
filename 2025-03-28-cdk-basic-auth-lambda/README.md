@@ -33,6 +33,47 @@ CBAL(Cdk Basic Auth Lambda)
 ルート・`packages/hono-api`配下にある`.env.sample`をコピーして`.env`を作成。
 ローカルで`ENV`は`local`に設定すること。
 
+## テストの実行方法
+
+### 単体テスト
+
+プロジェクトルートから以下のコマンドで単体テストを実行できます：
+
+```bash
+# 全パッケージの単体テストを実行
+pnpm test:unit
+
+# 特定のパッケージの単体テストを実行
+pnpm test:unit:aws-utils
+pnpm test:unit:integration-tests
+pnpm test:unit:cbal
+
+# ウォッチモードで単体テストを実行（ファイル変更時に自動的にテストを再実行）
+pnpm test:unit:watch
+pnpm test:unit:aws-utils:watch
+pnpm test:unit:integration-tests:watch
+
+# カバレッジレポート付きで単体テストを実行
+pnpm test:unit:coverage
+pnpm test:unit:aws-utils:coverage
+pnpm test:unit:integration-tests:coverage
+```
+
+### 結合テスト
+
+プロジェクトルートから以下のコマンドで結合テストを実行できます：
+
+```bash
+# ローカル環境での結合テスト（事前に pnpm local:start を実行してください）
+pnpm test:integration:local
+
+# 開発環境での結合テスト
+pnpm test:integration:dev
+
+# 本番環境での結合テスト
+pnpm test:integration:prod
+```
+
 ## 作業手順
 
 ### AI用
