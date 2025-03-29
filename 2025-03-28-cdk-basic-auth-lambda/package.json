@@ -7,14 +7,10 @@
     "test": "pnpm -r test",
 
     "# === 単体テストコマンド ===": "",
-    "test:u": "pnpm -r test",
+    "test:u": "pnpm --filter \"!integration-tests\" -r test",
     "test:u:aws-utils": "pnpm --filter aws-utils test",
     "test:u:db": "pnpm --filter db test",
     "test:u:cbal": "pnpm --filter cbal test",
-    "test:u:watch": "pnpm -r test:watch",
-    "test:u:aws-utils:watch": "pnpm --filter aws-utils test:watch",
-    "test:u:coverage": "pnpm -r test:coverage",
-    "test:u:aws-utils:coverage": "pnpm --filter aws-utils test:coverage",
 
     "# === ローカル開発環境コマンド ===": "",
     "local:start": "pnpm db:start && pnpm api:start",
