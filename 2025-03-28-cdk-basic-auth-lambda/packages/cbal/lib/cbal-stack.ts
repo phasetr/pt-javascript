@@ -29,14 +29,14 @@ export class CbalStack extends Stack {
 				honoMemorySize: 512,
 				honoTimeout: 30,
 				remixMemorySize: 256,
-				remixTimeout: 30,
+				remixTimeout: 30
 			},
 			prod: {
 				honoMemorySize: 512,
 				honoTimeout: 60,
 				remixMemorySize: 256,
-				remixTimeout: 60,
-			},
+				remixTimeout: 60
+			}
 		};
 		// 環境に応じた設定を取得
 		const config =
@@ -51,14 +51,14 @@ export class CbalStack extends Stack {
 			readCapacity: 1,
 			writeCapacity: 1,
 			// cdk destroyでテーブルも削除する
-			removalPolicy: cdk.RemovalPolicy.DESTROY,
+			removalPolicy: cdk.RemovalPolicy.DESTROY
 		});
 
 		// ユーザーIDによるグローバルセカンダリインデックスの追加
 		todosTable.addGlobalSecondaryIndex({
 			indexName: `${resourcePrefix}UserIdIndex`,
 			partitionKey: { name: "userId", type: dynamodb.AttributeType.STRING },
-			projectionType: dynamodb.ProjectionType.ALL,
+			projectionType: dynamodb.ProjectionType.ALL
 		});
 
 		// Secrets Managerの作成 - アプリケーション設定
@@ -95,7 +95,7 @@ export class CbalStack extends Stack {
 			`${resourcePrefix}HonoDockerImageFunction`,
 			{
 				code: lambda.DockerImageCode.fromImageAsset(
-					path.join(__dirname, "..", "..", "hono-api"),
+					path.join(__dirname, "..", "..", "hono-api")
 				),
 				functionName: `${resourcePrefix}HonoDockerImageFunction`,
 				architecture: lambda.Architecture.ARM_64,
@@ -104,9 +104,9 @@ export class CbalStack extends Stack {
 				environment: {
 					// 環境変数はSecrets Managerのシークレット名のみ
 					APP_CONFIG_SECRET_NAME: appConfigSecret.secretName,
-					BASIC_AUTH_SECRET_NAME: basicAuthSecret.secretName,
-				},
-			},
+					BASIC_AUTH_SECRET_NAME: basicAuthSecret.secretName
+				}
+			}
 		);
 
 		// Lambda関数にSecrets Managerへのアクセス権限を付与
@@ -117,13 +117,13 @@ export class CbalStack extends Stack {
 		todosTable.grantReadWriteData(honoLambda);
 
 		const apiGw = new apigw.LambdaRestApi(this, `${resourcePrefix}honoApi`, {
-			handler: honoLambda,
+			handler: honoLambda
 		});
 
 		// API GatewayのエンドポイントURLを出力
 		new cdk.CfnOutput(this, `${resourcePrefix}ApiEndpoint`, {
 			value: apiGw.url,
-			description: "API Gateway endpoint URL",
+			description: "API Gateway endpoint URL"
 		});
 	}
 }

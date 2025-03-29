@@ -8,7 +8,7 @@ export default defineConfig({
     testTimeout: 30000, // 30 seconds timeout
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-    },
-  },
+      reporter: ['text', 'json', 'html']
+    }
+  }
 });
