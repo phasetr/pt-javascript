@@ -4,11 +4,17 @@ import { getEnvironment } from "./config.js";
 /**
  * Lambda関数の情報からAPI GatewayのURLを推測する
  * @param functionName Lambda関数名
+ * @param nodeEnv 環境変数NODE_ENVの値
+ * @param region AWSリージョン
  * @returns 推測されたAPI GatewayのURL
  */
-export async function getLambdaUrl(functionName?: string): Promise<string> {
+export async function getLambdaUrl(
+	functionName?: string,
+	nodeEnv?: string,
+	region = "ap-northeast-1",
+): Promise<string> {
 	// 環境に応じたLambda関数名を生成
-	const environment = getEnvironment(process.env.NODE_ENV);
+	const environment = getEnvironment(nodeEnv);
 	const prefix = "CBAL";
 	const defaultFunctionName = `${prefix}-${environment}-HonoDockerImageFunction`;
 
@@ -17,7 +23,7 @@ export async function getLambdaUrl(functionName?: string): Promise<string> {
 
 	// AWS SDKクライアントを初期化
 	const client = new LambdaClient({
-		region: process.env.AWS_REGION || "ap-northeast-1",
+		region,
 	});
 
 	try {

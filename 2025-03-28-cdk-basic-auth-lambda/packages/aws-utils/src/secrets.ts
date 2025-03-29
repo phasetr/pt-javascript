@@ -7,13 +7,17 @@ import { getEnvironment } from "./config.js";
 /**
  * Secrets Managerから認証情報を取得する
  * @param secretName シークレット名（デフォルトは環境に応じて自動生成）
+ * @param nodeEnv 環境変数NODE_ENVの値
+ * @param awsRegion AWSリージョン
  * @returns 認証情報（username, password）
  */
 export async function getAuthCredentials(
 	secretName?: string,
+	nodeEnv?: string,
+	awsRegion = "ap-northeast-1",
 ): Promise<{ username: string; password: string }> {
 	// 環境に応じたシークレット名を生成
-	const environment = getEnvironment(process.env.NODE_ENV);
+	const environment = getEnvironment(nodeEnv);
 	const defaultSecretName = `CBAL-${environment}/BasicAuth`;
 
 	// 引数でシークレット名が指定されていない場合はデフォルト値を使用
@@ -21,7 +25,7 @@ export async function getAuthCredentials(
 
 	// AWS SDKクライアントを初期化
 	const client = new SecretsManagerClient({
-		region: process.env.AWS_REGION || "ap-northeast-1",
+		region: awsRegion,
 	});
 
 	try {
