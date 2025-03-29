@@ -1,9 +1,9 @@
 FROM public.ecr.aws/docker/library/node:20.9.0-slim AS builder
 WORKDIR /app
 
-# Create a temporary package.json without the @cbal/db dependency
+# Create a temporary package.json without the workspace dependencies
 COPY package.json .
-RUN cat package.json | grep -v "@cbal/db" > temp-package.json && \
+RUN cat package.json | grep -v "@cbal/db" | grep -v "aws-utils" > temp-package.json && \
     mv temp-package.json package.json
 
 # Copy and install dependencies
@@ -17,12 +17,16 @@ COPY . .
 # Create a minimal tsconfig.json file
 RUN echo '{ "compilerOptions": { "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext", "outDir": "dist", "esModuleInterop": true, "skipLibCheck": true } }' > /app/tsconfig.json
 
-# Create db directory and copy the compiled files
+# Create directories and copy the compiled files
 WORKDIR /app/node_modules/@cbal
 RUN mkdir -p db/dist
+WORKDIR /app/node_modules
+RUN mkdir -p aws-utils/dist
 WORKDIR /app
 COPY ./node_modules/@cbal/db/dist ./node_modules/@cbal/db/dist
 COPY ./node_modules/@cbal/db/package.json ./node_modules/@cbal/db/package.json
+COPY ./node_modules/aws-utils/dist ./node_modules/aws-utils/dist
+COPY ./node_modules/aws-utils/package.json ./node_modules/aws-utils/package.json
 
 # Build the app
 RUN npm run build

@@ -5,7 +5,10 @@ import {
 	getAuthCredentials,
 	type Environment,
 	type AppConfig,
-} from "../../../aws-utils/src/index.js";
+} from "aws-utils";
+
+// 型の再エクスポート
+export type { AppConfig, Environment };
 
 // Basic認証の認証情報の型
 export interface BasicAuthCredentials {

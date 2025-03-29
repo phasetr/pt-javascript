@@ -7,28 +7,42 @@ const { execSync } = require('node:child_process');
 // Paths
 const rootDir = path.resolve(__dirname, '..');
 const dbDir = path.join(rootDir, 'packages', 'db');
+const awsUtilsDir = path.join(rootDir, 'packages', 'aws-utils');
 const honoApiDir = path.join(rootDir, 'packages', 'hono-api');
 
-// Create node_modules/@cbal directory if it doesn't exist
-const honoApiNodeModulesDir = path.join(honoApiDir, 'node_modules', '@cbal');
+// Create node_modules directories if they don't exist
+const honoApiNodeModulesCbalDir = path.join(honoApiDir, 'node_modules', '@cbal');
+const honoApiNodeModulesDir = path.join(honoApiDir, 'node_modules');
 
-if (!fs.existsSync(honoApiNodeModulesDir)) {
-  fs.mkdirSync(honoApiNodeModulesDir, { recursive: true });
+if (!fs.existsSync(honoApiNodeModulesCbalDir)) {
+  fs.mkdirSync(honoApiNodeModulesCbalDir, { recursive: true });
 }
 
-// Build db
-console.log('Building db...');
+// Build packages
+console.log('Building packages...');
 execSync('pnpm --filter db build', { stdio: 'inherit' });
+execSync('pnpm --filter aws-utils build', { stdio: 'inherit' });
 
-// Copy db to apps
+// Copy db to hono-api
 console.log('Copying db to hono-api...');
 // Clean up existing directories if they exist
-if (fs.existsSync(`${honoApiNodeModulesDir}/db`)) {
-  execSync(`rm -rf ${honoApiNodeModulesDir}/db`, { stdio: 'inherit' });
+if (fs.existsSync(`${honoApiNodeModulesCbalDir}/db`)) {
+  execSync(`rm -rf ${honoApiNodeModulesCbalDir}/db`, { stdio: 'inherit' });
 }
 // Create directories and copy files
-execSync(`mkdir -p ${honoApiNodeModulesDir}/db/dist`, { stdio: 'inherit' });
-execSync(`cp -r ${dbDir}/dist/* ${honoApiNodeModulesDir}/db/dist/`, { stdio: 'inherit' });
-execSync(`cp ${dbDir}/package.json ${honoApiNodeModulesDir}/db/`, { stdio: 'inherit' });
+execSync(`mkdir -p ${honoApiNodeModulesCbalDir}/db/dist`, { stdio: 'inherit' });
+execSync(`cp -r ${dbDir}/dist/* ${honoApiNodeModulesCbalDir}/db/dist/`, { stdio: 'inherit' });
+execSync(`cp ${dbDir}/package.json ${honoApiNodeModulesCbalDir}/db/`, { stdio: 'inherit' });
+
+// Copy aws-utils to hono-api
+console.log('Copying aws-utils to hono-api...');
+// Clean up existing directories if they exist
+if (fs.existsSync(`${honoApiNodeModulesDir}/aws-utils`)) {
+  execSync(`rm -rf ${honoApiNodeModulesDir}/aws-utils`, { stdio: 'inherit' });
+}
+// Create directories and copy files
+execSync(`mkdir -p ${honoApiNodeModulesDir}/aws-utils/dist`, { stdio: 'inherit' });
+execSync(`cp -r ${awsUtilsDir}/dist/* ${honoApiNodeModulesDir}/aws-utils/dist/`, { stdio: 'inherit' });
+execSync(`cp ${awsUtilsDir}/package.json ${honoApiNodeModulesDir}/aws-utils/`, { stdio: 'inherit' });
 
 console.log('Done!');
