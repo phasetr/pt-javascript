@@ -149,14 +149,10 @@ export class ApiClient {
 	// Get a Todo by ID
 	async getTodoById(id: string): Promise<Todo> {
 		await this.ensureInitialized();
-
-		try {
-			const response = await this.client.get(`/api/todos/${id}`);
-			return response.data as Todo;
-		} catch (error) {
-			console.error(`Error getting todo ${id}:`, error);
-			throw error;
-		}
+		
+		// エラーログを出力せずに直接結果を返す
+		const response = await this.client.get(`/api/todos/${id}`);
+		return response.data as Todo;
 	}
 
 	// Update a Todo

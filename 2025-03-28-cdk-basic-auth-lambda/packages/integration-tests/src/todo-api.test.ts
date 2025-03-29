@@ -1,12 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { apiClient, type Todo, type CreateTodoRequest, type UpdateTodoRequest } from './api-client.js';
 import { getEnvironment } from 'aws-utils';
 import { getApiUrl } from './config.js';
-
-// 現在の環境を取得
-const currentEnv = getEnvironment(process.env.NODE_ENV);
-// ローカル環境かどうかを判定
-const isLocalEnv = currentEnv === 'local';
 
 // Test user ID
 const TEST_USER_ID = 'test-user-123';
@@ -22,19 +17,34 @@ const createTodoData: CreateTodoRequest = {
 // Store created todo for later tests
 let createdTodo: Todo;
 
+// コンソール出力を抑制する
+const originalConsoleError = console.error;
+const originalConsoleLog = console.log;
+const originalConsoleWarn = console.warn;
+
 describe('Todo API Integration Tests', () => {
+  // テスト前にコンソール出力を抑制
   beforeAll(async () => {
-    console.log(`Running tests in ${getEnvironment(process.env.NODE_ENV)} environment`);
+    // コンソール出力を抑制
+    console.error = () => {};
+    console.log = () => {};
+    console.warn = () => {};
     
-    // 非ローカル環境の場合はAPI URLを表示
+    // 非ローカル環境の場合はAPI URLを取得
     if (getEnvironment(process.env.NODE_ENV) !== 'local') {
       try {
-        const apiUrl = await getApiUrl();
-        console.log(`Using API URL: ${apiUrl}`);
+        await getApiUrl();
       } catch (error) {
-        console.warn('Failed to get API URL:', error);
+        // エラーは無視
       }
     }
+  });
+  
+  // テスト後にコンソール出力を元に戻す
+  afterEach(() => {
+    console.error = originalConsoleError;
+    console.log = originalConsoleLog;
+    console.warn = originalConsoleWarn;
   });
 
   it('should create a new todo', async () => {
@@ -53,8 +63,6 @@ describe('Todo API Integration Tests', () => {
     expect(response.todo.dueDate).toBe(createTodoData.dueDate);
     expect(response.todo.createdAt).toBeDefined();
     expect(response.todo.updatedAt).toBeDefined();
-    
-    console.log('Created Todo:', response.todo);
   });
 
   it('should get todos by user ID', async () => {
@@ -68,8 +76,6 @@ describe('Todo API Integration Tests', () => {
     const foundTodo = todos.find(todo => todo.id === createdTodo.id);
     expect(foundTodo).toBeDefined();
     expect(foundTodo?.title).toBe(createTodoData.title);
-    
-    console.log('Found Todos:', todos.length);
   });
 
   it('should get a todo by ID', async () => {
@@ -81,8 +87,6 @@ describe('Todo API Integration Tests', () => {
     expect(todo.userId).toBe(createTodoData.userId);
     expect(todo.title).toBe(createTodoData.title);
     expect(todo.completed).toBe(createTodoData.completed);
-    
-    console.log('Retrieved Todo:', todo);
   });
 
   it('should update a todo', async () => {
@@ -99,8 +103,6 @@ describe('Todo API Integration Tests', () => {
     expect(updatedTodo.title).toBe(updateData.title);
     expect(updatedTodo.completed).toBe(updateData.completed);
     expect(updatedTodo.updatedAt).not.toBe(createdTodo.updatedAt);
-    
-    console.log('Updated Todo:', updatedTodo);
   });
 
   it('should delete a todo', async () => {
@@ -110,20 +112,39 @@ describe('Todo API Integration Tests', () => {
     expect(response).toBeDefined();
     expect(response.message).toBe('Todo deleted successfully');
     
-    console.log('Delete Response:', response);
-    
     // Verify the todo is deleted by trying to get it (should throw an error)
     try {
       await apiClient.getTodoById(createdTodo.id);
       // If we get here, the todo was not deleted
       expect(true).toBe(false); // This will fail the test
     } catch (error) {
-      // Expected error
+      // Expected error - 404 Not Found
       expect(error).toBeDefined();
+      
+      // Check if it's an Axios error with status 404
+      // Type guard for Axios error
+      if (
+        error && 
+        typeof error === 'object' && 
+        'response' in error && 
+        error.response && 
+        typeof error.response === 'object' && 
+        'status' in error.response
+      ) {
+        expect(error.response.status).toBe(404);
+        
+        // データプロパティの存在を確認
+        if (
+          'data' in error.response && 
+          error.response.data && 
+          typeof error.response.data === 'object'
+        ) {
+          // エラーメッセージを検証
+          if ('error' in error.response.data) {
+            expect(error.response.data.error).toBe('Todo not found');
+          }
+        }
+      }
     }
-  });
-
-  afterAll(() => {
-    console.log('Tests completed');
   });
 });
