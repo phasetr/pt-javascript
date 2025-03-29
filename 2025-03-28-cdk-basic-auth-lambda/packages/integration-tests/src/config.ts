@@ -41,7 +41,7 @@ import { getApiUrlFromCloudFormation, getAuthCredentials, getApiUrl as getAwsApi
 
 // Get configuration for current environment
 export const getConfig = async (): Promise<ApiConfig> => {
-	const env = getEnvironment();
+	const env = getEnvironment(process.env.NODE_ENV);
 
 	// 環境に応じた認証情報を取得
 	if (env === "local") {
@@ -85,7 +85,7 @@ export const getConfig = async (): Promise<ApiConfig> => {
 
 // Update API URL in config
 export const updateApiUrl = (url: string): void => {
-	const env = getEnvironment();
+	const env = getEnvironment(process.env.NODE_ENV);
 	if (env !== "local") {
 		config[env].baseUrl = url;
 	}
@@ -93,7 +93,7 @@ export const updateApiUrl = (url: string): void => {
 
 // Get API URL for current environment
 export const getApiUrl = async (): Promise<string> => {
-	const env = getEnvironment();
+	const env = getEnvironment(process.env.NODE_ENV);
 	console.log(`Getting API URL for environment: ${env}`);
 
 	// ローカル環境の場合は設定ファイルのURLを使用

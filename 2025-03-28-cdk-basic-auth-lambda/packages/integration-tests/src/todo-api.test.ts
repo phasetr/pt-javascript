@@ -4,7 +4,7 @@ import { getEnvironment } from 'aws-utils';
 import { getApiUrl } from './config.js';
 
 // 現在の環境を取得
-const currentEnv = getEnvironment();
+const currentEnv = getEnvironment(process.env.NODE_ENV);
 // ローカル環境かどうかを判定
 const isLocalEnv = currentEnv === 'local';
 
@@ -24,10 +24,10 @@ let createdTodo: Todo;
 
 describe('Todo API Integration Tests', () => {
   beforeAll(async () => {
-    console.log(`Running tests in ${getEnvironment()} environment`);
+    console.log(`Running tests in ${getEnvironment(process.env.NODE_ENV)} environment`);
     
     // 非ローカル環境の場合はAPI URLを表示
-    if (getEnvironment() !== 'local') {
+    if (getEnvironment(process.env.NODE_ENV) !== 'local') {
       try {
         const apiUrl = await getApiUrl();
         console.log(`Using API URL: ${apiUrl}`);

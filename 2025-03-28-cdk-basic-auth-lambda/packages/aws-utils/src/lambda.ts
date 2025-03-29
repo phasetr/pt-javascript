@@ -8,7 +8,7 @@ import { getEnvironment } from "./config.js";
  */
 export async function getLambdaUrl(functionName?: string): Promise<string> {
 	// 環境に応じたLambda関数名を生成
-	const environment = getEnvironment();
+	const environment = getEnvironment(process.env.NODE_ENV);
 	const prefix = "CBAL";
 	const defaultFunctionName = `${prefix}-${environment}-HonoDockerImageFunction`;
 

@@ -5,7 +5,7 @@ import { getApiUrl } from './config.js';
 
 async function checkApiConnection() {
   try {
-    const environment = getEnvironment();
+    const environment = getEnvironment(process.env.NODE_ENV);
     console.log(`Testing API connection in ${environment} environment...`);
     
     // ローカル環境以外の場合はAPI URLを動的に取得

@@ -10,7 +10,7 @@ import { getLambdaUrl } from "./lambda.js";
 export async function getApiUrl(
 	baseUrl = "http://localhost:3000",
 ): Promise<string> {
-	const environment = getEnvironment();
+	const environment = getEnvironment(process.env.NODE_ENV);
 
 	// ローカル環境の場合は設定ファイルのURLを使用
 	if (environment === "local") {

@@ -128,9 +128,15 @@ export class ApiClient {
 				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
 			};
 
-			// 正しいJSONデータを手動で作成
-			const validJsonData = `{"userId":"${todo.userId}","title":"${todo.title}","completed":${todo.completed}${todo.dueDate ? `,"dueDate":"${todo.dueDate}"` : ''}}`;
-			console.log(`Using manually created JSON data: ${validJsonData}`);
+			// JSONデータをオブジェクトとして作成し、JSON.stringifyを使用して正しいJSONを生成
+			const todoDataObj = {
+				userId: todo.userId,
+				title: todo.title,
+				completed: todo.completed,
+				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
+			};
+			const correctJsonData = JSON.stringify(todoDataObj);
+			console.log(`Using correctly formatted JSON data: ${correctJsonData}`);
 			
 			// Content-Typeヘッダーを明示的に設定
 			const headers = {
@@ -145,7 +151,7 @@ export class ApiClient {
 
 			const response = await this.client.post<CreateTodoResponse>(
 				"/api/todos",
-				validJsonData, // 手動で作成したJSON文字列を送信
+				correctJsonData, // 正しく整形されたJSON文字列を送信
 				configWithHeaders,
 			);
 			return response.data;

@@ -10,7 +10,7 @@ export async function getApiUrlFromCloudFormation(
 	stackName?: string,
 ): Promise<string> {
 	// 環境に応じたスタック名を生成
-	const environment = getEnvironment();
+	const environment = getEnvironment(process.env.NODE_ENV);
 	const defaultStackName = `CbalStack-${environment}`;
 
 	// 引数でスタック名が指定されていない場合はデフォルト値を使用
@@ -95,7 +95,7 @@ export async function getApiUrlFromCloudFormation(
  */
 export async function getStackInfo(stackName?: string) {
   // 環境に応じたスタック名を生成
-  const environment = getEnvironment();
+  const environment = getEnvironment(process.env.NODE_ENV);
   const defaultStackName = `CbalStack-${environment}`;
 
   // 引数でスタック名が指定されていない場合はデフォルト値を使用

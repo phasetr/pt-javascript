@@ -6,7 +6,7 @@ vi.mock('./config.js', async () => {
   const actual = await vi.importActual('./config.js');
   return {
     ...actual,
-    getEnvironment: vi.fn().mockReturnValue('dev')
+    getEnvironment: vi.fn().mockImplementation((nodeEnv?: string) => 'dev')
   };
 });
 
@@ -76,13 +76,46 @@ describe('AWS Utils', () => {
   beforeAll(() => {
     // 環境変数のモック
     process.env.AWS_REGION = 'ap-northeast-1';
-    process.env.TEST_ENV = 'dev';
+    process.env.NODE_ENV = 'development';
   });
 
   describe('getEnvironment', () => {
-    it('should return the current environment', () => {
-      const env = getEnvironment();
+    it('should return the current environment based on NODE_ENV', () => {
+      const env = getEnvironment(process.env.NODE_ENV);
       expect(env).toBe('dev');
+    });
+
+    it('should return the environment from provided parameter', () => {
+      const env = getEnvironment('production');
+      expect(env).toBe('prod');
+    });
+
+    it('should return default environment when invalid value is provided', () => {
+      // @ts-ignore - 意図的に無効な値を渡す
+      const env = getEnvironment('invalid');
+      expect(env).toBe('local');
+    });
+
+    it('should use NODE_ENV to determine environment', () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      
+      // NODE_ENVを設定
+      process.env.NODE_ENV = 'production';
+      
+      // モックを一時的に元の実装に戻す
+      vi.mocked(getEnvironment).mockRestore();
+      
+      // 実際の関数をインポート
+      const { getEnvironment: actualGetEnvironment } = require('./config.js');
+      
+      const env = actualGetEnvironment('production');
+      expect(env).toBe('prod');
+      
+      // 環境変数を元に戻す
+      process.env.NODE_ENV = originalNodeEnv;
+      
+      // モックを再設定
+      vi.mocked(getEnvironment).mockImplementation((nodeEnv?: string) => 'dev');
     });
   });
 

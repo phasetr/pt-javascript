@@ -13,7 +13,7 @@ export async function getAuthCredentials(
 	secretName?: string,
 ): Promise<{ username: string; password: string }> {
 	// 環境に応じたシークレット名を生成
-	const environment = getEnvironment();
+	const environment = getEnvironment(process.env.NODE_ENV);
 	const defaultSecretName = `CBAL-${environment}/BasicAuth`;
 
 	// 引数でシークレット名が指定されていない場合はデフォルト値を使用
