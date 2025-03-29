@@ -14,6 +14,11 @@ import { renderToPipeableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5_000;
 
+// Basic認証の設定
+const AUTH_USERNAME = "admin";
+const AUTH_PASSWORD = "secret";
+const expectedAuth = `Basic ${Buffer.from(`${AUTH_USERNAME}:${AUTH_PASSWORD}`).toString("base64")}`;
+
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -24,6 +29,17 @@ export default function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext
 ) {
+  // Basic認証のチェック
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader || authHeader !== expectedAuth) {
+    return new Response("Unauthorized", {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": 'Basic realm="Protected Area"',
+      },
+    });
+  }
+
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
         request,
@@ -74,7 +90,7 @@ function handleBotRequest(
           reject(error);
         },
         onError(error: unknown) {
-          responseStatusCode = 500;
+          const newStatusCode = 500;
           // Log streaming rendering errors from inside the shell.  Don't log
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
@@ -124,7 +140,7 @@ function handleBrowserRequest(
           reject(error);
         },
         onError(error: unknown) {
-          responseStatusCode = 500;
+          const newStatusCode = 500;
           // Log streaming rendering errors from inside the shell.  Don't log
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.
