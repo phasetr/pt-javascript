@@ -1,5 +1,5 @@
 import { PutCommand, QueryCommand, DeleteCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { docClient, getTableName, getIndexName } from "../client";
+import { docClient, getTableName, getIndexName } from "../client.js";
 import { randomUUID } from "node:crypto";
 
 // Todo型の定義
