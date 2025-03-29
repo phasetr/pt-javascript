@@ -11,7 +11,11 @@
     "test:connection": "tsx src/test-connection.ts",
     "test:connection:local": "NODE_ENV=local tsx src/test-connection.ts",
     "test:connection:dev": "NODE_ENV=development tsx src/test-connection.ts",
-    "test:connection:prod": "NODE_ENV=production tsx src/test-connection.ts"
+    "test:connection:prod": "NODE_ENV=production tsx src/test-connection.ts",
+    "test:aws-utils": "vitest run aws-utils.test.ts",
+    "test:aws-utils:local": "NODE_ENV=local vitest run aws-utils.test.ts",
+    "test:aws-utils:dev": "NODE_ENV=development vitest run aws-utils.test.ts",
+    "test:aws-utils:prod": "NODE_ENV=production vitest run aws-utils.test.ts"
   },
   "dependencies": {
     "aws-utils": "workspace:*",
