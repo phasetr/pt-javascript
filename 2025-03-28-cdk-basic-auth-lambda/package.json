@@ -5,38 +5,35 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    
+
     "# === 単体テストコマンド ===": "",
     "test:u": "pnpm -r test",
     "test:u:aws-utils": "pnpm --filter aws-utils test",
     "test:u:db": "pnpm --filter db test",
-    "test:u:integration-tests": "pnpm --filter integration-tests test",
     "test:u:cbal": "pnpm --filter cbal test",
     "test:u:watch": "pnpm -r test:watch",
     "test:u:aws-utils:watch": "pnpm --filter aws-utils test:watch",
-    "test:u:integration-tests:watch": "pnpm --filter integration-tests test:watch",
     "test:u:coverage": "pnpm -r test:coverage",
     "test:u:aws-utils:coverage": "pnpm --filter aws-utils test:coverage",
-    "test:u:integration-tests:coverage": "pnpm --filter integration-tests test:coverage",
-    
+
     "# === ローカル開発環境コマンド ===": "",
     "local:start": "pnpm db:start && pnpm api:start",
     "local:stop": "pnpm api:stop || true && pnpm db:stop",
     "local:restart": "pnpm local:stop && pnpm local:start",
     "local:logs": "pnpm api:logs",
     "local:status": "pnpm api:status",
-    
+
     "# === 結合テストコマンド ===": "",
     "test:i:local": "# ローカル環境でのテスト実行（事前に pnpm local:start を実行してください）\npnpm --filter integration-tests test:connection:local && pnpm --filter integration-tests test:local",
     "test:i:dev": "# 開発環境でのテスト実行\npnpm --filter integration-tests test:connection:dev && pnpm --filter integration-tests test:dev",
     "test:i:prod": "# 本番環境でのテスト実行\npnpm --filter integration-tests test:connection:prod && pnpm --filter integration-tests test:prod",
-    
+
     "# === デプロイコマンド ===": "",
     "deploy:dev": "pnpm build && pnpm prepare:deploy && pnpm --filter cbal deploy:dev",
     "deploy:prod": "pnpm build && pnpm prepare:deploy && pnpm --filter cbal deploy:prod",
     "destroy:dev": "pnpm --filter cbal destroy:dev",
     "destroy:prod": "pnpm --filter cbal destroy:prod",
-    
+
     "# === 内部コマンド（直接実行しないでください） ===": "",
     "prepare:deploy": "node scripts/prepare-deploy.js",
     "db:start": "docker compose up -d dynamodb-local dynamodb-admin",
