@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, { type AxiosInstance } from "axios";
 import { getConfig, updateApiUrl, getApiUrl } from "./config.js";
 
 // Todo type definition
@@ -120,17 +120,18 @@ export class ApiClient {
 		);
 
 		try {
-			// JSONデータを手動で構築して、カンマが正しく含まれるようにする
-			// オブジェクトを文字列化する前に、各プロパティの間にカンマを追加する
-			const todoStr = `{
-        "userId": "${todo.userId}",
-        "title": "${todo.title}",
-        "completed": ${todo.completed},
-        "dueDate": "${todo.dueDate || ""}"
-      }`;
+			// JSONデータを直接オブジェクトとして送信
+			const todoData = {
+				userId: todo.userId,
+				title: todo.title,
+				completed: todo.completed,
+				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
+			};
 
-			console.log(`Sending JSON data: ${todoStr}`);
-
+			// 正しいJSONデータを手動で作成
+			const validJsonData = `{"userId":"${todo.userId}","title":"${todo.title}","completed":${todo.completed}${todo.dueDate ? `,"dueDate":"${todo.dueDate}"` : ''}}`;
+			console.log(`Using manually created JSON data: ${validJsonData}`);
+			
 			// Content-Typeヘッダーを明示的に設定
 			const headers = {
 				"Content-Type": "application/json",
@@ -144,7 +145,7 @@ export class ApiClient {
 
 			const response = await this.client.post<CreateTodoResponse>(
 				"/api/todos",
-				todoStr,
+				validJsonData, // 手動で作成したJSON文字列を送信
 				configWithHeaders,
 			);
 			return response.data;
@@ -242,19 +243,20 @@ export class ApiClient {
 		};
 
 		try {
-			// JSONデータを手動で構築して、カンマが正しく含まれるようにする
-			// オブジェクトを文字列化する前に、各プロパティの間にカンマを追加する
-			const todoStr = `{
-        ${todo.title ? `"title": "${todo.title}",` : ""}
-        ${todo.completed !== undefined ? `"completed": ${todo.completed},` : ""}
-        ${todo.dueDate ? `"dueDate": "${todo.dueDate}"` : ""}
-      }`.replace(/,\s*}/g, "}"); // 最後のカンマを削除
+			// JSONデータを直接オブジェクトとして送信
+			const todoData = {
+				...(todo.title ? { title: todo.title } : {}),
+				...(todo.completed !== undefined ? { completed: todo.completed } : {}),
+				...(todo.dueDate ? { dueDate: todo.dueDate } : {})
+			};
 
-			console.log(`Sending JSON data for update: ${todoStr}`);
+			// JSONデータをJSON文字列に変換
+			const jsonData = JSON.stringify(todoData);
+			console.log(`Sending JSON data for update: ${jsonData}`);
 
 			const response = await this.client.put<Todo>(
 				`/api/todos/${id}`,
-				todoStr,
+				jsonData, // JSON文字列を送信
 				requestConfig,
 			);
 			return response.data;

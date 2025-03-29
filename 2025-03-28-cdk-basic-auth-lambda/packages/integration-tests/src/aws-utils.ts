@@ -38,15 +38,47 @@ export async function getApiUrlFromCloudFormation(
 		if (stack?.Outputs) {
 			// API Endpointの出力を検索
 			// 出力キーは「CBALdevApiEndpoint」のような形式
+			console.log(`Searching for API endpoint in stack outputs for environment: ${environment}`);
+			console.log("Stack outputs:", JSON.stringify(stack.Outputs, null, 2));
+			
+			// 環境に応じた出力キーを検索
 			const apiEndpointOutput = stack.Outputs.find(
-				(output) =>
-					output.OutputKey === `CBAL${environment}ApiEndpoint` ||
-					output.OutputKey?.includes("ApiEndpoint") ||
-					output.Description?.includes("API Gateway endpoint URL"),
+				(output) => {
+					const isMatch = 
+						output.OutputKey === `CBAL${environment}ApiEndpoint` ||
+						output.OutputKey?.includes("ApiEndpoint") ||
+						output.Description?.includes("API Gateway endpoint URL");
+					
+					console.log(`Checking output key: ${output.OutputKey} match: ${isMatch}`);
+					return isMatch;
+				}
 			);
 
 			if (apiEndpointOutput?.OutputValue) {
-				return apiEndpointOutput.OutputValue;
+				console.log(`Found API endpoint: ${apiEndpointOutput.OutputValue}`);
+				// APIエンドポイントが見つかった場合、環境に応じたパスを追加
+				let apiUrl = apiEndpointOutput.OutputValue;
+				// URLの末尾が/で終わっていない場合は追加
+				if (!apiUrl.endsWith('/')) {
+					apiUrl += '/';
+				}
+				
+				// 環境に応じたパスを追加（例: prod/ -> dev/）
+				// 注意: API GatewayのURLは常に/prod/を含む可能性があるため、環境に応じて置換する
+				if (environment === 'dev') {
+					// dev環境の場合、/prod/を/dev/に置換
+					apiUrl = apiUrl.replace('/prod/', '/dev/');
+					console.log(`Modified API URL for dev environment: ${apiUrl}`);
+				} else if (environment === 'prod') {
+					// prod環境の場合、/dev/を/prod/に置換（念のため）
+					if (apiUrl.includes('/dev/')) {
+						apiUrl = apiUrl.replace('/dev/', '/prod/');
+						console.log(`Modified API URL for prod environment: ${apiUrl}`);
+					}
+				}
+				
+				console.log(`Found API URL in CloudFormation: ${apiUrl}`);
+				return apiUrl;
 			}
 		}
 

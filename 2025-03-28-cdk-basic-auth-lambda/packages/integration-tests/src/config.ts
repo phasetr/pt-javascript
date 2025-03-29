@@ -155,6 +155,7 @@ export const updateApiUrl = (url: string): void => {
 // Get API URL for current environment
 export const getApiUrl = async (): Promise<string> => {
 	const env = getEnvironment();
+	console.log(`Getting API URL for environment: ${env}`);
 
 	// ローカル環境の場合は設定ファイルのURLを使用
 	if (env === "local") {
@@ -163,15 +164,15 @@ export const getApiUrl = async (): Promise<string> => {
 
 	// dev/prod環境の場合はAWS SDKを使ってAPIのURLを取得
 	try {
-		const stackName =
-			env === "dev"
-				? process.env.DEV_STACK_NAME || "CbalStack-dev"
-				: process.env.PROD_STACK_NAME || "CbalStack-prod";
+		// 環境に応じたスタック名を使用
+		const stackName = `CbalStack-${env}`;
+		console.log(`Looking for API URL in CloudFormation stack: ${stackName}`);
 
 		const apiUrl = await getApiUrlFromCloudFormation(stackName);
 		if (apiUrl) {
 			// 取得したURLを設定に反映
 			config[env].baseUrl = apiUrl;
+			console.log(`Found API URL in CloudFormation: ${apiUrl}`);
 			return apiUrl;
 		}
 	} catch (error) {
@@ -179,5 +180,6 @@ export const getApiUrl = async (): Promise<string> => {
 	}
 
 	// CloudFormationからの取得に失敗した場合は設定ファイルのURLを使用
+	console.log(`Using default API URL from config: ${config[env].baseUrl}`);
 	return config[env].baseUrl;
 };
