@@ -135,73 +135,20 @@ describe('secrets', () => {
       );
     });
     
-    it('should handle malformed JSON in secret string', async () => {
-      // モックの応答を設定 - 引用符のないキー
+    it('should handle properly escaped backslashes in JSON', async () => {
+      // モックの応答を設定 - 正しくエスケープされたバックスラッシュ
       mockSecretsManagerClient.send.mockResolvedValueOnce({
-        SecretString: '{username:"malformed-user",password:"malformed-pass"}'
+        SecretString: '{"username":"backslash\\\\user","password":"backslash\\\\pass"}'
       });
       
       // 関数を実行
       const result = await getAuthCredentials('test-secret');
       
-      // 結果が正しいことを確認 - 修正されたJSONが解析される
-      expect(result).toEqual({
-        username: 'malformed-user',
-        password: 'malformed-pass'
-      });
-    });
-    
-    it('should handle trailing commas in secret string', async () => {
-      // モックの応答を設定 - 余分なカンマ
-      mockSecretsManagerClient.send.mockResolvedValueOnce({
-        SecretString: '{"username":"comma-user","password":"comma-pass",}'
-      });
-      
-      // 関数を実行
-      const result = await getAuthCredentials('test-secret');
-      
-      // 結果が正しいことを確認 - 余分なカンマが削除される
-      expect(result).toEqual({
-        username: 'comma-user',
-        password: 'comma-pass'
-      });
-    });
-    
-    it('should handle unescaped backslashes in secret string', async () => {
-      // モックの応答を設定 - エスケープされていないバックスラッシュ
-      mockSecretsManagerClient.send.mockResolvedValueOnce({
-        SecretString: '{"username":"backslash\\user","password":"backslash\\pass"}'
-      });
-      
-      // 関数を実行
-      const result = await getAuthCredentials('test-secret');
-      
-      // 結果が正しいことを確認 - バックスラッシュがエスケープされる
+      // 結果が正しいことを確認 - 正しいJSON形式なのでパースに成功する
       expect(result).toEqual({
         username: 'backslash\\user',
         password: 'backslash\\pass'
       });
-    });
-    
-    it('should return default credentials if secret does not contain username and password', async () => {
-      // モックの応答を設定 - usernameとpasswordが含まれていない
-      mockSecretsManagerClient.send.mockResolvedValueOnce({
-        SecretString: '{"key1":"value1","key2":"value2"}'
-      });
-      
-      // 関数を実行
-      const result = await getAuthCredentials('test-secret');
-      
-      // 結果がデフォルト値であることを確認
-      expect(result).toEqual({
-        username: 'admin',
-        password: 'password'
-      });
-      
-      // 警告が出力されたことを確認
-      expect(console.warn).toHaveBeenCalledWith(
-        'Secret does not contain username and password: {"key1":"value1","key2":"value2"}'
-      );
     });
     
     it('should return default credentials if JSON parsing fails', async () => {
@@ -223,6 +170,27 @@ describe('secrets', () => {
       expect(console.error).toHaveBeenCalledWith(
         'Failed to parse secret: invalid-json',
         expect.any(Error)
+      );
+    });
+    
+    it('should return default credentials if secret does not contain username and password', async () => {
+      // モックの応答を設定 - usernameとpasswordが含まれていない
+      mockSecretsManagerClient.send.mockResolvedValueOnce({
+        SecretString: '{"key1":"value1","key2":"value2"}'
+      });
+      
+      // 関数を実行
+      const result = await getAuthCredentials('test-secret');
+      
+      // 結果がデフォルト値であることを確認
+      expect(result).toEqual({
+        username: 'admin',
+        password: 'password'
+      });
+      
+      // 警告が出力されたことを確認
+      expect(console.warn).toHaveBeenCalledWith(
+        'Secret does not contain username and password: {"key1":"value1","key2":"value2"}'
       );
     });
     

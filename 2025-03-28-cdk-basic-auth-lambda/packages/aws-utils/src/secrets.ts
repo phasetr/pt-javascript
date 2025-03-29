@@ -38,16 +38,8 @@ export async function getAuthCredentials(
 
 		if (response.SecretString) {
 			try {
-				// JSONの形式が正しくない場合があるため、エラーハンドリングを追加
-				const secretString = response.SecretString.replace(
-					/([{,])([^,:{}"]+):/g,
-					'$1"$2":',
-				) // キーを引用符で囲む
-					.replace(/,(?=\s*[},])/g, "") // 余分なカンマを削除
-					.replace(/([^\\])\\([^\\"])/g, "$1\\\\$2") // エスケープされていないバックスラッシュをエスケープ
-					.replace(/(["}])(["{])/g, '$1,$2'); // 値と次のキーの間にカンマを追加
-
-				const secret = JSON.parse(secretString);
+				// 正しいJSON形式が前提
+				const secret = JSON.parse(response.SecretString);
 				if (secret.username && secret.password) {
 					console.log(
 						`Using credentials from Secrets Manager: ${secret.username}:${secret.password}`,
@@ -58,7 +50,7 @@ export async function getAuthCredentials(
 					};
 				}
 				console.warn(
-					`Secret does not contain username and password: ${secretString}`,
+					`Secret does not contain username and password: ${response.SecretString}`,
 				);
 				// デフォルト値を返す
 				return {
