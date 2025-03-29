@@ -1,5 +1,6 @@
 {
   "auto_approve_commands": [
+    "cd",
     "npm",
     "pnpm",
     "node",
