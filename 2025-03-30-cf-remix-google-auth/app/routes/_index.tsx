@@ -61,8 +61,8 @@ export default function Index() {
           </Form>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">または</p>
-            <button
-              type="button"
+            <Link
+              to="/auth/google"
               className="mt-2 inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-labelledby="googleIconTitle">
@@ -86,7 +86,7 @@ export default function Index() {
                 <path d="M1 1h22v22H1z" fill="none" />
               </svg>
               Googleでログイン
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -112,6 +112,14 @@ export default function Index() {
                 className="block rounded-md bg-gray-100 p-3 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
                 認証ページ2
+              </Link>
+            </li>
+            <li className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+              <Link
+                to="/test"
+                className="block rounded-md bg-green-100 p-3 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30"
+              >
+                テストページ（認証なし）
               </Link>
             </li>
           </ul>

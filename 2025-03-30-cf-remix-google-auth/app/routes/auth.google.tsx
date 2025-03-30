@@ -13,7 +13,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const sessionStorage = createCloudflareSessionStorage(env);
   
   // 認証インスタンスを作成
-  const authenticator = createAuthenticator(env, sessionStorage);
+  const authenticator = createAuthenticator(sessionStorage, env);
   
   // リダイレクト先を取得
   const url = new URL(request.url);

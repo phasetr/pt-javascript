@@ -25,7 +25,7 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export default function App() {
   const location = useLocation();
   
   return (
@@ -99,15 +99,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="container mx-auto px-4 py-8">
-          {children}
+          <Outlet />
         </main>
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
   );
-}
-
-export default function App() {
-  return <Outlet />;
 }
