@@ -36,8 +36,10 @@ CRGA(Cloudflare Remix Google Auth)
    常に表示されるメニューにログイン・ログアウトリンクがあるとする.
    ログイン用の記録保持で必要ならD1を設定して利用する.
 3. `Remix`にGoogle認証を追加する。
+   <steps/2025-03-30-1332-step4.md>に沿ってGoogle Cloudのコンソールでプロジェクト設定する。
 4. ローカル・サーバー双方でGoogle認証の動作を確認
 5. Cloudflare上の環境を削除
+6. Google Cloudのプロジェクトを削除
 
 ### 自分用(都度消す)
 
@@ -52,6 +54,7 @@ cloudflare用
 mkdir <proj-name>
 cd <proj-name>
 npm create cloudflare@latest -- --framework=remix
+wrangler dev
 ```
 
 `wrangler.toml`を書き換えたら次のコマンドを実行
