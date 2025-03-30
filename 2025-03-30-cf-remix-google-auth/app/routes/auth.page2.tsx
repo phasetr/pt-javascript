@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { json, redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import { createAuthenticator } from "~/utils/auth.server";
-import { createCloudflareSessionStorage } from "~/utils/session.server";
+import { createAuthenticator, requireUser } from "~/utils/auth.server";
+import { createCloudflareSessionStorage, getSession } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,16 +12,13 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  // セッションストレージを作成
-  const env = context.env as Record<string, string>;
-  const sessionStorage = createCloudflareSessionStorage(env);
-  
-  // 認証インスタンスを作成
-  const authenticator = createAuthenticator(env, sessionStorage);
-  
   try {
-    // 認証状態をチェック
-    const user = await authenticator.authenticate("google", request);
+    // セッションストレージを作成
+    const env = context.env as Record<string, string>;
+    const sessionStorage = createCloudflareSessionStorage(env);
+    
+    // ユーザーが認証されているか確認
+    const user = await requireUser(request, sessionStorage);
     
     // 認証済みユーザーのデータを返す
     return json({
@@ -54,9 +51,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       ]
     });
   } catch (error) {
-    // 認証されていない場合はログインページにリダイレクト
+    // エラーが発生した場合はログインページにリダイレクト
+    console.error("認証ページ2でエラーが発生しました:", error);
     const searchParams = new URLSearchParams([
       ["redirectTo", request.url],
+      ["error", error instanceof Error ? error.message : "認証中にエラーが発生しました。"]
     ]);
     return redirect(`/login?${searchParams}`);
   }

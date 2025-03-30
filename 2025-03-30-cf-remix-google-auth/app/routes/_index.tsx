@@ -103,7 +103,7 @@ export default function Index() {
                 to="/auth/page1"
                 className="block rounded-md bg-gray-100 p-3 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
-                認証ページ1
+                認証ページ1（ダッシュボード）
               </Link>
             </li>
             <li>
@@ -111,7 +111,7 @@ export default function Index() {
                 to="/auth/page2"
                 className="block rounded-md bg-gray-100 p-3 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
-                認証ページ2
+                認証ページ2（アクティビティ）
               </Link>
             </li>
             <li className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
