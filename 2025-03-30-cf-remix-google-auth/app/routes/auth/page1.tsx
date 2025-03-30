@@ -1,5 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
+import { json, redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
+import { createAuthenticator } from "~/utils/auth.server";
+import { createCloudflareSessionStorage } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,25 +11,34 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  // ここで認証状態をチェックし、認証されていない場合はリダイレクト
-  // 現段階では実装しないため、認証されているものとして扱う
-  // ステップ3で実装予定
-
-  // 認証済みユーザーのデータを返す（仮のデータ）
-  return Response.json({
-    user: {
-      id: "user_123",
-      name: "テストユーザー",
-      email: "test@example.com",
-      avatarUrl: "https://ui-avatars.com/api/?name=テスト+ユーザー&background=0D8ABC&color=fff",
-    },
-    pageData: {
-      title: "認証ページ1",
-      content: "このページは認証が必要なコンテンツです。ログインしているユーザーのみがアクセスできます。",
-      timestamp: new Date().toISOString(),
-    }
-  });
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // セッションストレージを作成
+  const env = context.env as Record<string, string>;
+  const sessionStorage = createCloudflareSessionStorage(env);
+  
+  // 認証インスタンスを作成
+  const authenticator = createAuthenticator(env, sessionStorage);
+  
+  try {
+    // 認証状態をチェック
+    const user = await authenticator.authenticate("google", request);
+    
+    // 認証済みユーザーのデータを返す
+    return json({
+      user,
+      pageData: {
+        title: "認証ページ1",
+        content: "このページは認証が必要なコンテンツです。ログインしているユーザーのみがアクセスできます。",
+        timestamp: new Date().toISOString(),
+      }
+    });
+  } catch (error) {
+    // 認証されていない場合はログインページにリダイレクト
+    const searchParams = new URLSearchParams([
+      ["redirectTo", request.url],
+    ]);
+    return redirect(`/login?${searchParams}`);
+  }
 }
 
 export default function AuthPage1() {
@@ -40,7 +52,7 @@ export default function AuthPage1() {
         </h1>
         <div className="flex items-center space-x-4">
           <img
-            src={data.user.avatarUrl}
+            src={data.user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name)}&background=0D8ABC&color=fff`}
             alt={data.user.name}
             className="h-10 w-10 rounded-full"
           />

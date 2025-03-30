@@ -15,12 +15,15 @@
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
+		"@coji/remix-auth-google": "^4.2.0",
 		"@remix-run/cloudflare": "^2.15.3",
 		"@remix-run/react": "^2.15.3",
 		"@remix-run/server-runtime": "^2.15.3",
 		"isbot": "^4.1.0",
 		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
+		"react-dom": "^18.2.0",
+		"remix-auth": "^4.1.0",
+		"remix-auth-oauth2": "^3.4.0"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250327.0",

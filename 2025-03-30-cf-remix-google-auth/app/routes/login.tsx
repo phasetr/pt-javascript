@@ -1,6 +1,8 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { json, redirect } from "@remix-run/cloudflare";
-import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
+import { Form, Link, useActionData, useLoaderData, useNavigation, useSearchParams } from "@remix-run/react";
+import { createAuthenticator } from "~/utils/auth.server";
+import { createCloudflareSessionStorage } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,10 +11,33 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  // ここで認証状態をチェックし、すでにログインしている場合はリダイレクト
-  // 現段階では実装しない
-  return null;
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // セッションストレージを作成
+  const env = context.env as Record<string, string>;
+  const sessionStorage = createCloudflareSessionStorage(env);
+  
+  // 認証インスタンスを作成
+  const authenticator = createAuthenticator(env, sessionStorage);
+  
+  // 現在のユーザーを取得
+  try {
+    // すでにログインしている場合はホームページにリダイレクト
+    const user = await authenticator.authenticate("google", request);
+    if (user) {
+      // リダイレクト先を取得
+      const url = new URL(request.url);
+      const redirectTo = url.searchParams.get("redirectTo") || "/";
+      return redirect(redirectTo);
+    }
+  } catch (error) {
+    // 認証エラーの場合は何もしない
+  }
+  
+  // URLからエラーメッセージを取得
+  const url = new URL(request.url);
+  const errorMessage = url.searchParams.get("error");
+  
+  return json({ errorMessage });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -42,14 +67,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // 認証ロジック（実際の実装はステップ3で行う）
   // 現段階では、単純にエラーを返す
-  errors.form = "認証機能はまだ実装されていません";
+  errors.form = "メール/パスワード認証は実装されていません。Googleログインをご利用ください。";
   return json({ errors, fields: { email: typeof email === "string" ? email : "" } }, { status: 400 });
 }
 
 export default function Login() {
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/";
 
   return (
     <div className="mx-auto max-w-md">
@@ -63,6 +91,14 @@ export default function Login() {
       </div>
 
       <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        {loaderData.errorMessage ? (
+          <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/20">
+            <p className="text-sm text-red-700 dark:text-red-400">
+              {loaderData.errorMessage}
+            </p>
+          </div>
+        ) : null}
+        
         {actionData?.errors?.form ? (
           <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/20">
             <p className="text-sm text-red-700 dark:text-red-400">
@@ -145,10 +181,9 @@ export default function Login() {
           </div>
 
           <div className="mt-6">
-            <button
-              type="button"
+            <Link
+              to={`/auth/google?redirectTo=${encodeURIComponent(redirectTo)}`}
               className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-              disabled={isSubmitting}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" aria-labelledby="googleIconTitle">
                 <title id="googleIconTitle">Google logo</title>
@@ -171,7 +206,7 @@ export default function Login() {
                 <path d="M1 1h22v22H1z" fill="none" />
               </svg>
               Googleでログイン
-            </button>
+            </Link>
           </div>
         </div>
       </div>

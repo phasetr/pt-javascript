@@ -25,11 +25,17 @@ enabled = true
 
 # Environment Variables
 # https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-# [vars]
-# MY_VARIABLE = "production_value"
+[vars]
+# セッションの暗号化に使用する秘密鍵（本番環境では`wrangler secret put SESSION_SECRET`で設定する）
+SESSION_SECRET = "development_session_secret"
+# Google認証のコールバックURL
+GOOGLE_CALLBACK_URL = "http://localhost:8788/auth/google/callback"
 
 # Note: Use secrets to store sensitive data.
 # https://developers.cloudflare.com/workers/configuration/secrets/
+# 以下の環境変数は機密情報のため、secretsとして設定する必要があります
+# wrangler secret put GOOGLE_CLIENT_ID
+# wrangler secret put GOOGLE_CLIENT_SECRET
 
 # Static Assets
 # https://developers.cloudflare.com/workers/static-assets/binding/
