@@ -1,0 +1,6 @@
+SESSION_SECRET=development_session_secret
+# Google Cloud Platformで取得した実際の値に置換
+GOOGLE_CLIENT_ID=<some-value>
+GOOGLE_CLIENT_SECRET=<some-value>
+# wrangler dev利用下では下記の固定値で問題ない
+GOOGLE_CALLBACK_URL=http://localhost:8787/auth/google/callback
