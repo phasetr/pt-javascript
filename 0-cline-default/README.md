@@ -54,6 +54,20 @@ Clineへの定型文：まず.clinerulesを読んでください。
 次のステップの作業を始めてください。
 ワンステップだけ対応して、二つ以上のステップを一気に進めないでください。
 
+AWS用
+
+```sh
+corepack enable && corepack prepare pnpm@latest --activate
+asdf reshim nodejs
+pnpm -v
+pnpm init
+
+mkdir -p packages/<proj-name>
+cdk init sample-app --language typescript
+npm create hono@latest packages/hono-api
+npx create-remix@latest packages/remix
+```
+
 cloudflare用
 
 ```sh
