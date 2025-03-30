@@ -32,7 +32,8 @@ CRBA(Cloudflare Remix Basic Auth)
 1. (手動)：`cloudflare cli`で`Remix`初期化・初期リリース
 2. (手動)：`Remix`にベーシック認証を追加する。
    特にRemixのサーバーサイドエントリーポイント`entry.server.tsx`にBasic認証のコードを追加すれば良い
-3. ローカル・サーバー双方でBasic認証の動作を確認
+3. ローカル・サーバー双方でBasic認証の動作を確認（ローカルはviteととの関係でうまく動かない場合も多いため基本はサーバーで確認）
+4. Cloudflareの環境を削除
 
 ### 自分用(都度消す)
 

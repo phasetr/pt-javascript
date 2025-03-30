@@ -11,6 +11,31 @@ import { renderToReadableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5000;
 
+// Basic認証の検証関数
+function validateBasicAuth(request: Request): boolean {
+  // Authorizationヘッダーを取得
+  const authHeader = request.headers.get('Authorization');
+  
+  // Authorizationヘッダーがない場合は認証失敗
+  if (!authHeader) {
+    return false;
+  }
+  
+  // Basic認証の形式を確認
+  const [scheme, credentials] = authHeader.split(' ');
+  if (scheme !== 'Basic') {
+    return false;
+  }
+  
+  // 認証情報をデコード
+  const decoded = atob(credentials);
+  const [username, password] = decoded.split(':');
+  
+  // ユーザー名とパスワードを検証
+  // 実際の環境では環境変数や設定ファイルから取得することを推奨
+  return username === 'admin' && password === 'password';
+}
+
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -21,6 +46,16 @@ export default async function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext
 ) {
+  // Basic認証の検証
+  if (!validateBasicAuth(request)) {
+    // 認証失敗時は401レスポンスを返す
+    responseHeaders.set('WWW-Authenticate', 'Basic realm="Secure Area"');
+    return new Response('認証が必要です', {
+      status: 401,
+      headers: responseHeaders,
+    });
+  }
+  
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), ABORT_DELAY);
 

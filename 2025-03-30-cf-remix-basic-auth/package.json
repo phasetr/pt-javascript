@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "remix vite:build",
+    "delete": "wrangler delete",
 		"deploy": "npm run build && wrangler deploy",
 		"dev": "remix vite:dev",
 		"lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
