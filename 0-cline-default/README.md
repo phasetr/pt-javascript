@@ -66,6 +66,12 @@ npm create hono@latest packages/hono-api
 npx create-remix@latest packages/remix
 ```
 
+```sh
+mkdir <proj-name>
+cd <proj-name>
+npm create cloudflare@latest -- --framework=remix
+```
+
 ## `cline/roomodes`更新時の対処
 
 `.cline/roomodes`内の`deno`の記述を適切な形で`node.js`・`npm`前提の記述に書き換え,
