@@ -6,7 +6,7 @@ const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
 // セッションストレージの作成
 export function createCloudflareSessionStorage(
-  env: Record<string, string>
+  env?: Record<string, string>
 ): SessionStorage {
   return createCookieSessionStorage({
     cookie: {
