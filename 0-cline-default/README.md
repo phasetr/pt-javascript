@@ -59,3 +59,7 @@ npm run typegen
 ```sh
 npm run deploy
 ```
+
+```sh
+wrangler delete
+```
