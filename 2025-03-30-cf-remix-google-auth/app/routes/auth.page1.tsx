@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { json, redirect } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import { createAuthenticator, requireUser } from "~/utils/auth.server";
-import { createCloudflareSessionStorage, getSession } from "~/utils/session.server";
+import { requireUser } from "~/utils/auth.server";
+import { createCloudflareSessionStorage } from "~/utils/session.server";
 
 export const meta: MetaFunction = () => {
   return [

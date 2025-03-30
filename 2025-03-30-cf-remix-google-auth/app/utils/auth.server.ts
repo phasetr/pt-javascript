@@ -1,5 +1,5 @@
 import { Authenticator } from "remix-auth";
-import { GoogleStrategy, type GoogleProfile } from "@coji/remix-auth-google";
+import { GoogleStrategy } from "@coji/remix-auth-google";
 import type { SessionStorage } from "@remix-run/cloudflare";
 
 // ユーザーモデルの定義

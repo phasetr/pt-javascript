@@ -15,10 +15,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // セッションストレージを作成
   const env = context.env as Record<string, string>;
   const sessionStorage = createCloudflareSessionStorage(env);
-  
+
   // 認証インスタンスを作成
   const authenticator = createAuthenticator(sessionStorage, env);
-  
+
   // 現在のユーザーを取得
   try {
     // すでにログインしている場合はホームページにリダイレクト
@@ -32,12 +32,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   } catch (error) {
     // 認証エラーの場合は何もしない
   }
-  
+
   // URLからエラーメッセージを取得
   const url = new URL(request.url);
   const errorMessage = url.searchParams.get("error");
-  
-  return json({ errorMessage });
+
+  return Response.json({ errorMessage });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -47,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // バリデーション
   const errors: { email?: string; password?: string; form?: string } = {};
-  
+
   if (!email || typeof email !== "string") {
     errors.email = "メールアドレスを入力してください";
   } else if (!email.includes("@")) {
@@ -108,7 +108,7 @@ export default function Login() {
             </div>
           </div>
         ) : null}
-        
+
         {actionData?.errors?.form ? (
           <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/20">
             <p className="text-sm text-red-700 dark:text-red-400">
@@ -127,11 +127,10 @@ export default function Login() {
               id="email"
               name="email"
               defaultValue={actionData?.fields?.email || ""}
-              className={`w-full rounded-md border ${
-                actionData?.errors?.email 
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+              className={`w-full rounded-md border ${actionData?.errors?.email
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              } px-3 py-2 focus:outline-none focus:ring-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white`}
+                } px-3 py-2 focus:outline-none focus:ring-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white`}
               aria-invalid={Boolean(actionData?.errors?.email)}
               aria-errormessage={actionData?.errors?.email ? "email-error" : undefined}
               disabled={isSubmitting}
@@ -152,11 +151,10 @@ export default function Login() {
               type="password"
               id="password"
               name="password"
-              className={`w-full rounded-md border ${
-                actionData?.errors?.password 
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+              className={`w-full rounded-md border ${actionData?.errors?.password
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              } px-3 py-2 focus:outline-none focus:ring-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white`}
+                } px-3 py-2 focus:outline-none focus:ring-1 dark:border-gray-600 dark:bg-gray-700 dark:text-white`}
               aria-invalid={Boolean(actionData?.errors?.password)}
               aria-errormessage={actionData?.errors?.password ? "password-error" : undefined}
               disabled={isSubmitting}
