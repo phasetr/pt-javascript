@@ -1,0 +1,33 @@
+{
+  "name": "cqlm",
+  "version": "0.1.0",
+  "bin": {
+    "cqlm": "bin/cqlm.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "verify": "ts-node scripts/verify.ts",
+    "verify:email": "ts-node scripts/verify-email.ts",
+    "verify:email:check": "ts-node scripts/verify-email.ts --check"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.7.9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "aws-cdk": "2.1005.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.540.0",
+    "@aws-sdk/client-ses": "^3.540.0",
+    "@aws-sdk/client-sns": "^3.540.0",
+    "@aws-sdk/client-sqs": "^3.540.0",
+    "aws-cdk-lib": "2.181.1",
+    "constructs": "^10.0.0"
+  }
+}

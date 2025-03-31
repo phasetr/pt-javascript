@@ -1,0 +1,20 @@
+{
+  "name": "cqlm-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "build:lambda": "cd packages/lambda && chmod +x build.sh && ./build.sh",
+    "cdk:synth": "cd packages/cqlm && pnpm run cdk synth",
+    "cdk:diff": "cd packages/cqlm && pnpm run cdk diff",
+    "deploy:dev": "pnpm run build:lambda && cd packages/cqlm && pnpm run cdk deploy --context env=dev",
+    "destroy:dev": "cd packages/cqlm && pnpm run cdk destroy --context env=dev",
+    "verify": "cd packages/cqlm && pnpm install && pnpm run verify",
+    "verify:email": "cd packages/cqlm && pnpm install && pnpm run verify:email",
+    "verify:email:check": "cd packages/cqlm && pnpm install && pnpm run verify:email:check",
+    "verify:transcription": "cd packages/cqlm && pnpm install && ts-node scripts/verify-transcription.ts",
+    "install:all": "pnpm install && pnpm -r install"
+  },
+  "packageManager": "pnpm@10.7.0"
+}
