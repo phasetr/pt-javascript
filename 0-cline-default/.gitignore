@@ -27,3 +27,8 @@ node_modules
 .env
 .env.local
 .dev.vars
+
+dist
+*.js.map
+*.d.ts
+*.js
