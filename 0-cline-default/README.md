@@ -76,6 +76,13 @@ cd <proj-name>
 npm create cloudflare@latest -- --framework=remix
 ```
 
+機密情報の設定・削除
+
+```sh
+wrangler secret put <KEY>
+wrangler secret delete <KEY>
+```
+
 `wrangler.toml`を書き換えたら次のコマンドを実行
 
 ```sh
