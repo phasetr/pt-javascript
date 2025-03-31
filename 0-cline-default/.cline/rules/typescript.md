@@ -204,4 +204,4 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
 
 5. 時刻の扱い
    - 明確な理由がない限り時刻は`JST`で処理する.
-     `Date`を利用する場合は`Date().now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });`のようにすればよい
+     `Date`を利用する場合は`new Date().now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });`のようにすればよい
