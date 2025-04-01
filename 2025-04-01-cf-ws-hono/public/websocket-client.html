@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket クライアント</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .connected {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .disconnected {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .connecting {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .message-form {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .message-input {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .connect-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .disconnect-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    .send-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .clear-btn {
+      background-color: #6c757d;
+      color: white;
+    }
+    .message-log {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #f8f9fa;
+    }
+    .message {
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .sent {
+      background-color: #e2f0fd;
+      border-left: 4px solid #007bff;
+    }
+    .received {
+      background-color: #e8f5e9;
+      border-left: 4px solid #28a745;
+    }
+    .error {
+      background-color: #ffebee;
+      border-left: 4px solid #dc3545;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #6c757d;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WebSocket クライアント</h1>
+    
+    <div id="status" class="status disconnected">
+      状態: 未接続
+    </div>
+    
+    <div class="button-group">
+      <button id="connect" class="connect-btn">接続</button>
+      <button id="disconnect" class="disconnect-btn" disabled>切断</button>
+    </div>
+    
+    <div class="message-form">
+      <textarea id="message" class="message-input" rows="3" placeholder="送信するJSONメッセージを入力してください" disabled></textarea>
+      <div class="button-group">
+        <button id="send" class="send-btn" disabled>送信</button>
+        <button id="clear" class="clear-btn">ログをクリア</button>
+      </div>
+    </div>
+    
+    <div id="log" class="message-log"></div>
+  </div>
+
+  <script>
+    // DOM要素
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connect');
+    const disconnectBtn = document.getElementById('disconnect');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
+    const clearBtn = document.getElementById('clear');
+    const logEl = document.getElementById('log');
+    
+    // WebSocket接続
+    let socket = null;
+    
+    // 接続ボタンのイベントリスナー
+    connectBtn.addEventListener('click', () => {
+      connect();
+    });
+    
+    // 切断ボタンのイベントリスナー
+    disconnectBtn.addEventListener('click', () => {
+      disconnect();
+    });
+    
+    // 送信ボタンのイベントリスナー
+    sendBtn.addEventListener('click', () => {
+      sendMessage();
+    });
+    
+    // クリアボタンのイベントリスナー
+    clearBtn.addEventListener('click', () => {
+      logEl.innerHTML = '';
+    });
+    
+    // メッセージ入力欄でEnterキーを押したときに送信
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    // WebSocket接続を確立
+    function connect() {
+      // 既存の接続を閉じる
+      if (socket) {
+        socket.close();
+      }
+      
+      // 接続中の状態を表示
+      updateStatus('connecting', '接続中...');
+      
+      // WebSocketのURLを構築（現在のホストを使用）
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      try {
+        // WebSocket接続を作成
+        socket = new WebSocket(wsUrl);
+        
+        // 接続が開いたときのイベントハンドラ
+        socket.addEventListener('open', (event) => {
+          updateStatus('connected', '接続済み');
+          enableControls(true);
+          logMessage('システム', '接続が確立されました', 'received');
+        });
+        
+        // メッセージを受信したときのイベントハンドラ
+        socket.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            logMessage('サーバー', JSON.stringify(data, null, 2), 'received');
+          } catch (e) {
+            logMessage('エラー', `受信したメッセージをJSONとして解析できません: ${event.data}`, 'error');
+          }
+        });
+        
+        // エラーが発生したときのイベントハンドラ
+        socket.addEventListener('error', (event) => {
+          logMessage('エラー', 'WebSocket接続でエラーが発生しました', 'error');
+          console.error('WebSocketエラー:', event);
+        });
+        
+        // 接続が閉じたときのイベントハンドラ
+        socket.addEventListener('close', (event) => {
+          updateStatus('disconnected', '切断されました');
+          enableControls(false);
+          logMessage('システム', `接続が閉じられました (コード: ${event.code})`, 'error');
+        });
+      } catch (error) {
+        updateStatus('disconnected', '接続エラー');
+        logMessage('エラー', `接続エラー: ${error.message}`, 'error');
+        console.error('接続エラー:', error);
+      }
+    }
+    
+    // WebSocket接続を閉じる
+    function disconnect() {
+      if (socket) {
+        socket.close();
+        socket = null;
+      }
+    }
+    
+    // メッセージを送信
+    function sendMessage() {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        logMessage('エラー', 'WebSocketが接続されていません', 'error');
+        return;
+      }
+      
+      const messageText = messageInput.value.trim();
+      if (!messageText) {
+        return;
+      }
+      
+      try {
+        // 入力がJSON形式かどうかを確認
+        const jsonObj = JSON.parse(messageText);
+        
+        // メッセージを送信
+        socket.send(messageText);
+        
+        // 送信したメッセージをログに表示
+        logMessage('クライアント', JSON.stringify(jsonObj, null, 2), 'sent');
+        
+        // 入力欄はクリアしない
+        // messageInput.value = '';
+      } catch (e) {
+        logMessage('エラー', '無効なJSON形式です', 'error');
+      }
+    }
+    
+    // 状態表示を更新
+    function updateStatus(className, text) {
+      statusEl.className = `status ${className}`;
+      statusEl.textContent = `状態: ${text}`;
+    }
+    
+    // コントロールの有効/無効を切り替え
+    function enableControls(connected) {
+      connectBtn.disabled = connected;
+      disconnectBtn.disabled = !connected;
+      messageInput.disabled = !connected;
+      sendBtn.disabled = !connected;
+    }
+    
+    // メッセージをログに追加
+    function logMessage(sender, message, type) {
+      const messageEl = document.createElement('div');
+      messageEl.className = `message ${type}`;
+      
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      
+      messageEl.innerHTML = `
+        <strong>${sender}:</strong>
+        <pre>${message}</pre>
+        <div class="timestamp">${timeString}</div>
+      `;
+      
+      logEl.appendChild(messageEl);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    // サンプルJSONメッセージを入力欄に設定
+    messageInput.value = JSON.stringify({
+      type: "message",
+      message: "こんにちは、WebSocket!",
+      timestamp: new Date().toISOString()
+    }, null, 2);
+  </script>
+</body>
+</html>
