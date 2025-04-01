@@ -46,6 +46,7 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
    APIは全てを一通り叩いて結果が返るか確認する。
    環境指定で`local`・`dev`・`prod`を選べるようにし、適切な環境を指定して簡易結合テストできるようにする.
    この指定がない場合は自動的に`local`になるとする。
+9. 環境を削除する
 
 ### 自分用(都度消す)
 
@@ -73,6 +74,7 @@ npx create-remix@latest packages/remix
 ```sh
 mkdir <proj-name>
 cd <proj-name>
+npm create cloudflare@latest -- --framework=hono
 npm create cloudflare@latest -- --framework=remix
 ```
 
@@ -95,6 +97,19 @@ npm run deploy
 
 ```sh
 wrangler delete
+```
+
+アカウントの確認
+
+```sh
+wrangler whoami
+```
+
+アカウントの切り替え
+
+```sh
+wrangler logout
+wrangler login
 ```
 
 #### リファクタリング時のお勧めプロンプト
