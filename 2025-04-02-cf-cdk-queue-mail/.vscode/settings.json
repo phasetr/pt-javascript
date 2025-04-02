@@ -1,0 +1,21 @@
+{
+	"deno.enable": true,
+	"[typescript]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "denoland.vscode-deno"
+	},
+	"cSpell.words": [
+		"CCQM",
+		"clinerules",
+		"frontmatter",
+		"Hono",
+		"mizchi",
+		"moonbit",
+		"neverthrow",
+		"nodemodes",
+		"pkgname",
+		"ROOMODES"
+	]
+}

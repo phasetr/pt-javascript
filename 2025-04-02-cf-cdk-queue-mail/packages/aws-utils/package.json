@@ -1,0 +1,29 @@
+{
+  "name": "aws-utils",
+  "version": "1.0.0",
+  "description": "AWS utilities for CCQM project",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "send-test-email": "node dist/send-test-email.js"
+  },
+  "keywords": [
+    "aws",
+    "sns",
+    "email"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.529.1",
+    "@aws-sdk/client-cloudformation": "^3.529.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.2",
+    "vitest": "^1.3.1"
+  }
+}

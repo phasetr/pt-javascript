@@ -1,0 +1,10 @@
+# Cloudflare Workers開発環境用の環境変数
+# 実際の値は手動で設定してください
+
+# AWS認証情報
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+
+# AWS設定
+AWS_REGION=ap-northeast-1
+AWS_STACK_NAME=CCQM-Stack-dev

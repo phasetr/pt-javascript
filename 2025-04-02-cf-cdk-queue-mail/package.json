@@ -1,0 +1,27 @@
+{
+	"name": "cf-cdk-queue-mail-monorepo",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"build": "pnpm -r build",
+		"test": "pnpm -r test",
+		"dev:hono": "pnpm --filter=aws-utils build && pnpm --filter=hono-api dev",
+		"cdk:deploy": "pnpm --filter=ccqm cdk deploy",
+		"cdk:deploy:dev": "pnpm --filter=ccqm cdk deploy --context env=dev",
+		"cdk:destroy": "pnpm --filter=ccqm cdk destroy",
+		"cdk:destroy:dev": "pnpm --filter=ccqm cdk destroy --context env=dev",
+		"cdk:synth": "pnpm --filter=ccqm cdk synth",
+		"cdk:diff": "pnpm --filter=ccqm cdk diff",
+		"test:email": "pnpm --filter=aws-utils build && pnpm --filter=aws-utils send-test-email",
+		"test:email:api": "pnpm --filter=aws-utils build && pnpm --filter=hono-api build && pnpm --filter=hono-api test:email",
+		"test:queue:api": "pnpm --filter=aws-utils build && pnpm --filter=hono-api build && pnpm --filter=hono-api test:queue",
+		"queue:list": "cd packages/hono-api && npx wrangler queues list",
+		"queue:tail": "cd packages/hono-api && npx wrangler queues tail email-queue",
+		"queue:info": "cd packages/hono-api && npx wrangler queues info email-queue",
+		"queue:consumer:tail": "cd packages/hono-api && npx wrangler tail --format=pretty"
+	},
+	"packageManager": "pnpm@10.7.0",
+	"devDependencies": {
+		"tsc": "^2.0.4"
+	}
+}

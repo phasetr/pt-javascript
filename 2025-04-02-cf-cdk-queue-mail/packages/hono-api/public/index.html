@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>CCQM - メール送信テスト</title>
+		<style>
+			body {
+				font-family: 'Helvetica Neue', Arial, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
+				line-height: 1.6;
+			}
+			h1 {
+				color: #333;
+				border-bottom: 2px solid #eee;
+				padding-bottom: 10px;
+			}
+			.message-container {
+				margin-bottom: 30px;
+				padding: 15px;
+				background-color: #f8f9fa;
+				border-radius: 5px;
+			}
+			.form-container {
+				background-color: #f8f9fa;
+				padding: 20px;
+				border-radius: 5px;
+				margin-bottom: 30px;
+			}
+			.form-group {
+				margin-bottom: 15px;
+			}
+			label {
+				display: block;
+				margin-bottom: 5px;
+				font-weight: bold;
+			}
+			input, textarea {
+				width: 100%;
+				padding: 8px;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				box-sizing: border-box;
+			}
+			textarea {
+				min-height: 100px;
+				resize: vertical;
+			}
+			button {
+				background-color: #4CAF50;
+				color: white;
+				padding: 10px 15px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 16px;
+			}
+			button:hover {
+				background-color: #45a049;
+			}
+			button:disabled {
+				background-color: #cccccc;
+				cursor: not-allowed;
+			}
+			.result {
+				margin-top: 20px;
+				padding: 15px;
+				border-radius: 5px;
+			}
+			.success {
+				background-color: #d4edda;
+				color: #155724;
+				border: 1px solid #c3e6cb;
+			}
+			.error {
+				background-color: #f8d7da;
+				color: #721c24;
+				border: 1px solid #f5c6cb;
+			}
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>CCQM - メール送信テスト</h1>
+		
+		<div class="message-container">
+			<h2>APIメッセージ</h2>
+			<p id="heading">APIからのメッセージを取得中...</p>
+		</div>
+		
+		<div class="form-container">
+			<h2>メール送信フォーム</h2>
+			<form id="emailForm">
+				<div class="form-group">
+					<label for="email">送信先メールアドレス:</label>
+					<input type="email" id="email" name="email" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="subject">件名:</label>
+					<input type="text" id="subject" name="subject" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="message">本文:</label>
+					<textarea id="message" name="message" required></textarea>
+				</div>
+				
+				<button type="submit" id="submitButton">送信</button>
+			</form>
+			
+			<div id="resultSuccess" class="result success hidden">
+				<h3>送信成功</h3>
+				<p>メールが正常に送信されました。</p>
+				<p>メッセージID: <span id="messageId"></span></p>
+			</div>
+			
+			<div id="resultError" class="result error hidden">
+				<h3>送信エラー</h3>
+				<p id="errorMessage"></p>
+			</div>
+		</div>
+		
+		<div class="health-container">
+			<h2>ヘルスチェック</h2>
+			<p id="healthStatus">ヘルスチェック結果を取得中...</p>
+		</div>
+		
+		<script>
+			// APIメッセージを取得
+			fetch('/message')
+				.then((resp) => resp.text())
+				.then((text) => {
+					const h1 = document.getElementById('heading');
+					h1.textContent = text;
+				})
+				.catch(error => {
+					const h1 = document.getElementById('heading');
+					h1.textContent = 'APIからのメッセージ取得に失敗しました: ' + error.message;
+				});
+			
+			// ヘルスチェック
+			fetch('/health')
+				.then((resp) => resp.json())
+				.then((data) => {
+					const healthStatus = document.getElementById('healthStatus');
+					healthStatus.textContent = `ステータス: ${data.status}, タイムスタンプ: ${data.timestamp}`;
+				})
+				.catch(error => {
+					const healthStatus = document.getElementById('healthStatus');
+					healthStatus.textContent = 'ヘルスチェックに失敗しました: ' + error.message;
+				});
+			
+			// メール送信フォームの処理
+			document.getElementById('emailForm').addEventListener('submit', function(e) {
+				e.preventDefault();
+				
+				// 送信ボタンを無効化
+				const submitButton = document.getElementById('submitButton');
+				submitButton.disabled = true;
+				submitButton.textContent = '送信中...';
+				
+				// 結果表示をリセット
+				document.getElementById('resultSuccess').classList.add('hidden');
+				document.getElementById('resultError').classList.add('hidden');
+				
+				// フォームデータを取得
+				const email = document.getElementById('email').value;
+				const subject = document.getElementById('subject').value;
+				const message = document.getElementById('message').value;
+				
+				// APIにPOSTリクエストを送信
+				fetch('/send-email', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						email,
+						subject,
+						message
+					})
+				})
+				.then(response => response.json())
+				.then(data => {
+					// 送信ボタンを有効化
+					submitButton.disabled = false;
+					submitButton.textContent = '送信';
+					
+					if (data.success) {
+						// 成功時の処理
+						document.getElementById('messageId').textContent = data.messageId;
+						document.getElementById('resultSuccess').classList.remove('hidden');
+					} else {
+						// エラー時の処理
+						document.getElementById('errorMessage').textContent = data.error || '不明なエラーが発生しました';
+						document.getElementById('resultError').classList.remove('hidden');
+					}
+				})
+				.catch(error => {
+					// 送信ボタンを有効化
+					submitButton.disabled = false;
+					submitButton.textContent = '送信';
+					
+					// エラー時の処理
+					document.getElementById('errorMessage').textContent = 'リクエストエラー: ' + error.message;
+					document.getElementById('resultError').classList.remove('hidden');
+				});
+			});
+		</script>
+	</body>
+</html>

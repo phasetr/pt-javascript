@@ -1,0 +1,22 @@
+{
+	"name": "hono-api",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
+		"build": "tsc",
+		"test:email": "node dist/test-email-api.js",
+		"test:queue": "node dist/test-queue-email-api.js"
+	},
+	"dependencies": {
+		"aws-utils": "workspace:*",
+		"hono": "^4.7.5",
+		"node-fetch": "^3.3.2"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250327.0",
+		"typescript": "^5.4.2",
+		"wrangler": "^4.6.0"
+	}
+}
