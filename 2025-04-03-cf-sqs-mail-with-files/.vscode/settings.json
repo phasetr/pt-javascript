@@ -1,0 +1,21 @@
+{
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"cSpell.words": [
+		"clinerules",
+		"CSMWF",
+		"frontmatter",
+		"Hono",
+		"mizchi",
+		"moonbit",
+		"neverthrow",
+		"nodemodes",
+		"pkgname",
+		"reshim",
+		"ROOMODES"
+	]
+}

@@ -27,6 +27,10 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 ステップ終了時は何を確認するべきか箇条書きにしてください.
 結果確認用に適切な`typescript`のプログラムとしてまとめ,
 得られるべき結果と実際の値を比較する部分もプログラムにおさめてください.
+設計・実装方針としてできる限り副作用,
+とりわけ環境変数は利用せず,
+環境変数を利用する場合は関数の引数として与えるようにし,
+関数の純粋性・テスタビリティを確保してください.
 テスト用スクリプトも原則として`typescript`で書いて実行してください.
 日時のように都度得られるべき結果が変わる場合は適切な比較対象を設定してください.
 最後にステップごとの内容は`steps`ディレクトリに`年月日-時間-step.md`として記録してください.
@@ -70,7 +74,10 @@ pnpm -v
 pnpm init
 
 mkdir -p packages/<proj-name>
+cd packages/<proj-name>
 cdk init sample-app --language typescript
+rm -rf test
+
 npm create hono@latest packages/hono-api
 npx create-remix@latest packages/remix
 ```
@@ -80,11 +87,16 @@ npx create-remix@latest packages/remix
 ```sh
 npm install -g wrangler@latest
 
-mkdir <proj-name>
-cd <proj-name>
+mkdir -p packages/<proj-name>-api
+cd packages/<proj-name>-api
 npm create cloudflare@latest -- --framework=hono
+mv packages/<proj-name>-api packages/hono-api
+
 npm create cloudflare@latest -- --framework=remix
 ```
+
+`wrangler dev --port 3000`などとすれば`wrangler`での起動でもポートが固定できるため,
+必要に応じて利用すること.
 
 機密情報の設定・削除
 

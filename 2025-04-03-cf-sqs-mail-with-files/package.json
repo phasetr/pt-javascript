@@ -1,0 +1,42 @@
+{
+	"name": "cf-sqs-mail-with-files",
+	"version": "1.0.0",
+	"description": "Cloudflare SQS Mail With Files",
+	"scripts": {
+		"test:sqs": "ts-node data/test-sqs-message.ts",
+		"test:hono": "ts-node data/test-hono-api.ts",
+		"dev:hono": "pnpm --filter=csmwf-api dev",
+		"deploy:cdk": "pnpm --filter=csmwf run deploy",
+		"deploy:hono": "pnpm --filter=csmwf-api run deploy",
+		"destroy:cdk": "cd packages/csmwf && pnpm run cdk destroy",
+		"get:queue-url": "aws cloudformation describe-stacks --stack-name CSMWF-prod-Stack --query \"Stacks[0].Outputs[?OutputKey=='QueueUrl'].OutputValue\" --output text",
+		"start": "pm2 start ecosystem.config.js",
+		"stop": "pm2 stop ecosystem.config.js",
+		"restart": "pm2 restart ecosystem.config.js",
+		"status": "pm2 status",
+		"logs": "pm2 logs",
+		"test:all": "concurrently \"pnpm run test:sqs\" \"pnpm run test:hono http://localhost:8787/message\""
+	},
+	"keywords": [
+		"cloudflare",
+		"aws",
+		"sqs",
+		"ses",
+		"lambda"
+	],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^22.7.9",
+		"concurrently": "^9.1.2",
+		"pm2": "^6.0.5",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.6.3"
+	},
+	"dependencies": {
+		"@aws-sdk/client-cloudformation": "^3.777.0",
+		"@aws-sdk/client-sqs": "^3.777.0",
+		"node-fetch": "^3.3.2"
+	},
+	"packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808"
+}
