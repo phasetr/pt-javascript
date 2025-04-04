@@ -10,5 +10,5 @@
     "dev:hono": "pnpm --filter=hono-api dev",
     "dev:remix": "pnpm --filter=remix dev"
   },
-  "packageManager": "pnpm@10.7.0"
+  "packageManager": "pnpm@10.7.1"
 }
