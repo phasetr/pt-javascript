@@ -80,7 +80,7 @@ cdk init sample-app --language typescript
 rm -rf test
 
 pnpm create hono@latest packages/hono-api
-npx create-remix@latest packages/remix
+pnpm dlx create-remix@latest packages/remix
 ```
 
 #### cloudflare用
