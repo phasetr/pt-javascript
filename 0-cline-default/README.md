@@ -79,7 +79,7 @@ cd packages/<proj-name>
 cdk init sample-app --language typescript
 rm -rf test
 
-npm create hono@latest packages/hono-api
+pnpm create hono@latest packages/hono-api
 npx create-remix@latest packages/remix
 ```
 
@@ -90,10 +90,10 @@ npm install -g wrangler@latest
 
 mkdir -p packages/<proj-name>-api
 cd packages/<proj-name>-api
-npm create cloudflare@latest -- --framework=hono
+pnpm create cloudflare@latest -- --framework=hono
 mv packages/<proj-name>-api packages/hono-api
 
-npm create cloudflare@latest -- --framework=remix
+pnpm create cloudflare@latest -- --framework=remix
 ```
 
 `wrangler dev --port 3000`などとすれば`wrangler`での起動でもポートが固定できるため,
