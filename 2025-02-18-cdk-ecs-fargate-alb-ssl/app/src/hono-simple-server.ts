@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { nowJst } from "./utils.js";
 
-export const hono = new Hono();
+export const honoSimple = new Hono();
 
-hono.get("/", async (c) => {
+honoSimple.get("/", async (c) => {
 	try {
 		// すぐ確認できるように削除ではなくコメントアウト
 		// const { OPENAI_API_KEY, SERVICE_URL } = await getAllSecretValues(
@@ -11,7 +11,7 @@ hono.get("/", async (c) => {
 		// );
 		const jst = nowJst();
 		console.log(`現在の日本時刻: ${jst}`);
-		return c.text(`Hello, hono: ${jst}`);
+		return c.text(`Hello, hono simple: ${jst}`);
 	} catch (e) {
 		console.log(e);
 		return c.text("We have some errors!");
