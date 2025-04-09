@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { honoSimple } from "./hono-simple-server.js";
 import { fastify } from "./fastify-server.js";
-import { hono } from "./hono-server.js";
+import { startServer } from "./hono-server.js";
 
 const PORT: number = process.env.PORT
 	? Number.parseInt(process.env.PORT, 10)
@@ -27,8 +27,6 @@ if (WAF === "hono-simple") {
 	});
 } else {
 	console.log(`Server is running on http://localhost:${PORT} by Hono`);
-	serve({
-		fetch: hono.fetch,
-		port: PORT,
-	});
+	// Honoサーバーを起動し、WebSocketサーバーもセットアップする
+	startServer(PORT);
 }
