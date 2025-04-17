@@ -1,4 +1,4 @@
-/**
+v/**
  * Hono API サーバー (Cloudflare Workers環境用)
  *
  * このファイルはCloudflare Workers環境用です。
@@ -149,7 +149,6 @@ app.get(
 						console.error("👺WebSocket接続エラー:", error);
 					});
 
-					console.log("👺OpenAI Realtime API WebSocket connection established");
 					return webSocket;
 				} catch (error) {
 					console.error("👺WebSocket接続エラー:", error);
@@ -320,7 +319,6 @@ app.get(
 							}
 							break;
 						default:
-							console.log("👺Received non-media event:", data.event);
 							break;
 					}
 				} catch (error) {
