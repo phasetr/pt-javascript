@@ -8,7 +8,7 @@
  * - Run `npm run deploy` to publish your worker to Cloudflare
  */
 
-import type { Context } from "hono";
+import type { Context, Next } from "hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -24,8 +24,7 @@ const app = new Hono<{
 }>();
 
 // ミドルウェアの設定
-app.use("*", async (c, next) => {
-	// コンテキストに環境変数をセット
+app.use("*", async (c: Context, next: Next) => {
 	c.set("envVars", {
 		SERVICE_URL: c.env.SERVICE_URL || "",
 		OPENAI_API_KEY: c.env.OPENAI_API_KEY || "",
