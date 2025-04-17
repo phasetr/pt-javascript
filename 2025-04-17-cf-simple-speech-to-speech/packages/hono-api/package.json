@@ -1,0 +1,37 @@
+{
+	"name": "hono-api",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"delete": "wrangler delete",
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --port 3000",
+		"start": "wrangler dev --port 3000",
+		"dev:node": "tsx watch src/index.node.ts",
+		"start:node": "node dist/index.node.js",
+		"build": "tsc",
+		"build:node": "tsc -p tsconfig.node.json",
+		"test": "vitest",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"@types/ws": "^8.18.1",
+		"@types/node": "^20.11.0",
+		"tsx": "^4.19.3",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.10.0"
+	},
+	"dependencies": {
+		"@aws-sdk/client-cloudformation": "^3.777.0",
+		"@aws-sdk/client-sqs": "^3.777.0",
+		"@hono/node-server": "^1.14.0",
+		"@hono/node-ws": "^1.1.1",
+		"common": "workspace:*",
+		"dotenv": "^16.4.7",
+		"hono": "^4.7.5",
+		"ws": "^8.18.1"
+	}
+}

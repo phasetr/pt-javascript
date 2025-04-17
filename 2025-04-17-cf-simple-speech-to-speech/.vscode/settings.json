@@ -1,0 +1,40 @@
+{
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"cSpell.words": [
+		"clinerules",
+		"cwhdt",
+		"flac",
+		"hono",
+		"jscoverage",
+		"kasuharan",
+		"kbps",
+		"neverthrow",
+		"pids",
+		"twiml",
+		"ulaw"
+	],
+	"files.associations": {
+		"wrangler.json": "jsonc"
+	}
+}
