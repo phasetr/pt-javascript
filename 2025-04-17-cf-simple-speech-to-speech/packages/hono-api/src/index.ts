@@ -186,11 +186,6 @@ app.get(
 							? JSON.parse(new TextDecoder().decode(event.data))
 							: JSON.parse(event.data);
 
-					// エラーイベントのみログ出力
-					if (response.type === "error") {
-						console.error("👺OpenAI Realtime API Error:", response);
-					}
-
 					// Node.js版にはない
 					if (response.type === "session.created") {
 						openAiConnected = true;
@@ -333,9 +328,11 @@ app.get(
 			});
 
 			// OpenAI WebSocket側のエラー発生時のハンドリング
-			openAiWs.addEventListener("error", async (error: Event) => {});
+			openAiWs.addEventListener("error", async (error: Event) => {
+        console.error("OpenAI WebSocket error:", error);
+      });
 		} catch (e) {
-			console.error("👺WebSocket接続エラー:", e);
+			console.error("WebSocket setup error:", e);
 			return c.text("Internal Server Error", 500);
 		}
 

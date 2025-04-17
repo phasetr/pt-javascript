@@ -151,42 +151,22 @@ wss.on("connection", async (connection: WebSocket) => {
 					connection.send(JSON.stringify(audioDelta));
 
 					// First delta from a new response starts the elapsed time counter
-					let newResponseStartTimestampTwilio = responseStartTimestampTwilio;
 					if (!responseStartTimestampTwilio) {
-						newResponseStartTimestampTwilio = latestMediaTimestamp;
+						responseStartTimestampTwilio = latestMediaTimestamp;
 					}
 
-					let newLastAssistantItem = lastAssistantItem;
 					if (response.item_id) {
-						newLastAssistantItem = response.item_id;
+						lastAssistantItem = response.item_id;
 					}
-
-					const sendMarkInline = (
-						conn: {
-							send(data: string): void;
-							readyState?: number;
-						},
-						sid: string | null,
-						queue: string[],
-					) => {
-						if (sid) {
-							const markEvent = {
-								event: "mark",
-								streamSid: sid,
-								mark: { name: "responsePart" },
-							};
-							conn.send(JSON.stringify(markEvent));
-							queue.push("responsePart");
-						}
-						return queue;
-					};
-					const newMarkQueue = sendMarkInline(connection, streamSid, [
-						...markQueue,
-					]);
-
-					responseStartTimestampTwilio = newResponseStartTimestampTwilio;
-					lastAssistantItem = newLastAssistantItem;
-					markQueue = newMarkQueue;
+					if (streamSid) {
+						const markEvent = {
+							event: "mark",
+							streamSid: streamSid,
+							mark: { name: "responsePart" },
+						};
+						connection.send(JSON.stringify(markEvent));
+						markQueue.push("responsePart");
+					}
 				}
 
 				if (response.type === "input_audio_buffer.speech_started") {
@@ -265,7 +245,9 @@ wss.on("connection", async (connection: WebSocket) => {
 		openAiWs.on("close", async () => {});
 
 		// OpenAI WebSocket側のエラー発生時のハンドリング
-		openAiWs.on("error", async () => {});
+		openAiWs.on("error", async (error) => {
+			console.error("OpenAI WebSocket error:", error);
+		});
 	} catch (e) {
 		console.error("WebSocket setup error:", e);
 	}
