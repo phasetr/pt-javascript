@@ -1,0 +1,30 @@
+{
+	"name": "cf-simple-monorepo",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "pnpm -r build",
+		"test": "pnpm -r test",
+		"hono:cf:delete": "pnpm --filter=hono-api run delete",
+		"hono:cf:deploy": "pnpm --filter=hono-api run deploy",
+		"hono:cf:types": "pnpm --filter=hono-api run cf-typegen",
+		"hono:cf:dev": "pnpm --filter=hono-api dev",
+		"hono:node:dev": "pnpm --filter=hono-api dev:node",
+		"prepare": "husky",
+		"twilio:dev-phone": "twilio profiles:use caller && twilio dev-phone"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@types/node": "^22.14.1",
+		"concurrently": "^9.1.2",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.5.1",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.8.3"
+	},
+	"packageManager": "pnpm@10.8.0",
+	"lint-staged": {
+		"*.{js,jsx,ts,tsx,json}": ["biome format --write", "biome lint --apply"]
+	}
+}

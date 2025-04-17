@@ -12,7 +12,6 @@
 		"start:node": "node dist/index.node.js",
 		"build": "tsc",
 		"build:node": "tsc -p tsconfig.node.json",
-		"test": "vitest",
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
