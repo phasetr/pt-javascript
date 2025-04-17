@@ -104,6 +104,7 @@ app.get(
 			if (!OPENAI_API_KEY) {
 				console.error("OpenAI API Key is not set");
 				return c.text("OpenAI API Key is not set", 500);
+				// throw new Error("OpenAI API Key is not set");
 			}
 
 			// Node.js版にはない
@@ -115,6 +116,7 @@ app.get(
 			const openAiWs = await (async () => {
 				try {
 					const response = await fetch(
+						// Different from node.js: here we use https, not wss
 						"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
 						{
 							headers: {
@@ -211,8 +213,6 @@ app.get(
 						if (response.item_id) {
 							lastAssistantItem = response.item_id;
 						}
-
-						// インライン化: sendMark
 						if (streamSid) {
 							const markEvent = {
 								event: "mark",
@@ -225,7 +225,6 @@ app.get(
 					}
 
 					if (response.type === "input_audio_buffer.speech_started") {
-						// インライン化: handleSpeechStartedEvent
 						if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
 							const elapsedTime =
 								latestMediaTimestamp - responseStartTimestampTwilio;
@@ -253,7 +252,7 @@ app.get(
 						}
 					}
 				} catch (error) {
-					console.error("👺Error processing OpenAI message:", error);
+					console.error("Error processing OpenAI message:", error);
 				}
 			});
 
@@ -271,7 +270,6 @@ app.get(
 							latestMediaTimestamp = data.media.timestamp;
 
 							if (openAiWs.readyState === WebSocket.OPEN) {
-								// インライン化: handleMediaMessage
 								const audioAppend = {
 									type: "input_audio_buffer.append",
 									audio: data.media.payload,
@@ -308,7 +306,6 @@ app.get(
 							break;
 						case "start":
 							streamSid = data.start.streamSid;
-							// Reset start and media timestamp on a new stream
 							responseStartTimestampTwilio = null;
 							latestMediaTimestamp = 0;
 							break;
@@ -321,7 +318,7 @@ app.get(
 							break;
 					}
 				} catch (error) {
-					console.error("👺Error processing Twilio message:", error);
+					console.error("Error processing Twilio message:", error);
 				}
 			});
 
@@ -337,9 +334,7 @@ app.get(
 			});
 
 			// OpenAI WebSocket側のエラー発生時のハンドリング
-			openAiWs.addEventListener("error", async (error: Event) => {
-				console.error("👺OpenAI WebSocket error:", error);
-			});
+			openAiWs.addEventListener("error", async (error: Event) => {});
 		} catch (e) {
 			console.error("👺WebSocket接続エラー:", e);
 			return c.text("Internal Server Error", 500);

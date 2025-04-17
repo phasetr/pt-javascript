@@ -49,6 +49,7 @@ app.get("/", (c: Context) => {
 		version: "1.0.0",
 	});
 });
+
 app.all("/incoming-call", async (c: Context) => {
 	try {
 		const envVars = c.get("envVars");
@@ -128,7 +129,7 @@ wss.on("connection", async (connection: WebSocket) => {
 					input_audio_format: "g711_ulaw",
 					output_audio_format: "g711_ulaw",
 					voice: "alloy",
-					instructions: "Respond simply.", // SYSTEM_MESSAGE をハードコード
+					instructions: "Respond simply.",
 					modalities: ["text", "audio"],
 					temperature: 0.8,
 				},
