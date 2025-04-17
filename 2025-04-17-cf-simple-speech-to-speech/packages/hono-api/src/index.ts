@@ -25,24 +25,6 @@ interface WebSocketLike {
 }
 
 /**
- * セッション初期化用のメッセージを作成
- */
-function createSessionUpdateMessage() {
-	return {
-		type: "session.update",
-		session: {
-			turn_detection: { type: "server_vad" },
-			input_audio_format: "g711_ulaw",
-			output_audio_format: "g711_ulaw",
-			voice: "alloy",
-			instructions: SYSTEM_MESSAGE,
-			modalities: ["text", "audio"],
-			temperature: 0.8,
-		},
-	};
-}
-
-/**
  * 音声入力が開始された時の処理
  * AIの応答を途中で切り上げる
  */
@@ -168,33 +150,6 @@ function handleMediaMessage(
 }
 
 /**
- * 会話開始メッセージを作成
- */
-function createConversationItem() {
-	return {
-		type: "conversation.item.create",
-		item: {
-			type: "message",
-			role: "user",
-			content: [],
-		},
-	};
-}
-
-/**
- * レスポンス作成リクエストを作成
- */
-function createResponseItem() {
-	return {
-		type: "response.create",
-		response: {
-			modalities: ["text", "audio"],
-			instructions: SYSTEM_MESSAGE,
-		},
-	};
-}
-
-/**
  * Cloudflare Workers環境でOpenAI Realtime APIに接続するためのWebSocketを作成する
  *
  * @param openai_api_key OpenAI APIキー
@@ -272,24 +227,15 @@ const app = new Hono<{
 
 // ミドルウェアの設定
 app.use("*", async (c, next) => {
-	// Cloudflare Workers環境用の環境変数ミドルウェア
-	// c.envから環境変数を取得し、コンテキストにセットする
-	const envVars: {
-		SERVICE_URL: string;
-		OPENAI_API_KEY: string;
-		ENVIRONMENT: string;
-		CLOUDFLARE: string;
-	} = {
+	// コンテキストに環境変数をセット
+	c.set("envVars", {
 		SERVICE_URL: c.env.SERVICE_URL || "",
 		OPENAI_API_KEY: c.env.OPENAI_API_KEY || "",
 		ENVIRONMENT: c.env.ENVIRONMENT || "development",
-		CLOUDFLARE: c.env.CLOUDFLARE || "true", // Cloudflare環境ではデフォルトでtrue
-	};
-
-	// コンテキストに環境変数をセット
-	c.set("envVars", envVars);
+		CLOUDFLARE: c.env.CLOUDFLARE || "true",
+	});
 	await next();
-}); // 環境変数ミドルウェアを最初に適用
+});
 app.use("*", logger());
 app.use("*", cors());
 
@@ -299,6 +245,34 @@ app.get("/", (c: Context) => {
 		message: "CWHDT API Server on Cloudflare",
 		version: "1.0.0",
 	});
+});
+
+app.all("/incoming-call", async (c: Context) => {
+	try {
+		const envVars = c.get("envVars");
+		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+  <Response>
+    <Pause length="2"/>
+    <Say>Hello, I am an assistant on Cloudflare!</Say>
+    <Pause length="1"/>
+    <Say>You can start talking!</Say>
+    <Connect>
+      <Stream url="wss://${envVars.SERVICE_URL}/ws-voice" />
+    </Connect>
+  </Response>`;
+		return c.text(twimlResponse, 200, {
+			"Content-Type": "text/xml",
+		});
+	} catch (e) {
+		console.error("環境変数の取得に失敗しました。", e);
+		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+  <Response>
+    <Say>We have some errors, sorry.</Say>
+  </Response>`;
+		return c.text(twimlResponse, 200, {
+			"Content-Type": "text/xml",
+		});
+	}
 });
 
 app.get(
@@ -313,16 +287,12 @@ app.get(
 			};
 		}>,
 	) => {
-		// WebSocketサーバーを作成
 		const webSocketPair = new WebSocketPair();
-		// Cloudflareのエッジとクライアント（Twilio）間のWebSocket接続
 		const client = webSocketPair[0];
-		// Workerスクリプト内で操作するWebSocket接続
 		const server = webSocketPair[1];
 
 		try {
 			// Node.js版にはない
-			// WebSocketの接続をアップグレード
 			const upgradeHeader = c.req.header("Upgrade");
 			if (!upgradeHeader || upgradeHeader !== "websocket") {
 				return c.text("Expected Upgrade: websocket", 400);
@@ -355,7 +325,18 @@ app.get(
 			openAiWs.addEventListener("open", async () => {
 				openAiConnected = true; // Node.js版にはない
 				setTimeout(() => {
-					const sessionUpdate = createSessionUpdateMessage();
+					const sessionUpdate = {
+						type: "session.update",
+						session: {
+							turn_detection: { type: "server_vad" },
+							input_audio_format: "g711_ulaw",
+							output_audio_format: "g711_ulaw",
+							voice: "alloy",
+							instructions: SYSTEM_MESSAGE,
+							modalities: ["text", "audio"],
+							temperature: 0.8,
+						},
+					};
 					openAiWs.send(JSON.stringify(sessionUpdate));
 				}, 100);
 			});
@@ -380,7 +361,6 @@ app.get(
 					}
 
 					if (response.type === "response.audio.delta" && response.delta) {
-						// 共通ロジックを使用して音声データを処理
 						const result = handleAudioDelta(
 							response,
 							streamSid,
@@ -436,9 +416,26 @@ app.get(
 								// 会話がまだ開始されていない場合は、会話を開始する
 								if (openAiConnected && !conversationStarted) {
 									// 空の会話アイテムを作成（音声入力用）
-									openAiWs.send(JSON.stringify(createConversationItem()));
+									openAiWs.send(
+										JSON.stringify({
+											type: "conversation.item.create",
+											item: {
+												type: "message",
+												role: "user",
+												content: [],
+											},
+										}),
+									);
 									// レスポンス作成リクエストを送信
-									openAiWs.send(JSON.stringify(createResponseItem()));
+									openAiWs.send(
+										JSON.stringify({
+											type: "response.create",
+											response: {
+												modalities: ["text", "audio"],
+												instructions: SYSTEM_MESSAGE,
+											},
+										}),
+									);
 									conversationStarted = true;
 								}
 							}
@@ -493,41 +490,5 @@ app.get(
 		});
 	},
 );
-
-app.all("/incoming-call", async (c: Context) => {
-	try {
-		// ミドルウェアでセットされた環境変数を取得
-		const envVars = c.get("envVars");
-		const isCloudflare = envVars?.CLOUDFLARE === "true";
-		const environment = isCloudflare ? "Cloudflare" : "Node.js";
-		const SERVICE_URL = envVars.SERVICE_URL;
-		if (!SERVICE_URL) {
-			throw new Error("SERVICE_URL is not configured");
-		}
-
-		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
-  <Response>
-    <Pause length="2"/>
-    <Say>Hello, I am an assistant on ${environment}!</Say>
-    <Pause length="1"/>
-    <Say>You can start talking!</Say>
-    <Connect>
-      <Stream url="wss://${SERVICE_URL}/ws-voice" />
-    </Connect>
-  </Response>`;
-		return c.text(twimlResponse, 200, {
-			"Content-Type": "text/xml",
-		});
-	} catch (e) {
-		console.error("環境変数の取得に失敗しました。", e);
-		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
-  <Response>
-    <Say>We have some errors, sorry.</Say>
-  </Response>`;
-		return c.text(twimlResponse, 200, {
-			"Content-Type": "text/xml",
-		});
-	}
-});
 
 export default app;
