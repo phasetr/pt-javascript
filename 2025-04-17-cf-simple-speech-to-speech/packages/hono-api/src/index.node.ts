@@ -1,7 +1,6 @@
 /**
  * Hono API サーバー (Node.js環境用)
  *
- * メール送信用のエンドポイントとWebSocketを提供します。
  * このファイルはNode.js環境用です。
  * Cloudflare Workers環境では index.ts を使用してください。
  *
@@ -20,39 +19,6 @@ import WebSocket, { WebSocketServer } from "ws";
 // .envファイルを読み込む
 dotenv.config();
 
-/**
- * WebSocketの共通インターフェース
- * CloudflareとNode.jsの両方の環境で動作するように
- */
-interface WebSocketLike {
-	send(data: string): void;
-	readyState?: number;
-}
-// =======================================
-// ミドルウェア
-// =======================================
-
-/**
- * アプリケーションで使用する環境変数の型定義
- */
-type AppEnvVars = {
-	SERVICE_URL: string;
-	OPENAI_API_KEY: string;
-	ENVIRONMENT: string;
-	CLOUDFLARE: string;
-	// 必要に応じて他の環境変数を追加
-	[key: string]: string | undefined;
-};
-
-/**
- * 環境変数をコンテキストに追加するための型拡張
- */
-declare module "hono" {
-	interface ContextVariableMap {
-		envVars: AppEnvVars;
-	}
-}
-
 // Honoアプリケーションの作成
 const app = new Hono<{
 	Bindings: {
@@ -66,12 +32,11 @@ const app = new Hono<{
 // ミドルウェアの設定
 // nodeEnvMiddleware をインライン化
 app.use("*", async (c: Context, next: Next) => {
-	const envVars: AppEnvVars = {
+	const envVars = {
 		SERVICE_URL: process.env.SERVICE_URL || "",
 		OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
 		ENVIRONMENT: process.env.ENVIRONMENT || "development",
 		CLOUDFLARE: process.env.CLOUDFLARE || "false", // Node.js環境ではデフォルトでfalse
-		// 必要に応じて他の環境変数を追加
 	};
 	c.set("envVars", envVars);
 	await next();
@@ -208,7 +173,10 @@ if (process.env.NODE_ENV !== "test") {
 						}
 
 						const sendMarkInline = (
-							conn: WebSocketLike,
+							conn: {
+								send(data: string): void;
+								readyState?: number;
+							},
 							sid: string | null,
 							queue: string[],
 						) => {
