@@ -15,10 +15,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import type * as http from "node:http";
 import { nodeEnvMiddleware } from "./middleware/env-middleware";
-import { errorHandler, notFoundHandler } from "./middleware/error-handlers";
 import { incomingCallHandler } from "./routes/incoming-call";
 import { rootHandler } from "./routes/root";
-import { sendEmailFromSqsHandler } from "./routes/send-email-from-sqs";
 import { wsVoiceHandler } from "./routes/websocket";
 import { wsVoiceNodeHandler } from "./routes/websocket/ws-voice-node-handler";
 
@@ -43,19 +41,8 @@ app.use("*", cors());
 
 // エンドポイント
 app.get("/", rootHandler);
-app.post("/send-mail-from-sqs", sendEmailFromSqsHandler);
-// app.get("/ws", wsSimpleHandler);
-
-// OpenAI Realtime API用のWebSocketエンドポイント
-// app.get("/ws-chat", wsChatHandler);
 app.get("/ws-voice", wsVoiceHandler);
-
-// Twilio着信コール処理エンドポイント
 app.all("/incoming-call", incomingCallHandler);
-
-// エラーハンドラー
-app.notFound(notFoundHandler);
-app.onError(errorHandler);
 
 // Node.js環境でサーバーを起動
 if (process.env.NODE_ENV !== "test") {

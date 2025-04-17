@@ -13,16 +13,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { errorHandler, notFoundHandler } from "./middleware/error-handlers";
 import { cloudflareEnvMiddleware } from "./middleware/env-middleware";
 import { incomingCallHandler } from "./routes/incoming-call";
 import { rootHandler } from "./routes/root";
-import { sendEmailFromSqsHandler } from "./routes/send-email-from-sqs";
-import {
-	wsChatHandler,
-	wsSimpleHandler,
-	wsVoiceHandler,
-} from "./routes/websocket";
+import { wsVoiceHandler } from "./routes/websocket";
 
 // 型定義
 type Env = {
@@ -43,18 +37,7 @@ app.use("*", cors());
 
 // エンドポイント
 app.get("/", rootHandler);
-app.post("/send-mail-from-sqs", sendEmailFromSqsHandler);
-app.get("/ws", wsSimpleHandler);
-
-// OpenAI Realtime API用のWebSocketエンドポイント
-app.get("/ws-chat", wsChatHandler);
 app.get("/ws-voice", wsVoiceHandler);
-
-// Twilio着信コール処理エンドポイント
 app.all("/incoming-call", incomingCallHandler);
-
-// エラーハンドラー
-app.notFound(notFoundHandler);
-app.onError(errorHandler);
 
 export default app;
