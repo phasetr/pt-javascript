@@ -119,27 +119,23 @@ wss.on("connection", async (connection: WebSocket) => {
 			},
 		);
 
-		// セッション初期化
-		const initializeSession = () => {
-			// createSessionUpdateMessage をインライン化
-			const sessionUpdate = {
-				type: "session.update",
-				session: {
-					turn_detection: { type: "server_vad" },
-					input_audio_format: "g711_ulaw",
-					output_audio_format: "g711_ulaw",
-					voice: "alloy",
-					instructions: "Respond simply.",
-					modalities: ["text", "audio"],
-					temperature: 0.8,
-				},
-			};
-			openAiWs.send(JSON.stringify(sessionUpdate));
-		};
-
 		// OpenAIサーバーとの接続が確立したときのハンドラー
 		openAiWs.on("open", async () => {
-			setTimeout(initializeSession, 100);
+			setTimeout(() => {
+				const sessionUpdate = {
+					type: "session.update",
+					session: {
+						turn_detection: { type: "server_vad" },
+						input_audio_format: "g711_ulaw",
+						output_audio_format: "g711_ulaw",
+						voice: "alloy",
+						instructions: "Respond simply.",
+						modalities: ["text", "audio"],
+						temperature: 0.8,
+					},
+				};
+				openAiWs.send(JSON.stringify(sessionUpdate));
+			}, 100);
 		});
 
 		// Listen for messages from the OpenAI WebSocket (and send to Twilio if necessary)
@@ -269,7 +265,7 @@ wss.on("connection", async (connection: WebSocket) => {
 		openAiWs.on("close", async () => {});
 
 		// OpenAI WebSocket側のエラー発生時のハンドリング
-		openAiWs.on("error", async (error: Error) => {});
+		openAiWs.on("error", async () => {});
 	} catch (e) {
 		console.error("WebSocket setup error:", e);
 	}

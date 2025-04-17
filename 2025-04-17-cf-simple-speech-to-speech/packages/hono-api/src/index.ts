@@ -197,7 +197,6 @@ app.get(
 					}
 
 					if (response.type === "response.audio.delta" && response.delta) {
-						// インライン化: handleAudioDelta
 						const audioDelta = {
 							event: "media",
 							streamSid: streamSid,
