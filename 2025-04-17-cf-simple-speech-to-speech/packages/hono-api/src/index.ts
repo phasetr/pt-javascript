@@ -8,26 +8,10 @@
  * - Run `npm run deploy` to publish your worker to Cloudflare
  */
 
-import type { Context } from "hono"; // Context と MiddlewareHandler をインポート (重複を削除)
+import type { Context } from "hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-
-const SYSTEM_MESSAGE = "Respond simply.";
-
-/**
- * 環境変数をコンテキストに追加するための型拡張
- */
-declare module "hono" {
-	interface ContextVariableMap {
-		envVars: {
-			SERVICE_URL: string;
-			OPENAI_API_KEY: string;
-			ENVIRONMENT: string;
-			CLOUDFLARE: string;
-		};
-	}
-}
 
 // Honoアプリケーションの作成
 const app = new Hono<{
@@ -66,10 +50,7 @@ app.all("/incoming-call", async (c: Context) => {
 		const envVars = c.get("envVars");
 		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
   <Response>
-    <Pause length="2"/>
-    <Say>Hello, I am an assistant on Cloudflare!</Say>
-    <Pause length="1"/>
-    <Say>You can start talking!</Say>
+    <Say>You can start talking on Cloudflare!</Say>
     <Connect>
       <Stream url="wss://${envVars.SERVICE_URL}/ws-voice" />
     </Connect>
@@ -187,7 +168,7 @@ app.get(
 							input_audio_format: "g711_ulaw",
 							output_audio_format: "g711_ulaw",
 							voice: "alloy",
-							instructions: SYSTEM_MESSAGE,
+							instructions: "Respond simply.",
 							modalities: ["text", "audio"],
 							temperature: 0.8,
 						},
@@ -248,7 +229,8 @@ app.get(
 					if (response.type === "input_audio_buffer.speech_started") {
 						// インライン化: handleSpeechStartedEvent
 						if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
-							const elapsedTime = latestMediaTimestamp - responseStartTimestampTwilio;
+							const elapsedTime =
+								latestMediaTimestamp - responseStartTimestampTwilio;
 
 							if (lastAssistantItem) {
 								const truncateEvent = {
@@ -318,7 +300,7 @@ app.get(
 											type: "response.create",
 											response: {
 												modalities: ["text", "audio"],
-												instructions: SYSTEM_MESSAGE,
+												instructions: "Respond simply.",
 											},
 										}),
 									);
