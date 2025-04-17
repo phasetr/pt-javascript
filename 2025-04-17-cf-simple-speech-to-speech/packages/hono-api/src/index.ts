@@ -329,8 +329,8 @@ app.get(
 
 			// OpenAI WebSocket側のエラー発生時のハンドリング
 			openAiWs.addEventListener("error", async (error: Event) => {
-        console.error("OpenAI WebSocket error:", error);
-      });
+				console.error("OpenAI WebSocket error:", error);
+			});
 		} catch (e) {
 			console.error("WebSocket setup error:", e);
 			return c.text("Internal Server Error", 500);
