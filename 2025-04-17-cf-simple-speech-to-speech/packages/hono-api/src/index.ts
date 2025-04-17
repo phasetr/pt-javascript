@@ -16,192 +16,6 @@ import { logger } from "hono/logger";
 const SYSTEM_MESSAGE = "Respond simply.";
 
 /**
- * WebSocketの共通インターフェース
- * CloudflareとNode.jsの両方の環境で動作するように
- */
-interface WebSocketLike {
-	send(data: string): void;
-	readyState?: number;
-}
-
-/**
- * 音声入力が開始された時の処理
- * AIの応答を途中で切り上げる
- */
-function handleSpeechStartedEvent(
-	markQueue: string[],
-	responseStartTimestampTwilio: number | null,
-	latestMediaTimestamp: number,
-	lastAssistantItem: string | null,
-	openAiWs: WebSocketLike,
-	serverWs: WebSocketLike,
-	streamSid: string | null,
-) {
-	if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
-		const elapsedTime = latestMediaTimestamp - responseStartTimestampTwilio;
-
-		if (lastAssistantItem) {
-			const truncateEvent = {
-				type: "conversation.item.truncate",
-				item_id: lastAssistantItem,
-				content_index: 0,
-				audio_end_ms: elapsedTime,
-			};
-			openAiWs.send(JSON.stringify(truncateEvent));
-		}
-
-		serverWs.send(
-			JSON.stringify({
-				event: "clear",
-				streamSid: streamSid,
-			}),
-		);
-
-		return {
-			markQueue: [],
-			lastAssistantItem: null,
-			responseStartTimestampTwilio: null,
-		};
-	}
-
-	return { markQueue, lastAssistantItem, responseStartTimestampTwilio };
-}
-
-/**
- * マークメッセージを送信
- * AIの応答再生が完了したかどうかを確認するため
- */
-function sendMark(
-	connection: WebSocketLike,
-	streamSid: string | null,
-	markQueue: string[],
-) {
-	if (streamSid) {
-		const markEvent = {
-			event: "mark",
-			streamSid: streamSid,
-			mark: { name: "responsePart" },
-		};
-		connection.send(JSON.stringify(markEvent));
-		markQueue.push("responsePart");
-	}
-	return markQueue;
-}
-
-/**
- * OpenAIからの音声データを処理
- */
-function handleAudioDelta(
-	response: {
-		delta: string;
-		item_id?: string;
-	},
-	streamSid: string | null,
-	serverWs: WebSocketLike,
-	responseStartTimestampTwilio: number | null,
-	latestMediaTimestamp: number,
-	lastAssistantItem: string | null,
-	markQueue: string[],
-) {
-	const audioDelta = {
-		event: "media",
-		streamSid: streamSid,
-		media: { payload: response.delta },
-	};
-	serverWs.send(JSON.stringify(audioDelta));
-
-	// First delta from a new response starts the elapsed time counter
-	let newResponseStartTimestampTwilio = responseStartTimestampTwilio;
-	if (!responseStartTimestampTwilio) {
-		newResponseStartTimestampTwilio = latestMediaTimestamp;
-	}
-
-	let newLastAssistantItem = lastAssistantItem;
-	if (response.item_id) {
-		newLastAssistantItem = response.item_id;
-	}
-
-	const newMarkQueue = sendMark(serverWs, streamSid, [...markQueue]);
-
-	return {
-		responseStartTimestampTwilio: newResponseStartTimestampTwilio,
-		lastAssistantItem: newLastAssistantItem,
-		markQueue: newMarkQueue,
-	};
-}
-
-/**
- * Twilioからのメディアメッセージを処理
- */
-function handleMediaMessage(
-	data: {
-		media: {
-			payload: string;
-			timestamp?: number;
-		};
-	},
-	openAiWs: WebSocketLike,
-) {
-	const audioAppend = {
-		type: "input_audio_buffer.append",
-		audio: data.media.payload,
-	};
-	openAiWs.send(JSON.stringify(audioAppend));
-}
-
-/**
- * Cloudflare Workers環境でOpenAI Realtime APIに接続するためのWebSocketを作成する
- *
- * @param openai_api_key OpenAI APIキー
- * @returns Cloudflare Workers環境でのWebSocket接続
- */
-async function createCloudflareRealtimeApiWebSocket(
-	openai_api_key: string,
-): Promise<WebSocket> {
-	try {
-		const response = await fetch(
-			"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
-			{
-				headers: {
-					Authorization: `Bearer ${openai_api_key}`,
-					"OpenAI-Beta": "realtime=v1",
-					Upgrade: "websocket",
-					Connection: "Upgrade",
-					"Sec-WebSocket-Version": "13",
-					"Sec-WebSocket-Key": btoa(
-						Math.random().toString(36).substring(2, 15),
-					),
-				},
-			},
-		);
-
-		// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
-		const webSocket = response.webSocket;
-
-		if (!webSocket) {
-			throw new Error(
-				"WebSocket接続の確立に失敗しました: response.webSocketがnull",
-			);
-		}
-
-		// WebSocket接続を確立
-		// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
-		webSocket.accept();
-
-		// エラーハンドリングを追加
-		webSocket.addEventListener("error", (error: Event) => {
-			console.error("👺WebSocket接続エラー:", error);
-		});
-
-		console.log("👺OpenAI Realtime API WebSocket connection established");
-		return webSocket;
-	} catch (error) {
-		console.error("👺WebSocket接続エラー:", error);
-		throw error;
-	}
-}
-
-/**
  * 環境変数をコンテキストに追加するための型拡張
  */
 declare module "hono" {
@@ -318,8 +132,49 @@ app.get(
 			let conversationStarted = false;
 
 			// OpenAIとのWebSocket接続を作成
-			const openAiWs =
-				await createCloudflareRealtimeApiWebSocket(OPENAI_API_KEY);
+			const openAiWs = await (async () => {
+				try {
+					const response = await fetch(
+						"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+						{
+							headers: {
+								Authorization: `Bearer ${OPENAI_API_KEY}`,
+								"OpenAI-Beta": "realtime=v1",
+								Upgrade: "websocket",
+								Connection: "Upgrade",
+								"Sec-WebSocket-Version": "13",
+								"Sec-WebSocket-Key": btoa(
+									Math.random().toString(36).substring(2, 15),
+								),
+							},
+						},
+					);
+
+					// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+					const webSocket = response.webSocket;
+
+					if (!webSocket) {
+						throw new Error(
+							"WebSocket接続の確立に失敗しました: response.webSocketがnull",
+						);
+					}
+
+					// WebSocket接続を確立
+					// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+					webSocket.accept();
+
+					// エラーハンドリングを追加
+					webSocket.addEventListener("error", (error: Event) => {
+						console.error("👺WebSocket接続エラー:", error);
+					});
+
+					console.log("👺OpenAI Realtime API WebSocket connection established");
+					return webSocket;
+				} catch (error) {
+					console.error("👺WebSocket接続エラー:", error);
+					throw error;
+				}
+			})();
 
 			// OpenAIサーバーとの接続が確立したときのハンドラー
 			openAiWs.addEventListener("open", async () => {
@@ -361,34 +216,61 @@ app.get(
 					}
 
 					if (response.type === "response.audio.delta" && response.delta) {
-						const result = handleAudioDelta(
-							response,
-							streamSid,
-							server,
-							responseStartTimestampTwilio,
-							latestMediaTimestamp,
-							lastAssistantItem,
-							markQueue,
-						);
+						// インライン化: handleAudioDelta
+						const audioDelta = {
+							event: "media",
+							streamSid: streamSid,
+							media: { payload: response.delta },
+						};
+						server.send(JSON.stringify(audioDelta));
 
-						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
-						lastAssistantItem = result.lastAssistantItem;
-						markQueue = result.markQueue;
+						// First delta from a new response starts the elapsed time counter
+						if (!responseStartTimestampTwilio) {
+							responseStartTimestampTwilio = latestMediaTimestamp;
+						}
+
+						if (response.item_id) {
+							lastAssistantItem = response.item_id;
+						}
+
+						// インライン化: sendMark
+						if (streamSid) {
+							const markEvent = {
+								event: "mark",
+								streamSid: streamSid,
+								mark: { name: "responsePart" },
+							};
+							server.send(JSON.stringify(markEvent));
+							markQueue.push("responsePart");
+						}
 					}
 
 					if (response.type === "input_audio_buffer.speech_started") {
-						const result = handleSpeechStartedEvent(
-							markQueue,
-							responseStartTimestampTwilio,
-							latestMediaTimestamp,
-							lastAssistantItem,
-							openAiWs,
-							server,
-							streamSid,
-						);
-						markQueue = result.markQueue;
-						lastAssistantItem = result.lastAssistantItem;
-						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
+						// インライン化: handleSpeechStartedEvent
+						if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
+							const elapsedTime = latestMediaTimestamp - responseStartTimestampTwilio;
+
+							if (lastAssistantItem) {
+								const truncateEvent = {
+									type: "conversation.item.truncate",
+									item_id: lastAssistantItem,
+									content_index: 0,
+									audio_end_ms: elapsedTime,
+								};
+								openAiWs.send(JSON.stringify(truncateEvent));
+							}
+
+							server.send(
+								JSON.stringify({
+									event: "clear",
+									streamSid: streamSid,
+								}),
+							);
+
+							markQueue = [];
+							lastAssistantItem = null;
+							responseStartTimestampTwilio = null;
+						}
 					}
 				} catch (error) {
 					console.error("👺Error processing OpenAI message:", error);
@@ -409,8 +291,12 @@ app.get(
 							latestMediaTimestamp = data.media.timestamp;
 
 							if (openAiWs.readyState === WebSocket.OPEN) {
-								// 共通ロジックを使用してメディアメッセージを処理
-								handleMediaMessage(data, openAiWs);
+								// インライン化: handleMediaMessage
+								const audioAppend = {
+									type: "input_audio_buffer.append",
+									audio: data.media.payload,
+								};
+								openAiWs.send(JSON.stringify(audioAppend));
 
 								// Node.js版にはない
 								// 会話がまだ開始されていない場合は、会話を開始する
