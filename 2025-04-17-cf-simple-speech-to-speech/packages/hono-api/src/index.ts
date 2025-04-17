@@ -12,83 +12,8 @@ import type { Context, MiddlewareHandler } from "hono"; // Context と Middlewar
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-// import { cloudflareEnvMiddleware } from "./middleware/env-middleware"; // 削除
-// import { incomingCallHandler } from "./routes/incoming-call"; // 削除
-// import { rootHandler } from "./routes/root"; // 削除
-// import { wsVoiceHandler } from "./routes/websocket"; // 削除
 
-// constants.ts から必要な定数
-/**
- * OpenAI Realtime APIのURL
- */
-const REALTIME_API_URL =
-	"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01";
-
-// routes/websocket/ws-voice-common.ts から必要な定数と関数
-/**
- * 共通の定数
- */
 const SYSTEM_MESSAGE = "Respond simply.";
-const VOICE = "alloy";
-
-// utils/logger.ts から必要な関数
-/**
- * ログレベルの型定義
- */
-type LogLevel = "log" | "warn" | "error";
-
-/**
- * ログ保存結果の型定義
- */
-type LogResult = {
-	success: boolean;
-	error?: string | Error;
-	[key: string]: unknown;
-};
-
-/**
- * 汎用ロガー関数
- *
- * @param message ログメッセージ
- * @param isLocal ローカル環境かどうか (true: ローカル環境, false: 本番環境)
- * @param level ログレベル ('log' | 'warn' | 'error')
- * @param sessionId セッションID (オプション、ログファイル名に使用)
- * @returns Promise<LogResult> ログ保存の結果
- */
-async function logMessage(
-	message: string,
-	isLocal: boolean,
-	level: LogLevel = "log",
-	sessionId = "app",
-): Promise<LogResult> {
-	// ログメッセージにレベルを付加
-	const formattedMessage = `[${level.toUpperCase()}] ${message}`;
-
-	try {
-		if (isLocal) {
-			// ローカル環境: audio-saver-api を使用してファイルに保存
-			const response = await fetch(
-				`http://localhost:3001/save-log?sessionId=${sessionId}`,
-				{
-					method: "POST",
-					body: formattedMessage,
-					headers: {
-						"Content-Type": "text/plain",
-					},
-				},
-			);
-			// レスポンスを解析して結果を返す
-			return (await response.json()) as LogResult;
-		}
-
-		// 本番環境: console にのみ出力
-		console[level](formattedMessage);
-		return { success: true } as LogResult;
-	} catch (error) {
-		// エラーハンドリング - 結果オブジェクトのみを返す
-		return { success: false, error } as LogResult;
-	}
-}
 
 /**
  * WebSocketの共通インターフェース
@@ -109,7 +34,7 @@ function createSessionUpdateMessage() {
 			turn_detection: { type: "server_vad" },
 			input_audio_format: "g711_ulaw",
 			output_audio_format: "g711_ulaw",
-			voice: VOICE,
+			voice: "alloy",
 			instructions: SYSTEM_MESSAGE,
 			modalities: ["text", "audio"],
 			temperature: 0.8,
@@ -279,17 +204,21 @@ async function createCloudflareRealtimeApiWebSocket(
 	openai_api_key: string,
 ): Promise<WebSocket> {
 	try {
-		const apiUrl = REALTIME_API_URL.replace("wss://", "https://");
-		const response = await fetch(apiUrl, {
-			headers: {
-				Authorization: `Bearer ${openai_api_key}`,
-				"OpenAI-Beta": "realtime=v1",
-				Upgrade: "websocket",
-				Connection: "Upgrade",
-				"Sec-WebSocket-Version": "13",
-				"Sec-WebSocket-Key": btoa(Math.random().toString(36).substring(2, 15)),
+		const response = await fetch(
+			"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+			{
+				headers: {
+					Authorization: `Bearer ${openai_api_key}`,
+					"OpenAI-Beta": "realtime=v1",
+					Upgrade: "websocket",
+					Connection: "Upgrade",
+					"Sec-WebSocket-Version": "13",
+					"Sec-WebSocket-Key": btoa(
+						Math.random().toString(36).substring(2, 15),
+					),
+				},
 			},
-		});
+		);
 
 		// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
 		const webSocket = response.webSocket;
@@ -453,9 +382,6 @@ const wsVoiceHandler = async (
 ) => {
 	// 環境変数の判定（ローカル環境かどうか）
 	// 標準ではfalse、環境変数があり、かつ値がLOCALである場合にのみtrue
-	const isLocalEnvironment: boolean = Boolean(
-		c.env.ENVIRONMENT && c.env.ENVIRONMENT === "LOCAL",
-	);
 
 	// Node.js版は別処理
 	// WebSocketサーバーを作成
@@ -503,12 +429,6 @@ const wsVoiceHandler = async (
 
 		// OpenAIサーバーとの接続が確立したときのハンドラー
 		openAiWs.addEventListener("open", async () => {
-			await logMessage(
-				"Connected to the OpenAI Realtime API",
-				isLocalEnvironment,
-				"log",
-				streamSid || "unknown",
-			);
 			openAiConnected = true; // Node.js版にはない
 			setTimeout(initializeSession, 100);
 		});
@@ -524,12 +444,7 @@ const wsVoiceHandler = async (
 
 				// エラーイベントのみログ出力
 				if (response.type === "error") {
-					await logMessage(
-						`Response: ${JSON.stringify(response)}`,
-						isLocalEnvironment,
-						"log",
-						streamSid || "unknown",
-					);
+					console.error("👺OpenAI Realtime API Error:", response);
 				}
 
 				// Node.js版にはない
@@ -569,13 +484,7 @@ const wsVoiceHandler = async (
 					responseStartTimestampTwilio = result.responseStartTimestampTwilio;
 				}
 			} catch (error) {
-				const errorMessage = `Error processing OpenAI message: ${error}, Raw message: ${typeof event.data === "string" ? event.data : "binary data"}`;
-				await logMessage(
-					errorMessage,
-					isLocalEnvironment,
-					"error",
-					streamSid || "unknown",
-				);
+				console.error("👺Error processing OpenAI message:", error);
 			}
 		});
 
@@ -609,13 +518,6 @@ const wsVoiceHandler = async (
 						break;
 					case "start":
 						streamSid = data.start.streamSid;
-						await logMessage(
-							`Incoming stream has started: ${streamSid}`,
-							isLocalEnvironment,
-							"log",
-							streamSid || "unknown",
-						);
-
 						// Reset start and media timestamp on a new stream
 						responseStartTimestampTwilio = null;
 						latestMediaTimestamp = 0;
@@ -630,51 +532,27 @@ const wsVoiceHandler = async (
 						break;
 				}
 			} catch (error) {
-				const errorMessage = `Error parsing Twilio message: ${error}, Message: ${typeof event.data === "string" ? event.data : "binary data"}`;
-				await logMessage(
-					errorMessage,
-					isLocalEnvironment,
-					"error",
-					streamSid || "unknown",
-				);
+				console.error("👺Error processing Twilio message:", error);
 			}
 		});
 
 		// Handle connection close
 		server.addEventListener("close", async () => {
-			await logMessage(
-				"Client disconnected",
-				isLocalEnvironment,
-				"log",
-				streamSid || "unknown",
-			);
 			if (openAiWs.readyState === WebSocket.OPEN) openAiWs.close();
 		});
 
 		// Handle WebSocket close and errors
 		openAiWs.addEventListener("close", async () => {
-			await logMessage(
-				"Disconnected from the OpenAI Realtime API",
-				isLocalEnvironment,
-				"log",
-				streamSid || "unknown",
-			);
 			// Node.js版にはない
 			openAiConnected = false;
 		});
 
 		// OpenAI WebSocket側のエラー発生時のハンドリング
 		openAiWs.addEventListener("error", async (error: Event) => {
-			await logMessage(
-				`Error in the OpenAI WebSocket: ${error}`,
-				isLocalEnvironment,
-				"error",
-				streamSid || "unknown",
-			);
+			console.error("👺OpenAI WebSocket error:", error);
 		});
 	} catch (e) {
-		const errorMessage = `Error setting up WebSocket: ${e}`;
-		await logMessage(errorMessage, isLocalEnvironment, "error", "setup_error");
+		console.error("👺WebSocket接続エラー:", e);
 		return c.text("Internal Server Error", 500);
 	}
 
