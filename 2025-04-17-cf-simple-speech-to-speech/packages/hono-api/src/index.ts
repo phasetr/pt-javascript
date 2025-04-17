@@ -1,4 +1,4 @@
-v/**
+/**
  * Hono API サーバー (Cloudflare Workers環境用)
  *
  * このファイルはCloudflare Workers環境用です。
