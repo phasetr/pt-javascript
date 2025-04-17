@@ -19,25 +19,6 @@ import WebSocket, { WebSocketServer } from "ws";
 
 // .envファイルを読み込む
 dotenv.config();
-const SYSTEM_MESSAGE = "Respond simply.";
-
-/**
- * セッション初期化用のメッセージを作成
- */
-const createSessionUpdateMessage = () => {
-	return {
-		type: "session.update",
-		session: {
-			turn_detection: { type: "server_vad" },
-			input_audio_format: "g711_ulaw",
-			output_audio_format: "g711_ulaw",
-			voice: "alloy",
-			instructions: SYSTEM_MESSAGE,
-			modalities: ["text", "audio"],
-			temperature: 0.8,
-		},
-	};
-};
 
 /**
  * WebSocketの共通インターフェース
@@ -47,132 +28,6 @@ interface WebSocketLike {
 	send(data: string): void;
 	readyState?: number;
 }
-
-/**
- * 音声入力が開始された時の処理
- * AIの応答を途中で切り上げる
- */
-const handleSpeechStartedEvent = (
-	markQueue: string[],
-	responseStartTimestampTwilio: number | null,
-	latestMediaTimestamp: number,
-	lastAssistantItem: string | null,
-	openAiWs: WebSocketLike,
-	serverWs: WebSocketLike,
-	streamSid: string | null,
-) => {
-	if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
-		const elapsedTime = latestMediaTimestamp - responseStartTimestampTwilio;
-
-		if (lastAssistantItem) {
-			const truncateEvent = {
-				type: "conversation.item.truncate",
-				item_id: lastAssistantItem,
-				content_index: 0,
-				audio_end_ms: elapsedTime,
-			};
-			openAiWs.send(JSON.stringify(truncateEvent));
-		}
-
-		serverWs.send(
-			JSON.stringify({
-				event: "clear",
-				streamSid: streamSid,
-			}),
-		);
-
-		return {
-			markQueue: [],
-			lastAssistantItem: null,
-			responseStartTimestampTwilio: null,
-		};
-	}
-
-	return { markQueue, lastAssistantItem, responseStartTimestampTwilio };
-};
-
-/**
- * マークメッセージを送信
- * AIの応答再生が完了したかどうかを確認するため
- */
-const sendMark = (
-	connection: WebSocketLike,
-	streamSid: string | null,
-	markQueue: string[],
-) => {
-	if (streamSid) {
-		const markEvent = {
-			event: "mark",
-			streamSid: streamSid,
-			mark: { name: "responsePart" },
-		};
-		connection.send(JSON.stringify(markEvent));
-		markQueue.push("responsePart");
-	}
-	return markQueue;
-};
-
-/**
- * OpenAIからの音声データを処理
- */
-const handleAudioDelta = (
-	response: {
-		delta: string;
-		item_id?: string;
-	},
-	streamSid: string | null,
-	serverWs: WebSocketLike,
-	responseStartTimestampTwilio: number | null,
-	latestMediaTimestamp: number,
-	lastAssistantItem: string | null,
-	markQueue: string[],
-) => {
-	const audioDelta = {
-		event: "media",
-		streamSid: streamSid,
-		media: { payload: response.delta },
-	};
-	serverWs.send(JSON.stringify(audioDelta));
-
-	// First delta from a new response starts the elapsed time counter
-	let newResponseStartTimestampTwilio = responseStartTimestampTwilio;
-	if (!responseStartTimestampTwilio) {
-		newResponseStartTimestampTwilio = latestMediaTimestamp;
-	}
-
-	let newLastAssistantItem = lastAssistantItem;
-	if (response.item_id) {
-		newLastAssistantItem = response.item_id;
-	}
-
-	const newMarkQueue = sendMark(serverWs, streamSid, [...markQueue]);
-
-	return {
-		responseStartTimestampTwilio: newResponseStartTimestampTwilio,
-		lastAssistantItem: newLastAssistantItem,
-		markQueue: newMarkQueue,
-	};
-};
-
-/**
- * Twilioからのメディアメッセージを処理
- */
-const handleMediaMessage = (
-	data: {
-		media: {
-			payload: string;
-			timestamp?: number;
-		};
-	},
-	openAiWs: WebSocketLike,
-) => {
-	const audioAppend = {
-		type: "input_audio_buffer.append",
-		audio: data.media.payload,
-	};
-	openAiWs.send(JSON.stringify(audioAppend));
-};
-
 // =======================================
 // ミドルウェア
 // =======================================
@@ -198,11 +53,19 @@ declare module "hono" {
 	}
 }
 
-/**
- * Node.js環境用の環境変数ミドルウェア
- * process.envから環境変数を取得し、コンテキストにセットする
- */
-const nodeEnvMiddleware = async (c: Context, next: Next) => {
+// Honoアプリケーションの作成
+const app = new Hono<{
+	Bindings: {
+		OPENAI_API_KEY?: string;
+		SERVICE_URL?: string;
+		ENVIRONMENT?: string;
+		[key: string]: unknown;
+	};
+}>();
+
+// ミドルウェアの設定
+// nodeEnvMiddleware をインライン化
+app.use("*", async (c: Context, next: Next) => {
 	const envVars: AppEnvVars = {
 		SERVICE_URL: process.env.SERVICE_URL || "",
 		OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
@@ -210,56 +73,29 @@ const nodeEnvMiddleware = async (c: Context, next: Next) => {
 		CLOUDFLARE: process.env.CLOUDFLARE || "false", // Node.js環境ではデフォルトでfalse
 		// 必要に応じて他の環境変数を追加
 	};
-
-	// コンテキストに環境変数をセット
 	c.set("envVars", envVars);
 	await next();
-};
+});
+app.use("*", logger());
+app.use("*", cors());
 
-// =======================================
-// ハンドラー
-// =======================================
-
-/**
- * ルートエンドポイントのハンドラー関数
- * APIの基本情報と利用可能なエンドポイントの一覧を返します
- * 環境変数CLOUDFLAREの値に基づいて実行環境を判定し、メッセージを切り替えます
- */
-const rootHandler = (c: Context) => {
-	// 環境変数からCloudflare環境かどうかを判定
-	// .dev.varsまたは.envファイルのCLOUDFLARE環境変数を使用
-	const envVars = c.get("envVars");
-	const isCloudflare = envVars?.CLOUDFLARE === "true";
-	const environment = isCloudflare ? "Cloudflare" : "Node.js";
-
+// エンドポイント
+app.get("/", (c: Context) => {
 	return c.json({
-		message: `CWHDT API Server on ${environment}`,
+		message: "CWHDT API Server on Node.js",
 		version: "1.0.0",
-		environment,
 	});
-};
-
-/**
- * Twilioからの着信コールを処理するエンドポイント
- * TwiMLレスポンスを返し、WebSocketストリームへの接続を指示する
- */
-const incomingCallHandler = async (c: Context) => {
+});
+app.all("/incoming-call", async (c: Context) => {
 	try {
-		// ミドルウェアでセットされた環境変数を取得
 		const envVars = c.get("envVars");
-		const isCloudflare = envVars?.CLOUDFLARE === "true";
-		const environment = isCloudflare ? "Cloudflare" : "Node.js";
 		const SERVICE_URL = envVars.SERVICE_URL;
 		if (!SERVICE_URL) {
 			throw new Error("SERVICE_URL is not configured");
 		}
-
 		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
   <Response>
-    <Pause length="2"/>
-    <Say>Hello, I am an assistant on ${environment}!</Say>
-    <Pause length="1"/>
-    <Say>You can start talking!</Say>
+    <Say>You can start talking on Node.js!</Say>
     <Connect>
       <Stream url="wss://${SERVICE_URL}/ws-voice" />
     </Connect>
@@ -277,33 +113,22 @@ const incomingCallHandler = async (c: Context) => {
 			"Content-Type": "text/xml",
 		});
 	}
-};
+});
 
-/**
- * Cloudflare環境用のWebSocket Voice ハンドラー
- * このハンドラーはNode.js環境では使用されませんが、
- * インターフェースの一貫性のために含めています
- */
-const wsVoiceHandler = async (c: Context) => {
-	return c.text(
-		"This endpoint is only available in Cloudflare Workers environment",
-		400,
-	);
-};
+// Node.js環境でサーバーを起動
+if (process.env.NODE_ENV !== "test") {
+	const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
+	const server = serve({
+		fetch: app.fetch,
+		port,
+	});
 
-/**
- * Node.js環境用のWebSocketサーバーを設定するための関数
- * OpenAI Realtime APIを使用した音声対話を処理します
- */
-const wsVoiceNodeHandler = (server: http.Server) => {
-	// 環境変数の判定（ローカル環境かどうか）
-	// 標準ではfalse、環境変数があり、かつ値がLOCALである場合にのみtrue
-	const isLocalEnvironment: boolean = Boolean(
-		process.env.ENVIRONMENT && process.env.ENVIRONMENT === "LOCAL",
-	);
-
+	const nodeHttpServer = server as unknown as http.Server;
 	// WebSocketサーバーを作成
-	const wss = new WebSocketServer({ server, path: "/ws-voice" });
+	const wss = new WebSocketServer({
+		server: nodeHttpServer,
+		path: "/ws-voice",
+	});
 
 	wss.on("connection", async (connection: WebSocket) => {
 		try {
@@ -338,7 +163,19 @@ const wsVoiceNodeHandler = (server: http.Server) => {
 
 			// セッション初期化
 			const initializeSession = () => {
-				const sessionUpdate = createSessionUpdateMessage();
+				// createSessionUpdateMessage をインライン化
+				const sessionUpdate = {
+					type: "session.update",
+					session: {
+						turn_detection: { type: "server_vad" },
+						input_audio_format: "g711_ulaw",
+						output_audio_format: "g711_ulaw",
+						voice: "alloy",
+						instructions: "Respond simply.", // SYSTEM_MESSAGE をハードコード
+						modalities: ["text", "audio"],
+						temperature: 0.8,
+					},
+				};
 				openAiWs.send(JSON.stringify(sessionUpdate));
 			};
 
@@ -351,42 +188,76 @@ const wsVoiceNodeHandler = (server: http.Server) => {
 			openAiWs.on("message", async (data: WebSocket.Data) => {
 				try {
 					const response = JSON.parse(data.toString());
-
-					// エラーイベントのみログ出力
-					if (response.type === "error") {
-						console.error("OpenAI API Error:", response);
-					}
-
 					if (response.type === "response.audio.delta" && response.delta) {
-						// 共通ロジックを使用して音声データを処理
-						const result = handleAudioDelta(
-							response,
-							streamSid,
-							connection,
-							responseStartTimestampTwilio,
-							latestMediaTimestamp,
-							lastAssistantItem,
-							markQueue,
-						);
+						const audioDelta = {
+							event: "media",
+							streamSid: streamSid,
+							media: { payload: response.delta },
+						};
+						connection.send(JSON.stringify(audioDelta));
 
-						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
-						lastAssistantItem = result.lastAssistantItem;
-						markQueue = result.markQueue;
+						// First delta from a new response starts the elapsed time counter
+						let newResponseStartTimestampTwilio = responseStartTimestampTwilio;
+						if (!responseStartTimestampTwilio) {
+							newResponseStartTimestampTwilio = latestMediaTimestamp;
+						}
+
+						let newLastAssistantItem = lastAssistantItem;
+						if (response.item_id) {
+							newLastAssistantItem = response.item_id;
+						}
+
+						const sendMarkInline = (
+							conn: WebSocketLike,
+							sid: string | null,
+							queue: string[],
+						) => {
+							if (sid) {
+								const markEvent = {
+									event: "mark",
+									streamSid: sid,
+									mark: { name: "responsePart" },
+								};
+								conn.send(JSON.stringify(markEvent));
+								queue.push("responsePart");
+							}
+							return queue;
+						};
+						const newMarkQueue = sendMarkInline(connection, streamSid, [
+							...markQueue,
+						]);
+
+						responseStartTimestampTwilio = newResponseStartTimestampTwilio;
+						lastAssistantItem = newLastAssistantItem;
+						markQueue = newMarkQueue;
 					}
 
 					if (response.type === "input_audio_buffer.speech_started") {
-						const result = handleSpeechStartedEvent(
-							markQueue,
-							responseStartTimestampTwilio,
-							latestMediaTimestamp,
-							lastAssistantItem,
-							openAiWs,
-							connection,
-							streamSid,
-						);
-						markQueue = result.markQueue;
-						lastAssistantItem = result.lastAssistantItem;
-						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
+						if (markQueue.length > 0 && responseStartTimestampTwilio != null) {
+							const elapsedTime =
+								latestMediaTimestamp - responseStartTimestampTwilio;
+
+							if (lastAssistantItem) {
+								const truncateEvent = {
+									type: "conversation.item.truncate",
+									item_id: lastAssistantItem,
+									content_index: 0,
+									audio_end_ms: elapsedTime,
+								};
+								openAiWs.send(JSON.stringify(truncateEvent));
+							}
+
+							connection.send(
+								JSON.stringify({
+									event: "clear",
+									streamSid: streamSid,
+								}),
+							);
+
+							markQueue = [];
+							lastAssistantItem = null;
+							responseStartTimestampTwilio = null;
+						}
 					}
 				} catch (error) {
 					console.error("Error processing OpenAI message:", error);
@@ -403,13 +274,15 @@ const wsVoiceNodeHandler = (server: http.Server) => {
 							latestMediaTimestamp = data.media.timestamp;
 
 							if (openAiWs.readyState === WebSocket.OPEN) {
-								// 共通ロジックを使用してメディアメッセージを処理
-								handleMediaMessage(data, openAiWs);
+								const audioAppend = {
+									type: "input_audio_buffer.append",
+									audio: data.media.payload,
+								};
+								openAiWs.send(JSON.stringify(audioAppend));
 							}
 							break;
 						case "start":
 							streamSid = data.start.streamSid;
-							// Reset start and media timestamp on a new stream
 							responseStartTimestampTwilio = null;
 							latestMediaTimestamp = 0;
 							break;
@@ -440,43 +313,6 @@ const wsVoiceNodeHandler = (server: http.Server) => {
 			console.error("WebSocket setup error:", e);
 		}
 	});
-};
-
-// =======================================
-// アプリケーション設定
-// =======================================
-
-// 型定義
-type Env = {
-	OPENAI_API_KEY?: string;
-	SERVICE_URL?: string;
-	ENVIRONMENT?: string;
-	[key: string]: unknown;
-};
-
-// Honoアプリケーションの作成
-const app = new Hono<{ Bindings: Env }>();
-
-// ミドルウェアの設定
-app.use("*", nodeEnvMiddleware); // 環境変数ミドルウェアを最初に適用
-app.use("*", logger());
-app.use("*", cors());
-
-// エンドポイント
-app.get("/", rootHandler);
-app.get("/ws-voice", wsVoiceHandler);
-app.all("/incoming-call", incomingCallHandler);
-
-// Node.js環境でサーバーを起動
-if (process.env.NODE_ENV !== "test") {
-	const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
-	console.log(`Starting Hono server on port ${port} in Node.js environment`);
-	const server = serve({
-		fetch: app.fetch,
-		port,
-	});
-	// WebSocketサーバーをセットアップ
-	wsVoiceNodeHandler(server as unknown as http.Server);
 }
 
 export default app;
