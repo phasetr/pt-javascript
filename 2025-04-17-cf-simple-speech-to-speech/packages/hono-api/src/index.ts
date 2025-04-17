@@ -8,7 +8,7 @@
  * - Run `npm run deploy` to publish your worker to Cloudflare
  */
 
-import type { Context, MiddlewareHandler } from "hono"; // Context と MiddlewareHandler をインポート (重複を削除)
+import type { Context } from "hono"; // Context と MiddlewareHandler をインポート (重複を削除)
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -247,77 +247,255 @@ async function createCloudflareRealtimeApiWebSocket(
 }
 
 /**
- * 日本時間の現在時刻を文字列で返す
- */
-function nowJst() {
-	const now = new Date();
-	return now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
-}
-
-/**
- * アプリケーションで使用する環境変数の型定義
- */
-type AppEnvVars = {
-	SERVICE_URL: string;
-	OPENAI_API_KEY: string;
-	ENVIRONMENT: string;
-	CLOUDFLARE: string;
-	// 必要に応じて他の環境変数を追加
-	[key: string]: string | undefined;
-};
-
-/**
  * 環境変数をコンテキストに追加するための型拡張
  */
 declare module "hono" {
 	interface ContextVariableMap {
-		envVars: AppEnvVars;
+		envVars: {
+			SERVICE_URL: string;
+			OPENAI_API_KEY: string;
+			ENVIRONMENT: string;
+			CLOUDFLARE: string;
+		};
 	}
 }
 
-/**
- * Cloudflare Workers環境用の環境変数ミドルウェア
- * c.envから環境変数を取得し、コンテキストにセットする
- */
-const cloudflareEnvMiddleware: MiddlewareHandler<{
-	// export を削除
-	Bindings: Record<string, string | undefined>;
-}> = async (c, next) => {
-	const envVars: AppEnvVars = {
+// Honoアプリケーションの作成
+const app = new Hono<{
+	Bindings: {
+		OPENAI_API_KEY?: string;
+		SERVICE_URL?: string;
+		ENVIRONMENT?: string;
+		CLOUDFLARE?: string;
+	};
+}>();
+
+// ミドルウェアの設定
+app.use("*", async (c, next) => {
+	// Cloudflare Workers環境用の環境変数ミドルウェア
+	// c.envから環境変数を取得し、コンテキストにセットする
+	const envVars: {
+		SERVICE_URL: string;
+		OPENAI_API_KEY: string;
+		ENVIRONMENT: string;
+		CLOUDFLARE: string;
+	} = {
 		SERVICE_URL: c.env.SERVICE_URL || "",
 		OPENAI_API_KEY: c.env.OPENAI_API_KEY || "",
 		ENVIRONMENT: c.env.ENVIRONMENT || "development",
 		CLOUDFLARE: c.env.CLOUDFLARE || "true", // Cloudflare環境ではデフォルトでtrue
-		// 必要に応じて他の環境変数を追加
 	};
 
 	// コンテキストに環境変数をセット
 	c.set("envVars", envVars);
 	await next();
-};
-
-// 型定義
-type Env = {
-	OPENAI_API_KEY?: string;
-	SERVICE_URL?: string;
-	ENVIRONMENT?: string;
-	CLOUDFLARE?: string;
-	[key: string]: unknown;
-};
-
-// Honoアプリケーションの作成
-const app = new Hono<{ Bindings: Env }>();
-
-// ミドルウェアの設定
-app.use("*", cloudflareEnvMiddleware); // 環境変数ミドルウェアを最初に適用
+}); // 環境変数ミドルウェアを最初に適用
 app.use("*", logger());
 app.use("*", cors());
 
 // エンドポイント
-// incomingCallHandler の定義 (nowJst は後で追加)
-const incomingCallHandler = async (c: Context) => {
+app.get("/", (c: Context) => {
+	return c.json({
+		message: "CWHDT API Server on Cloudflare",
+		version: "1.0.0",
+	});
+});
+
+app.get(
+	"/ws-voice",
+	async (
+		c: Context<{
+			Bindings: {
+				OPENAI_API_KEY?: string;
+				SERVICE_URL?: string;
+				ENVIRONMENT?: string;
+				CLOUDFLARE?: string;
+			};
+		}>,
+	) => {
+		// WebSocketサーバーを作成
+		const webSocketPair = new WebSocketPair();
+		// Cloudflareのエッジとクライアント（Twilio）間のWebSocket接続
+		const client = webSocketPair[0];
+		// Workerスクリプト内で操作するWebSocket接続
+		const server = webSocketPair[1];
+
+		try {
+			// Node.js版にはない
+			// WebSocketの接続をアップグレード
+			const upgradeHeader = c.req.header("Upgrade");
+			if (!upgradeHeader || upgradeHeader !== "websocket") {
+				return c.text("Expected Upgrade: websocket", 400);
+			}
+
+			// Connection-specific state
+			let streamSid: string | null = null;
+			let latestMediaTimestamp = 0;
+			let lastAssistantItem: string | null = null;
+			let markQueue: string[] = [];
+			let responseStartTimestampTwilio: number | null = null;
+
+			// 環境変数から OPENAI_API_KEY を取得
+			const OPENAI_API_KEY = c.env.OPENAI_API_KEY;
+			if (!OPENAI_API_KEY) {
+				console.error("OpenAI API Key is not set");
+				return c.text("OpenAI API Key is not set", 500);
+			}
+
+			// Node.js版にはない
+			// OpenAIサーバーとの接続状態管理
+			let openAiConnected = false;
+			let conversationStarted = false;
+
+			// OpenAIとのWebSocket接続を作成
+			const openAiWs =
+				await createCloudflareRealtimeApiWebSocket(OPENAI_API_KEY);
+
+			// OpenAIサーバーとの接続が確立したときのハンドラー
+			openAiWs.addEventListener("open", async () => {
+				openAiConnected = true; // Node.js版にはない
+				setTimeout(() => {
+					const sessionUpdate = createSessionUpdateMessage();
+					openAiWs.send(JSON.stringify(sessionUpdate));
+				}, 100);
+			});
+
+			// Listen for messages from the OpenAI WebSocket (and send to client if necessary)
+			openAiWs.addEventListener("message", async (event: MessageEvent) => {
+				try {
+					// データがArrayBufferかどうかをチェック
+					const response =
+						event.data instanceof ArrayBuffer
+							? JSON.parse(new TextDecoder().decode(event.data))
+							: JSON.parse(event.data);
+
+					// エラーイベントのみログ出力
+					if (response.type === "error") {
+						console.error("👺OpenAI Realtime API Error:", response);
+					}
+
+					// Node.js版にはない
+					if (response.type === "session.created") {
+						openAiConnected = true;
+					}
+
+					if (response.type === "response.audio.delta" && response.delta) {
+						// 共通ロジックを使用して音声データを処理
+						const result = handleAudioDelta(
+							response,
+							streamSid,
+							server,
+							responseStartTimestampTwilio,
+							latestMediaTimestamp,
+							lastAssistantItem,
+							markQueue,
+						);
+
+						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
+						lastAssistantItem = result.lastAssistantItem;
+						markQueue = result.markQueue;
+					}
+
+					if (response.type === "input_audio_buffer.speech_started") {
+						const result = handleSpeechStartedEvent(
+							markQueue,
+							responseStartTimestampTwilio,
+							latestMediaTimestamp,
+							lastAssistantItem,
+							openAiWs,
+							server,
+							streamSid,
+						);
+						markQueue = result.markQueue;
+						lastAssistantItem = result.lastAssistantItem;
+						responseStartTimestampTwilio = result.responseStartTimestampTwilio;
+					}
+				} catch (error) {
+					console.error("👺Error processing OpenAI message:", error);
+				}
+			});
+
+			// Handle incoming messages from Twilio
+			server.addEventListener("message", async (event: MessageEvent) => {
+				try {
+					// データがArrayBufferかどうかをチェック
+					const data =
+						event.data instanceof ArrayBuffer
+							? JSON.parse(new TextDecoder().decode(event.data))
+							: JSON.parse(event.data);
+
+					switch (data.event) {
+						case "media":
+							latestMediaTimestamp = data.media.timestamp;
+
+							if (openAiWs.readyState === WebSocket.OPEN) {
+								// 共通ロジックを使用してメディアメッセージを処理
+								handleMediaMessage(data, openAiWs);
+
+								// Node.js版にはない
+								// 会話がまだ開始されていない場合は、会話を開始する
+								if (openAiConnected && !conversationStarted) {
+									// 空の会話アイテムを作成（音声入力用）
+									openAiWs.send(JSON.stringify(createConversationItem()));
+									// レスポンス作成リクエストを送信
+									openAiWs.send(JSON.stringify(createResponseItem()));
+									conversationStarted = true;
+								}
+							}
+							break;
+						case "start":
+							streamSid = data.start.streamSid;
+							// Reset start and media timestamp on a new stream
+							responseStartTimestampTwilio = null;
+							latestMediaTimestamp = 0;
+							break;
+						case "mark":
+							if (markQueue.length > 0) {
+								markQueue.shift();
+							}
+							break;
+						default:
+							console.log("👺Received non-media event:", data.event);
+							break;
+					}
+				} catch (error) {
+					console.error("👺Error processing Twilio message:", error);
+				}
+			});
+
+			// Handle connection close
+			server.addEventListener("close", async () => {
+				if (openAiWs.readyState === WebSocket.OPEN) openAiWs.close();
+			});
+
+			// Handle WebSocket close and errors
+			openAiWs.addEventListener("close", async () => {
+				// Node.js版にはない
+				openAiConnected = false;
+			});
+
+			// OpenAI WebSocket側のエラー発生時のハンドリング
+			openAiWs.addEventListener("error", async (error: Event) => {
+				console.error("👺OpenAI WebSocket error:", error);
+			});
+		} catch (e) {
+			console.error("👺WebSocket接続エラー:", e);
+			return c.text("Internal Server Error", 500);
+		}
+
+		// Node.js版にはない
+		// WebSocketの接続を開始
+		server.accept();
+		// レスポンスを返す
+		return new Response(null, {
+			status: 101,
+			webSocket: client,
+		});
+	},
+);
+
+app.all("/incoming-call", async (c: Context) => {
 	try {
-		console.log(`👺This is get /incoming-call: ${nowJst()}`); // nowJst() は未定義
 		// ミドルウェアでセットされた環境変数を取得
 		const envVars = c.get("envVars");
 		const isCloudflare = envVars?.CLOUDFLARE === "true";
@@ -350,225 +528,6 @@ const incomingCallHandler = async (c: Context) => {
 			"Content-Type": "text/xml",
 		});
 	}
-};
-
-/**
- * ルートエンドポイントのハンドラー関数
- * APIの基本情報と利用可能なエンドポイントの一覧を返します
- * 環境変数CLOUDFLAREの値に基づいて実行環境を判定し、メッセージを切り替えます
- */
-const rootHandler = (c: Context) => {
-	// 環境変数からCloudflare環境かどうかを判定
-	// .dev.varsまたは.envファイルのCLOUDFLARE環境変数を使用
-	const envVars = c.get("envVars");
-	const isCloudflare = envVars?.CLOUDFLARE === "true";
-	const environment = isCloudflare ? "Cloudflare" : "Node.js";
-
-	return c.json({
-		message: `CWHDT API Server on ${environment}`,
-		version: "1.0.0",
-		environment,
-	});
-};
-
-/**
- * Cloudflare環境用のWebSocketサーバーを設定するための関数
- * OpenAI Realtime APIを使用した音声対話を処理します
- */
-const wsVoiceHandler = async (
-	c: Context<{
-		Bindings: Env & { OPENAI_API_KEY?: string; ENVIRONMENT?: string };
-	}>,
-) => {
-	// 環境変数の判定（ローカル環境かどうか）
-	// 標準ではfalse、環境変数があり、かつ値がLOCALである場合にのみtrue
-
-	// Node.js版は別処理
-	// WebSocketサーバーを作成
-	const webSocketPair = new WebSocketPair();
-	// Cloudflareのエッジとクライアント（Twilio）間のWebSocket接続
-	const client = webSocketPair[0];
-	// Workerスクリプト内で操作するWebSocket接続
-	const server = webSocketPair[1];
-
-	try {
-		// Node.js版にはない
-		// WebSocketの接続をアップグレード
-		const upgradeHeader = c.req.header("Upgrade");
-		if (!upgradeHeader || upgradeHeader !== "websocket") {
-			return c.text("Expected Upgrade: websocket", 400);
-		}
-
-		// Connection-specific state
-		let streamSid: string | null = null;
-		let latestMediaTimestamp = 0;
-		let lastAssistantItem: string | null = null;
-		let markQueue: string[] = [];
-		let responseStartTimestampTwilio: number | null = null;
-
-		// 環境変数から OPENAI_API_KEY を取得
-		const OPENAI_API_KEY = c.env.OPENAI_API_KEY;
-		if (!OPENAI_API_KEY) {
-			console.error("OpenAI API Key is not set");
-			return c.text("OpenAI API Key is not set", 500);
-		}
-
-		// Node.js版にはない
-		// OpenAIサーバーとの接続状態管理
-		let openAiConnected = false;
-		let conversationStarted = false;
-
-		// OpenAIとのWebSocket接続を作成
-		const openAiWs = await createCloudflareRealtimeApiWebSocket(OPENAI_API_KEY);
-
-		// セッション初期化
-		const initializeSession = () => {
-			const sessionUpdate = createSessionUpdateMessage();
-			openAiWs.send(JSON.stringify(sessionUpdate));
-		};
-
-		// OpenAIサーバーとの接続が確立したときのハンドラー
-		openAiWs.addEventListener("open", async () => {
-			openAiConnected = true; // Node.js版にはない
-			setTimeout(initializeSession, 100);
-		});
-
-		// Listen for messages from the OpenAI WebSocket (and send to client if necessary)
-		openAiWs.addEventListener("message", async (event: MessageEvent) => {
-			try {
-				// データがArrayBufferかどうかをチェック
-				const response =
-					event.data instanceof ArrayBuffer
-						? JSON.parse(new TextDecoder().decode(event.data))
-						: JSON.parse(event.data);
-
-				// エラーイベントのみログ出力
-				if (response.type === "error") {
-					console.error("👺OpenAI Realtime API Error:", response);
-				}
-
-				// Node.js版にはない
-				if (response.type === "session.created") {
-					openAiConnected = true;
-				}
-
-				if (response.type === "response.audio.delta" && response.delta) {
-					// 共通ロジックを使用して音声データを処理
-					const result = handleAudioDelta(
-						response,
-						streamSid,
-						server,
-						responseStartTimestampTwilio,
-						latestMediaTimestamp,
-						lastAssistantItem,
-						markQueue,
-					);
-
-					responseStartTimestampTwilio = result.responseStartTimestampTwilio;
-					lastAssistantItem = result.lastAssistantItem;
-					markQueue = result.markQueue;
-				}
-
-				if (response.type === "input_audio_buffer.speech_started") {
-					const result = handleSpeechStartedEvent(
-						markQueue,
-						responseStartTimestampTwilio,
-						latestMediaTimestamp,
-						lastAssistantItem,
-						openAiWs,
-						server,
-						streamSid,
-					);
-					markQueue = result.markQueue;
-					lastAssistantItem = result.lastAssistantItem;
-					responseStartTimestampTwilio = result.responseStartTimestampTwilio;
-				}
-			} catch (error) {
-				console.error("👺Error processing OpenAI message:", error);
-			}
-		});
-
-		// Handle incoming messages from Twilio
-		server.addEventListener("message", async (event: MessageEvent) => {
-			try {
-				// データがArrayBufferかどうかをチェック
-				const data =
-					event.data instanceof ArrayBuffer
-						? JSON.parse(new TextDecoder().decode(event.data))
-						: JSON.parse(event.data);
-
-				switch (data.event) {
-					case "media":
-						latestMediaTimestamp = data.media.timestamp;
-
-						if (openAiWs.readyState === WebSocket.OPEN) {
-							// 共通ロジックを使用してメディアメッセージを処理
-							handleMediaMessage(data, openAiWs);
-
-							// Node.js版にはない
-							// 会話がまだ開始されていない場合は、会話を開始する
-							if (openAiConnected && !conversationStarted) {
-								// 空の会話アイテムを作成（音声入力用）
-								openAiWs.send(JSON.stringify(createConversationItem()));
-								// レスポンス作成リクエストを送信
-								openAiWs.send(JSON.stringify(createResponseItem()));
-								conversationStarted = true;
-							}
-						}
-						break;
-					case "start":
-						streamSid = data.start.streamSid;
-						// Reset start and media timestamp on a new stream
-						responseStartTimestampTwilio = null;
-						latestMediaTimestamp = 0;
-						break;
-					case "mark":
-						if (markQueue.length > 0) {
-							markQueue.shift();
-						}
-						break;
-					default:
-						console.log("👺Received non-media event:", data.event);
-						break;
-				}
-			} catch (error) {
-				console.error("👺Error processing Twilio message:", error);
-			}
-		});
-
-		// Handle connection close
-		server.addEventListener("close", async () => {
-			if (openAiWs.readyState === WebSocket.OPEN) openAiWs.close();
-		});
-
-		// Handle WebSocket close and errors
-		openAiWs.addEventListener("close", async () => {
-			// Node.js版にはない
-			openAiConnected = false;
-		});
-
-		// OpenAI WebSocket側のエラー発生時のハンドリング
-		openAiWs.addEventListener("error", async (error: Event) => {
-			console.error("👺OpenAI WebSocket error:", error);
-		});
-	} catch (e) {
-		console.error("👺WebSocket接続エラー:", e);
-		return c.text("Internal Server Error", 500);
-	}
-
-	// Node.js版にはない
-	// WebSocketの接続を開始
-	server.accept();
-	// レスポンスを返す
-	return new Response(null, {
-		status: 101,
-		webSocket: client,
-	});
-};
-
-// エンドポイント
-app.get("/", rootHandler);
-app.get("/ws-voice", wsVoiceHandler);
-app.all("/incoming-call", incomingCallHandler);
+});
 
 export default app;
