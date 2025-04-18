@@ -1,8 +1,8 @@
 /**
- * Hono API サーバー (Cloudflare Workers環境用)
+ * Hono API Server (for Cloudflare Workers environment)
  *
- * このファイルはCloudflare Workers環境用です。
- * Node.js環境では index.node.ts を使用してください。
+ * This file is for Cloudflare Workers environment.
+ * For Node.js environment, please use index.node.ts.
  *
  * - Run `npm run dev` in your terminal to start a Cloudflare Workers development server
  * - Run `npm run deploy` to publish your worker to Cloudflare
@@ -13,7 +13,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-// Honoアプリケーションの作成
 const app = new Hono<{
 	Bindings: {
 		OPENAI_API_KEY?: string;
@@ -23,7 +22,6 @@ const app = new Hono<{
 	};
 }>();
 
-// ミドルウェアの設定
 app.use("*", async (c: Context, next: Next) => {
 	c.set("envVars", {
 		SERVICE_URL: c.env.SERVICE_URL || "",
@@ -36,7 +34,6 @@ app.use("*", async (c: Context, next: Next) => {
 app.use("*", logger());
 app.use("*", cors());
 
-// エンドポイント
 app.get("/", (c: Context) => {
 	return c.json({
 		message: "CWHDT API Server on Cloudflare",
@@ -58,7 +55,7 @@ app.all("/incoming-call", async (c: Context) => {
 			"Content-Type": "text/xml",
 		});
 	} catch (e) {
-		console.error("環境変数の取得に失敗しました。", e);
+		console.error("Failed to retrieve environment variables.", e);
 		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
   <Response>
     <Say>We have some errors, sorry.</Say>
@@ -86,7 +83,7 @@ app.get(
 		const server = webSocketPair[1];
 
 		try {
-			// Node.js版にはない
+			// Not in Node.js version
 			const upgradeHeader = c.req.header("Upgrade");
 			if (!upgradeHeader || upgradeHeader !== "websocket") {
 				return c.text("Expected Upgrade: websocket", 400);
@@ -99,7 +96,6 @@ app.get(
 			let markQueue: string[] = [];
 			let responseStartTimestampTwilio: number | null = null;
 
-			// 環境変数から OPENAI_API_KEY を取得
 			const OPENAI_API_KEY = c.env.OPENAI_API_KEY;
 			if (!OPENAI_API_KEY) {
 				console.error("OpenAI API Key is not set");
@@ -107,12 +103,12 @@ app.get(
 				// throw new Error("OpenAI API Key is not set");
 			}
 
-			// Node.js版にはない
-			// OpenAIサーバーとの接続状態管理
+			// Not in Node.js version
+			// Manage connection state with OpenAI server
 			let openAiConnected = false;
 			let conversationStarted = false;
 
-			// OpenAIとのWebSocket接続を作成
+			// Create WebSocket connection with OpenAI
 			const openAiWs = await (async () => {
 				try {
 					const response = await fetch(
@@ -141,11 +137,10 @@ app.get(
 						);
 					}
 
-					// WebSocket接続を確立
-					// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+					// Establish WebSocket connection
+					// @ts-ignore
 					webSocket.accept();
 
-					// エラーハンドリングを追加
 					webSocket.addEventListener("error", (error: Event) => {
 						console.error("👺WebSocket接続エラー:", error);
 					});
@@ -157,7 +152,7 @@ app.get(
 				}
 			})();
 
-			// OpenAIサーバーとの接続が確立したときのハンドラー
+			// Handler for when connection with OpenAI server is established
 			openAiWs.addEventListener("open", async () => {
 				openAiConnected = true; // Node.js版にはない
 				setTimeout(() => {
@@ -180,7 +175,6 @@ app.get(
 			// Listen for messages from the OpenAI WebSocket (and send to client if necessary)
 			openAiWs.addEventListener("message", async (event: MessageEvent) => {
 				try {
-					// データがArrayBufferかどうかをチェック
 					const response =
 						event.data instanceof ArrayBuffer
 							? JSON.parse(new TextDecoder().decode(event.data))
@@ -270,10 +264,10 @@ app.get(
 								};
 								openAiWs.send(JSON.stringify(audioAppend));
 
-								// Node.js版にはない
-								// 会話がまだ開始されていない場合は、会話を開始する
+								// Not in Node.js version
+								// If conversation has not started yet, start it
 								if (openAiConnected && !conversationStarted) {
-									// 空の会話アイテムを作成（音声入力用）
+									// Create empty conversation item (for voice input)
 									openAiWs.send(
 										JSON.stringify({
 											type: "conversation.item.create",
@@ -284,7 +278,7 @@ app.get(
 											},
 										}),
 									);
-									// レスポンス作成リクエストを送信
+									// Send response creation request
 									openAiWs.send(
 										JSON.stringify({
 											type: "response.create",
@@ -327,7 +321,7 @@ app.get(
 				openAiConnected = false;
 			});
 
-			// OpenAI WebSocket側のエラー発生時のハンドリング
+			// Handling errors from OpenAI WebSocket
 			openAiWs.addEventListener("error", async (error: Event) => {
 				console.error("OpenAI WebSocket error:", error);
 			});
@@ -336,10 +330,9 @@ app.get(
 			return c.text("Internal Server Error", 500);
 		}
 
-		// Node.js版にはない
-		// WebSocketの接続を開始
+		// Not in Node.js version
+		// Start WebSocket connection
 		server.accept();
-		// レスポンスを返す
 		return new Response(null, {
 			status: 101,
 			webSocket: client,
@@ -359,34 +352,30 @@ app.get(
 			};
 		}>,
 	) => {
-		// WebSocketの接続をアップグレード
 		const upgradeHeader = c.req.header("Upgrade");
 		if (!upgradeHeader || upgradeHeader !== "websocket") {
 			return c.text("Expected Upgrade: websocket", 400);
 		}
 
-		// OpenAIのAPIキー取得
 		const OPENAI_API_KEY = c.env.OPENAI_API_KEY;
 		if (!OPENAI_API_KEY) {
 			console.error("YOU MUST SET AN OPENAI_API_KEY!");
 			return c.text("OpenAI API Key is not set", 500);
 		}
 
-		// WebSocketPairの作成
-		// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+		// Create WebSocketPair
+		// @ts-ignore
 		const webSocketPair = new WebSocketPair();
 		const client = webSocketPair[0];
 		const server = webSocketPair[1];
 
-		// 接続固有の状態
-		const streamSidRef = { value: null as string | null };
-		/** クライアントに返すメッセージをためる配列 */
+		/** Array to store messages to be returned to the client */
 		const returnMessages: string[] = [];
 
-		// OpenAIとのWebSocket接続を作成
+		// Create WebSocket connection with OpenAI
 		const openAiWs = await (async () => {
 			try {
-				// fetch APIを使用してWebSocketアップグレードリクエストを送信
+				// Send WebSocket upgrade request using fetch API
 				const response = await fetch(
 					"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
 					{
@@ -412,13 +401,13 @@ app.get(
 					);
 				}
 
-				// WebSocket接続を確立
-				// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+				// Establish WebSocket connection
+				// @ts-ignore
 				webSocket.accept();
 
-				// エラーハンドリングを追加
+				// Add error handling
 				webSocket.addEventListener("error", (error: Event) => {
-					console.error("👺WebSocket接続エラー:", error);
+					console.error("👺WebSocket connection error:", error);
 				});
 
 				console.log("👺OpenAI Realtime API WebSocket connection established");
@@ -429,10 +418,10 @@ app.get(
 			}
 		})();
 
-		// OpenAIサーバーとの接続状態管理
+		// Manage connection state with OpenAI server
 		let openAiConnected = false;
 
-		// WebSocketの接続が確立された直後にセッション更新メッセージを送信
+		// Send session update message immediately after WebSocket connection is established
 		openAiWs.send(
 			JSON.stringify({
 				type: "session.update",
@@ -444,19 +433,19 @@ app.get(
 			}),
 		);
 
-		// OpenAIサーバーとの接続が確立したときのハンドラー
+		// Handler for when connection with OpenAI server is established
 		openAiWs.addEventListener("open", () => {
 			console.log("Connected to the OpenAI Realtime API");
 			openAiConnected = true;
 		});
 
-		// OpenAI WebSocket側のcloseイベントのハンドリング
+		// Handling close event from OpenAI WebSocket
 		openAiWs.addEventListener("close", () => {
 			console.log("Disconnected from the OpenAI Realtime API");
 			openAiConnected = false;
 		});
 
-		// OpenAI WebSocket側のエラー発生時のハンドリング
+		// Handling errors from OpenAI WebSocket
 		openAiWs.addEventListener("error", (error: Event) => {
 			console.error("OpenAI WebSocketエラー:", error);
 			if (error instanceof Error) {
@@ -464,37 +453,37 @@ app.get(
 			}
 		});
 
-		// OpenAI WebSocketからのメッセージ処理
+		// Processing messages from OpenAI WebSocket
 		openAiWs.addEventListener("message", (event: MessageEvent) => {
 			try {
-				// データがArrayBufferの場合は文字列に変換
+				// Convert data to string if it's ArrayBuffer
 				const response =
 					typeof event.data === "string"
 						? JSON.parse(event.data)
 						: JSON.parse(new TextDecoder().decode(event.data));
 
-				// session.createdイベントを受信したときにopenAiConnectedフラグをtrueに設定
+				// Set openAiConnected flag to true when session.created event is received
 				if (response.type === "session.created") {
 					openAiConnected = true;
 				}
 
-				// レスポンスタイプに応じた処理
+				// Process based on response type
 				switch (response.type) {
 					case "response.text.delta":
-						// deltaが存在することを確認
+						// Verify delta exists
 						if (typeof response.delta !== "string") {
 							console.error("Received delta is not a string:", response.delta);
 							return;
 						}
 
-						// 差分を配列にためる
+						// Store delta in array
 						returnMessages.push(response.delta);
 
-						// 部分的に段落の区切りが含まれているか確認
+						// Check if paragraph breaks are included
 						if (response.delta.includes("\n\n")) {
-							// すべての差分を一度連結して段落に分割
+							// Concatenate all deltas and split into paragraphs
 							const paragraphs = returnMessages.join("").split("\n\n");
-							// 最後の要素はまだ完結していない可能性があるので取り除く
+							// Remove the last element as it may not be complete yet
 							const completeParagraphs = paragraphs.slice(0, -1);
 							const remainder = paragraphs[paragraphs.length - 1];
 
@@ -503,13 +492,13 @@ app.get(
 									server.send(para);
 								}
 							}
-							// 未完の段落部分を再度蓄積する
-							returnMessages.length = 0; // 配列をクリア
+							// Re-accumulate the incomplete paragraph part
+							returnMessages.length = 0; // Clear array
 							returnMessages.push(remainder);
 						}
 						break;
 					case "response.text.done":
-						// 最終的なテキストを組み立て、段落ごとに分割して送信
+						// Build final text and send it split by paragraphs
 						{
 							const fullMessage = returnMessages.join("");
 							const paragraphs = fullMessage.split("\n\n");
@@ -523,7 +512,7 @@ app.get(
 								}
 							}
 						}
-						returnMessages.length = 0; // 配列をクリア
+						returnMessages.length = 0; // Clear array
 						break;
 					case "response.done":
 						if (server.readyState === WebSocket.OPEN) {
@@ -541,10 +530,10 @@ app.get(
 			}
 		});
 
-		// クライアントからのメッセージを処理
+		// Process messages from client
 		server.addEventListener("message", (event: MessageEvent) => {
 			try {
-				// データがArrayBufferの場合は文字列に変換
+				// Convert data to string if it's ArrayBuffer
 				const data =
 					typeof event.data === "string"
 						? event.data
@@ -583,7 +572,7 @@ app.get(
 							openAiWs.send(JSON.stringify(responseItem));
 						} else {
 							console.warn(
-								"OpenAIとの接続が確立されていないため、メッセージを送信できません",
+								"Cannot send message because connection with OpenAI is not established",
 							);
 						}
 						break;
@@ -593,12 +582,12 @@ app.get(
 			}
 		});
 
-		// エラー発生時のイベントハンドラー
+		// Event handler for errors
 		server.addEventListener("error", (event: Event) => {
 			console.error("WebSocket error:", event);
 		});
 
-		// 接続が閉じられたときのイベントハンドラー
+		// Event handler for when connection is closed
 		server.addEventListener("close", () => {
 			console.log("WebSocket connection closed");
 			if (openAiConnected) {
