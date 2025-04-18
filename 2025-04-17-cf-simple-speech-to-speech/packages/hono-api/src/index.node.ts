@@ -1,8 +1,8 @@
 /**
- * Hono API サーバー (Node.js環境用)
+ * Hono API Server (for Node.js environment)
  *
- * このファイルはNode.js環境用です。
- * Cloudflare Workers環境では index.ts を使用してください。
+ * This file is for Node.js environment.
+ * For Cloudflare Workers environment, please use index.ts.
  *
  * - Run `npm run dev:node` to start a Node.js development server
  */
@@ -16,10 +16,8 @@ import { logger } from "hono/logger";
 import type * as http from "node:http";
 import WebSocket, { WebSocketServer } from "ws";
 
-// .envファイルを読み込む
 dotenv.config();
 
-// Honoアプリケーションの作成
 const app = new Hono<{
 	Bindings: {
 		OPENAI_API_KEY?: string;
@@ -29,7 +27,6 @@ const app = new Hono<{
 	};
 }>();
 
-// ミドルウェアの設定
 app.use("*", async (c: Context, next: Next) => {
 	c.set("envVars", {
 		SERVICE_URL: process.env.SERVICE_URL || "",
@@ -42,7 +39,6 @@ app.use("*", async (c: Context, next: Next) => {
 app.use("*", logger());
 app.use("*", cors());
 
-// エンドポイント
 app.get("/", (c: Context) => {
 	return c.json({
 		message: "CWHDT API Server on Node.js",
@@ -64,7 +60,7 @@ app.all("/incoming-call", async (c: Context) => {
 			"Content-Type": "text/xml",
 		});
 	} catch (e) {
-		console.error("環境変数の取得に失敗しました。", e);
+		console.error("Failed to retrieve environment variables.", e);
 		const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
   <Response>
     <Say>We have some errors, sorry.</Say>
@@ -82,7 +78,6 @@ const server = serve({
 });
 
 const nodeHttpServer = server as unknown as http.Server;
-// WebSocketサーバーを作成
 const wss = new WebSocketServer({
 	server: nodeHttpServer,
 	path: "/ws-voice",
@@ -97,7 +92,6 @@ wss.on("connection", async (connection: WebSocket) => {
 		let markQueue: string[] = [];
 		let responseStartTimestampTwilio: number | null = null;
 
-		// 環境変数から OPENAI_API_KEY を取得
 		const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 		if (!OPENAI_API_KEY) {
 			throw new Error("OpenAI API Key is not set");
@@ -119,7 +113,7 @@ wss.on("connection", async (connection: WebSocket) => {
 			},
 		);
 
-		// OpenAIサーバーとの接続が確立したときのハンドラー
+		// Handler for when connection with OpenAI server is established
 		openAiWs.on("open", async () => {
 			setTimeout(() => {
 				const sessionUpdate = {
@@ -244,7 +238,7 @@ wss.on("connection", async (connection: WebSocket) => {
 		// Handle WebSocket close and errors
 		openAiWs.on("close", async () => {});
 
-		// OpenAI WebSocket側のエラー発生時のハンドリング
+		// Handling errors from OpenAI WebSocket
 		openAiWs.on("error", async (error) => {
 			console.error("OpenAI WebSocket error:", error);
 		});
