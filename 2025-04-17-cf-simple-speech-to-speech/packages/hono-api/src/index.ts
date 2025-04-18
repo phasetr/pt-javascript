@@ -128,12 +128,12 @@ app.get(
 						},
 					);
 
-					// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+					// @ts-ignore
 					const webSocket = response.webSocket;
 
 					if (!webSocket) {
 						throw new Error(
-							"WebSocket接続の確立に失敗しました: response.webSocketがnull",
+							"Failed to connect WebSocket: response.webSocket is null",
 						);
 					}
 
@@ -142,12 +142,12 @@ app.get(
 					webSocket.accept();
 
 					webSocket.addEventListener("error", (error: Event) => {
-						console.error("👺WebSocket接続エラー:", error);
+						console.error("👺WebSocket connection error:", error);
 					});
 
 					return webSocket;
 				} catch (error) {
-					console.error("👺WebSocket接続エラー:", error);
+					console.error("👺WebSocket connection error:", error);
 					throw error;
 				}
 			})();
@@ -392,12 +392,12 @@ app.get(
 					},
 				);
 
-				// @ts-ignore - Cloudflare Workers固有のAPIのため型エラーを無視
+				// @ts-ignore
 				const webSocket = response.webSocket;
 
 				if (!webSocket) {
 					throw new Error(
-						"WebSocket接続の確立に失敗しました: response.webSocketがnull",
+						"Failed to connect WebSocket connection: response.webSocket is null",
 					);
 				}
 
@@ -413,7 +413,7 @@ app.get(
 				console.log("👺OpenAI Realtime API WebSocket connection established");
 				return webSocket;
 			} catch (error) {
-				console.error("👺WebSocket接続エラー:", error);
+				console.error("👺WebSocket connection error:", error);
 				throw error;
 			}
 		})();
@@ -447,9 +447,9 @@ app.get(
 
 		// Handling errors from OpenAI WebSocket
 		openAiWs.addEventListener("error", (error: Event) => {
-			console.error("OpenAI WebSocketエラー:", error);
+			console.error("OpenAI WebSocket error:", error);
 			if (error instanceof Error) {
-				console.error("エラーメッセージ:", error.message);
+				console.error(error.message);
 			}
 		});
 
