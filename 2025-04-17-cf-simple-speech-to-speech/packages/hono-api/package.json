@@ -21,7 +21,7 @@
 		"tsx": "^4.19.3",
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
-		"wrangler": "^4.10.0"
+		"wrangler": "^4.12.0"
 	},
 	"dependencies": {
 		"@aws-sdk/client-cloudformation": "^3.777.0",
@@ -32,5 +32,5 @@
 		"hono": "^4.7.5",
 		"ws": "^8.18.1"
 	},
-	"packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
+	"packageManager": "pnpm@10.8.1"
 }
