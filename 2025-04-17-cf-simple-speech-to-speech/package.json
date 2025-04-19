@@ -11,6 +11,7 @@
 		"hono:cf:types": "pnpm --filter=hono-api run cf-typegen",
 		"hono:cf:dev": "pnpm --filter=hono-api dev",
 		"hono:node:dev": "pnpm --filter=hono-api dev:node",
+		"hono:save": "pnpm --filter=hono-api dev:save",
 		"prepare": "husky",
 		"twilio:dev-phone": "twilio profiles:use caller && twilio dev-phone"
 	},

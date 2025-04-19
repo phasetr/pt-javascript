@@ -35,5 +35,6 @@ dist
 *.ulaw
 *.wav
 *.pcm16
+packages/hono-api/output
 
 !bin/*.ts

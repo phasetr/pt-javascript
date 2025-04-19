@@ -172,6 +172,10 @@ app.get(
 				}, 100);
 			});
 
+			// Track audio chunks for each response
+			let audioChunks: string[] = [];
+			const currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
 			// Listen for messages from the OpenAI WebSocket (and send to client if necessary)
 			openAiWs.addEventListener("message", async (event: MessageEvent) => {
 				try {
@@ -186,6 +190,9 @@ app.get(
 					}
 
 					if (response.type === "response.audio.delta" && response.delta) {
+						// Save audio data for later storage
+						audioChunks.push(response.delta);
+
 						const audioDelta = {
 							event: "media",
 							streamSid: streamSid,
@@ -209,6 +216,61 @@ app.get(
 							};
 							server.send(JSON.stringify(markEvent));
 							markQueue.push("responsePart");
+						}
+					}
+
+					// When response is done, save all data to the server
+					if (response.type === "response.done") {
+						const timestamp = new Date().toISOString();
+
+						// Save transcription to server if available
+						if (response?.response?.output?.[0]?.content?.[0]?.transcript) {
+							try {
+								await fetch("http://localhost:3500/save-data", {
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										sessionId: currentSessionId,
+										type: "transcription",
+										data: response.response.output[0].content[0].transcript,
+										timestamp,
+									}),
+								});
+								console.log(
+									`Transcription saved for session: ${currentSessionId}`,
+								);
+							} catch (error) {
+								console.error("Error saving transcription:", error);
+							}
+						}
+
+						// Save audio to server if available
+						if (audioChunks.length > 0) {
+							try {
+								// Combine all audio chunks
+								const combinedAudio = audioChunks.join("");
+
+								await fetch("http://localhost:3500/save-data", {
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json",
+									},
+									body: JSON.stringify({
+										sessionId: currentSessionId,
+										type: "audio",
+										data: combinedAudio,
+										timestamp,
+									}),
+								});
+								console.log(`Audio saved for session: ${currentSessionId}`);
+							} catch (error) {
+								console.error("Error saving audio:", error);
+							}
+
+							// Reset audio chunks for next response
+							audioChunks = [];
 						}
 					}
 

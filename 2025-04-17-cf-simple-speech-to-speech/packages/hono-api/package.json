@@ -10,6 +10,7 @@
 		"start": "wrangler dev --port 3000",
 		"dev:node": "tsx watch src/index.node.ts",
 		"start:node": "node dist/index.node.js",
+		"dev:save": "tsx watch src/save-server.ts",
 		"build": "tsc",
 		"build:node": "tsc -p tsconfig.node.json",
 		"cf-typegen": "wrangler types"
