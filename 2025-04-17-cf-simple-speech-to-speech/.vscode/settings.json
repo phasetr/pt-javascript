@@ -22,6 +22,7 @@
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"cSpell.words": [
+		"acodec",
 		"clinerules",
 		"cwhdt",
 		"flac",
@@ -29,6 +30,8 @@
 		"jscoverage",
 		"kasuharan",
 		"kbps",
+		"libmp",
+		"mulaw",
 		"neverthrow",
 		"pids",
 		"twiml",

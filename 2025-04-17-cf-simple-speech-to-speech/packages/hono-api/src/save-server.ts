@@ -14,6 +14,10 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
+const execPromise = promisify(exec);
 
 dotenv.config();
 
@@ -56,13 +60,45 @@ app.post("/save-data", async (c) => {
 		if (type === "audio") {
 			// Save audio data
 			const audioBuffer = Buffer.from(data, "base64");
-			const audioFilePath = join(
+			const ulawFilePath = join(
 				sessionDir,
 				`${sessionId}_${formattedTimestamp}_audio.ulaw`,
 			);
-			writeFileSync(audioFilePath, audioBuffer);
-			console.log(`Audio saved to: ${audioFilePath}`);
-			return c.json({ success: true, path: audioFilePath });
+			writeFileSync(ulawFilePath, audioBuffer);
+			console.log(`Audio saved to: ${ulawFilePath}`);
+			
+			// Create MP3 file path
+			const mp3FilePath = join(
+				sessionDir,
+				`${sessionId}_${formattedTimestamp}_audio.mp3`,
+			);
+			
+			// Convert ulaw to mp3 using system ffmpeg
+			try {
+				// Use system ffmpeg command to convert ulaw to mp3
+				const ffmpegCommand = `ffmpeg -f mulaw -ar 8000 -ac 1 -i "${ulawFilePath}" -acodec libmp3lame -ar 8000 -ac 1 "${mp3FilePath}"`;
+				
+				await execPromise(ffmpegCommand);
+				console.log(`Audio converted and saved to: ${mp3FilePath}`);
+				
+				return c.json({ 
+					success: true, 
+					paths: {
+						ulaw: ulawFilePath,
+						mp3: mp3FilePath
+					}
+				});
+			} catch (ffmpegError) {
+				console.error("Error converting audio to MP3 with ffmpeg:", ffmpegError);
+				// If conversion fails, at least return the ulaw file path
+				return c.json({ 
+					success: true, 
+					paths: {
+						ulaw: ulawFilePath
+					},
+					error: "Failed to convert to MP3 format"
+				});
+			}
 		}
 
 		if (type === "transcription") {
