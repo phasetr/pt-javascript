@@ -1,5 +1,5 @@
 {
-	"name": "<proj-name>-monorepo",
+	"name": "cgaa-monorepo",
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
@@ -8,7 +8,6 @@
 		"hono:delete": "pnpm --filter=hono-api run delete",
 		"hono:deploy": "pnpm --filter=hono-api run deploy",
 		"hono:dev": "pnpm --filter=hono-api dev",
-		"remix:dev": "pnpm --filter=remix dev",
 		"prepare": "husky"
 	},
 	"devDependencies": {

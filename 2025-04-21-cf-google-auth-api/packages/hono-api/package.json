@@ -1,0 +1,19 @@
+{
+	"name": "hono-api",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"delete": "wrangler delete",
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --port 3000",
+		"start": "wrangler dev --port 3000",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"@cloudflare/workers-types": "^4.20250420.0",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.12.0"
+	}
+}

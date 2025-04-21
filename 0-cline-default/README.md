@@ -106,7 +106,7 @@ wrangler secret put <KEY>
 wrangler secret delete <KEY>
 ```
 
-`wrangler.toml`を書き換えたら次のコマンドを実行
+`wrangler.jsonc`を書き換えたら次のコマンドを実行
 
 ```sh
 npm run typegen
