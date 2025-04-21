@@ -8,6 +8,7 @@ Cloudflare上にHonoによるAPIサーバーを立てる.
 特にGoogle認証を利用してAPIを保護するサンプルを作る.
 Google認証の対象は`phasetr@gmail.com`だけを前提にする.
 本来はデータベース(`D1`)を利用するべきだが,
+単にサンプル作成目的でしかなく,
 実装とインフラを簡潔にするためメールアドレスはハードコードにする.
 
 ## プロジェクトの略称
@@ -61,37 +62,3 @@ mv packages/hono-api packages/hono-api
 
 `wrangler dev --port 3000`などとすれば`wrangler`での起動でもポートが固定できるため,
 必要に応じて利用すること.
-
-機密情報の設定・削除
-
-```sh
-wrangler secret put <KEY>
-wrangler secret delete <KEY>
-```
-
-`wrangler.jsonc`を書き換えたら次のコマンドを実行
-
-```sh
-npm run typegen
-```
-
-```sh
-npm run deploy
-```
-
-```sh
-wrangler delete
-```
-
-アカウントの確認
-
-```sh
-wrangler whoami
-```
-
-アカウントの切り替え
-
-```sh
-wrangler logout
-wrangler login
-```
