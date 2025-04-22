@@ -189,6 +189,32 @@ app.get(
 
 					if (response.type === "response.audio.delta" && response.delta) {
 						try {
+							const timeStamp = new Date().toISOString();
+							// Save event data raw string
+							await fetch("http://localhost:3500/save-data", {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									sessionId: currentSessionId,
+									type: "transcription",
+									data: event.data,
+									timeStamp,
+								}),
+							});
+							await fetch("http://localhost:3500/save-data", {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									sessionId: currentSessionId,
+									type: "transcription",
+									data: JSON.stringify(response),
+									timeStamp,
+								}),
+							});
 							// Save audio delta data
 							await fetch("http://localhost:3500/save-data", {
 								method: "POST",
@@ -199,7 +225,7 @@ app.get(
 									sessionId: currentSessionId,
 									type: "audio",
 									data: response.delta,
-									timeStamp: new Date().toISOString(),
+									timeStamp,
 								}),
 							});
 						} catch (error) {
