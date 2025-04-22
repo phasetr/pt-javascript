@@ -140,6 +140,32 @@ wss.on("connection", async (connection: WebSocket) => {
 				const response = JSON.parse(data.toString());
 				if (response.type === "response.audio.delta" && response.delta) {
 					try {
+						const timeStamp = new Date().toISOString();
+						// Save event data raw string
+						await fetch("http://localhost:3500/save-data", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								sessionId: currentSessionId,
+								type: "transcription",
+								data: data.toString(),
+								timeStamp,
+							}),
+						});
+						await fetch("http://localhost:3500/save-data", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								sessionId: currentSessionId,
+								type: "transcription",
+								data: JSON.stringify(response),
+								timeStamp,
+							}),
+						});
 						// Save audio delta data
 						await fetch("http://localhost:3500/save-data", {
 							method: "POST",
@@ -150,7 +176,7 @@ wss.on("connection", async (connection: WebSocket) => {
 								sessionId: currentSessionId,
 								type: "audio",
 								data: response.delta,
-								timeStamp: new Date().toISOString(),
+								timeStamp,
 							}),
 						});
 					} catch (error) {
