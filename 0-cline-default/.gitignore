@@ -33,3 +33,5 @@ dist
 *.js.map
 *.d.ts
 *.js
+
+*.sqlite*
