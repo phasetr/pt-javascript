@@ -10,7 +10,8 @@
 		"hono:cf:dev": "pnpm --filter=hono-api dev",
     "hono:cf:types": "pnpm --filter=hono-api run cf-typegen",
 		"hono:cf:test": "pnpm --filter=hono-api test",
-		"hono:cf:integration-test": "echo \"Running integration tests. Make sure 'pnpm hono:cf:dev' is running in another terminal!\" && pnpm --filter=hono-api test"
+		"hono:cf:test:unit": "pnpm --filter=hono-api run test:unit",
+		"hono:cf:test:integration": "echo \"Running integration tests. Make sure 'pnpm hono:cf:dev' is running in another terminal!\" && pnpm --filter=hono-api run test:integration"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",

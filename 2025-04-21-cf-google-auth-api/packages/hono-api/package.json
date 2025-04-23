@@ -10,7 +10,9 @@
 		"start": "wrangler dev --port 3000",
 		"cf-typegen": "wrangler types",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"test:unit": "vitest run test/auth.mock.test.ts",
+		"test:integration": "vitest run test/auth.test.ts"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
