@@ -99,8 +99,8 @@ wss.on("connection", async (connection: WebSocket) => {
 		}
 
 		const openAiWs = new WebSocket(
-			// "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
-			"ws://localhost:3500/ws-voice",
+			"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+			// "ws://localhost:3500/ws-voice",
 			{
 				headers: {
 					Authorization: `Bearer ${OPENAI_API_KEY}`,
