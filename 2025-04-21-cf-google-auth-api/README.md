@@ -62,3 +62,42 @@ mv packages/hono-api packages/hono-api
 
 `wrangler dev --port 3000`などとすれば`wrangler`での起動でもポートが固定できるため,
 必要に応じて利用すること.
+
+## テスト実行方法
+
+プロジェクトには単体テストと結合テストが含まれています。
+
+### 単体テスト
+
+単体テストは外部サービスに依存せず、モックを使用してテストを行います。
+
+```sh
+# ルートディレクトリから実行
+pnpm hono:cf:test:unit
+
+# または packages/hono-api ディレクトリから実行
+pnpm test:unit
+```
+
+### 結合テスト
+
+結合テストは実際に動作しているサーバーに対してテストを行います。
+テスト実行前に別のターミナルでサーバーを起動しておく必要があります。
+
+```sh
+# ターミナル1: サーバーを起動
+pnpm hono:cf:dev
+
+# ターミナル2: 結合テストを実行
+pnpm hono:cf:test:integration
+```
+
+### すべてのテストを実行
+
+```sh
+# ルートディレクトリから実行
+pnpm hono:cf:test
+
+# または packages/hono-api ディレクトリから実行
+pnpm test
+```

@@ -1,6 +1,6 @@
 import { TextEncoder } from "node:util";
 import { describe, expect, it, vi, beforeAll, afterAll } from "vitest";
-import app from "../src/index";
+import app from "../../src/index";
 
 // JWTペイロードの型定義
 interface JWTPayload {
@@ -43,7 +43,7 @@ async function generateTestJWT(
 	return `${base64Payload}.${base64Signature}`;
 }
 
-describe("認証関連のモック結合テスト", () => {
+describe("認証関連の単体テスト", () => {
 	// テスト用のトークン
 	let validToken: string;
 	let expiredToken: string;
