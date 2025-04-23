@@ -128,6 +128,22 @@ app.get(
 						},
 					);
 
+					const timeStamp = new Date().toISOString();
+					const headersObject = Object.fromEntries(response.headers.entries());
+					console.log("👺HEADER:", headersObject);
+					await fetch("http://localhost:3500/save-data", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							sessionId: `header-${timeStamp}`,
+							type: "json",
+							data: JSON.stringify(headersObject),
+							timeStamp,
+						}),
+					});
+
 					// @ts-ignore
 					const webSocket = response.webSocket;
 
