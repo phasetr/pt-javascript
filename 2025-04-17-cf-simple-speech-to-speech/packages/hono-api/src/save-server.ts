@@ -7,15 +7,14 @@
  * - Run `npm run save-server` to start the server
  */
 
+import { serve } from "@hono/node-server";
 import dotenv from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { exec } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { createServer } from "node:http";
-import type { Socket } from "node:net";
+import type { Server } from "node:http";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { WebSocketServer } from "ws";
@@ -31,8 +30,6 @@ if (!existsSync(OUTPUT_DIR)) {
 }
 
 const app = new Hono();
-// WebSocketサーバーの初期化
-const wss = new WebSocketServer({ noServer: true });
 
 app.use("*", logger());
 app.use("*", cors());
@@ -140,6 +137,23 @@ app.post("/save-data", async (c) => {
 
 const port = 3500;
 
+// Honoアプリをサーバーに接続して起動
+const server = serve(
+	{
+		fetch: app.fetch,
+		port,
+	},
+	(info) => {
+		console.log(`Run the save server: http://localhost:${info.port}`);
+	},
+);
+
+// WebSocketサーバーの設定
+const wss = new WebSocketServer({
+	server: server as unknown as Server,
+	path: "/ws",
+});
+
 // Set the event handler for the WebSocket server
 wss.on("connection", (ws, request) => {
 	const headers = request.headers;
@@ -167,52 +181,12 @@ wss.on("connection", (ws, request) => {
 	);
 
 	ws.on("message", (message) => {
-		console.log(`Receive a message from a client: ${message}`);
+		ws.send(`Your message: ${message}`);
 	});
 
 	ws.on("close", () => {
-		console.log("Close a connection");
+		console.log("WebSocket connection closed");
 	});
 });
 
-// Node.jsの標準的なHTTPサーバーを作成
-const httpServer = createServer();
-
-// Honoアプリをサーバーに接続
-const server = {
-	fetch: app.fetch,
-	server: httpServer,
-};
-
-// WebSocketサーバーの設定
-httpServer.on(
-	"upgrade",
-	(request: IncomingMessage, socket: Socket, head: Buffer) => {
-		const pathname = new URL(
-			request.url || "",
-			`http://${request.headers.host || "localhost"}`,
-		).pathname;
-
-		if (pathname === "/ws") {
-			wss.handleUpgrade(request, socket, head, (ws) => {
-				wss.emit("connection", ws, request);
-			});
-		} else {
-			console.log(
-				"Close a connection because the request is not a WebSocket one",
-			);
-			socket.destroy();
-		}
-	},
-);
-
-httpServer.on("request", (req: IncomingMessage, res: ServerResponse) => {
-	app.fetch(req, res);
-});
-
-// サーバーを起動
-httpServer.listen(port, () => {
-	console.log(`Run the save server: http://localhost:${port}`);
-});
-
-export default server;
+export default app;
