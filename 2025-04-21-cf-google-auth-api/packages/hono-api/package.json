@@ -12,7 +12,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:unit": "vitest run test/auth.mock.test.ts",
-		"test:integration": "vitest run test/auth.test.ts"
+		"test:integration": "vitest run test/auth.test.ts",
+		"test:google": "vitest run test/auth.google.test.ts"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
