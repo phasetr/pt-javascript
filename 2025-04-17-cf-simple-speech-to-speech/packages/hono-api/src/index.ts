@@ -12,6 +12,7 @@ import type { Context, Next } from "hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { toBase64 } from "./utils";
 
 const app = new Hono<{
 	Bindings: {
@@ -122,7 +123,7 @@ app.get(
 								Upgrade: "websocket",
 								Connection: "Upgrade",
 								"Sec-WebSocket-Version": "13",
-								"Sec-WebSocket-Key": btoa(
+								"Sec-WebSocket-Key": toBase64(
 									Math.random().toString(36).substring(2, 15),
 								),
 								"X-Original-URL":
@@ -472,7 +473,7 @@ app.get(
 							Upgrade: "websocket",
 							Connection: "Upgrade",
 							"Sec-WebSocket-Version": "13",
-							"Sec-WebSocket-Key": btoa(
+							"Sec-WebSocket-Key": toBase64(
 								Math.random().toString(36).substring(2, 15),
 							),
 						},

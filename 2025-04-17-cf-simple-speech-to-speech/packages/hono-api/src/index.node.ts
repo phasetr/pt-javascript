@@ -15,6 +15,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import type * as http from "node:http";
 import WebSocket, { WebSocketServer } from "ws";
+import { toBase64 } from "./utils";
 
 dotenv.config();
 
@@ -98,7 +99,8 @@ wss.on("connection", async (connection: WebSocket) => {
 		}
 
 		const openAiWs = new WebSocket(
-			"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+			// "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+			"ws://localhost:3500/ws-voice",
 			{
 				headers: {
 					Authorization: `Bearer ${OPENAI_API_KEY}`,
@@ -106,9 +108,11 @@ wss.on("connection", async (connection: WebSocket) => {
 					Upgrade: "websocket",
 					Connection: "Upgrade",
 					"Sec-WebSocket-Version": "13",
-					"Sec-WebSocket-Key": btoa(
+					"Sec-WebSocket-Key": toBase64(
 						Math.random().toString(36).substring(2, 15),
 					),
+					"X-Original-URL":
+						"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
 				},
 			},
 		);
