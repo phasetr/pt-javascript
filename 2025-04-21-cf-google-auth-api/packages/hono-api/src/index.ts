@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import type { Context, MiddlewareHandler, Next } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
+import { HTTPException } from "hono/http-exception";
 
 // 許可するメールアドレス
 const ALLOWED_EMAIL = "phasetr@gmail.com";
@@ -24,6 +25,22 @@ interface JWTPayload {
 	email: string;
 	name: string;
 	exp: number;
+}
+
+// トークンレスポンスの型定義
+interface TokenResponse {
+	access_token: string;
+	token_type: string;
+	expires_in: number;
+}
+
+// クライアント認証リクエストの型定義
+interface ClientAuthRequest {
+	client_id: string;
+	client_secret: string;
+	grant_type: string;
+	code?: string;
+	redirect_uri?: string;
 }
 
 // アプリケーションの作成
@@ -111,12 +128,32 @@ app.get("/auth/google/callback", async (c) => {
 	}
 
 	// JWTトークンの生成
-	const jwtSecret = c.env.JWT_SECRET;
 	const payload: JWTPayload = {
 		email: userInfo.email,
 		name: userInfo.name,
 		exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間有効
 	};
+
+	const jwtToken = await generateJWT(c, payload);
+
+	// Cookieにトークンを保存
+	setCookie(c, "auth_token", jwtToken, {
+		httpOnly: true,
+		secure: true,
+		path: "/",
+		maxAge: 60 * 60 * 24, // 24時間
+	});
+
+	// 認証成功後のリダイレクト
+	return c.redirect("/api/private");
+});
+
+// JWTトークンの生成関数
+async function generateJWT<T extends { Bindings: Env }>(
+	c: Context<T>,
+	payload: JWTPayload,
+): Promise<string> {
+	const jwtSecret = c.env.JWT_SECRET;
 
 	// JWTトークンの署名
 	const encoder = new TextEncoder();
@@ -138,31 +175,14 @@ app.get("/auth/google/callback", async (c) => {
 	const base64Signature = btoa(
 		String.fromCharCode(...new Uint8Array(signature)),
 	);
-	const jwtToken = `${base64Payload}.${base64Signature}`;
+	return `${base64Payload}.${base64Signature}`;
+}
 
-	// Cookieにトークンを保存
-	setCookie(c, "auth_token", jwtToken, {
-		httpOnly: true,
-		secure: true,
-		path: "/",
-		maxAge: 60 * 60 * 24, // 24時間
-	});
-
-	// 認証成功後のリダイレクト
-	return c.redirect("/api/private");
-});
-
-// JWTミドルウェア
-const verifyJWT: MiddlewareHandler<{
-	Bindings: Env;
-	Variables: { user: UserInfo };
-}> = async (c, next) => {
-	const token = getCookie(c, "auth_token");
-
-	if (!token) {
-		return c.json({ error: "Authentication required" }, 401);
-	}
-
+// JWTトークンの検証関数
+async function verifyJWTToken<T extends { Bindings: Env }>(
+	c: Context<T>,
+	token: string,
+): Promise<JWTPayload> {
 	try {
 		// トークンの検証
 		const [payloadBase64] = token.split(".");
@@ -170,13 +190,43 @@ const verifyJWT: MiddlewareHandler<{
 
 		// 有効期限のチェック
 		if (payload.exp < Math.floor(Date.now() / 1000)) {
-			return c.json({ error: "Token expired" }, 401);
+			throw new HTTPException(401, { message: "Token expired" });
 		}
 
 		// メールアドレスのチェック
 		if (payload.email !== ALLOWED_EMAIL) {
-			return c.json({ error: "Unauthorized email" }, 403);
+			throw new HTTPException(403, { message: "Unauthorized email" });
 		}
+
+		return payload;
+	} catch (e) {
+		if (e instanceof HTTPException) {
+			throw e;
+		}
+		throw new HTTPException(401, { message: "Invalid token" });
+	}
+}
+
+// JWTミドルウェア
+const verifyJWT: MiddlewareHandler<{
+	Bindings: Env;
+	Variables: { user: UserInfo };
+}> = async (c, next) => {
+	// Cookieからトークンを取得
+	let token = getCookie(c, "auth_token");
+
+	// Authorization headerからトークンを取得（Cookieより優先）
+	const authHeader = c.req.header("Authorization");
+	if (authHeader?.startsWith("Bearer ")) {
+		token = authHeader.substring(7);
+	}
+
+	if (!token) {
+		return c.json({ error: "Authentication required" }, 401);
+	}
+
+	try {
+		const payload = await verifyJWTToken(c, token);
 
 		// ユーザー情報をコンテキストに追加
 		c.set("user", {
@@ -186,6 +236,9 @@ const verifyJWT: MiddlewareHandler<{
 
 		await next();
 	} catch (e) {
+		if (e instanceof HTTPException) {
+			return c.json({ error: e.message }, e.status);
+		}
 		return c.json({ error: "Invalid token" }, 401);
 	}
 };
@@ -202,6 +255,102 @@ app.get("/api/private", verifyJWT, (c) => {
 		},
 		timestamp: new Date().toISOString(),
 	});
+});
+
+// クライアント認証用のトークン取得エンドポイント
+app.post("/auth/token", async (c) => {
+	// リクエストボディの取得
+	const body = (await c.req.json()) as ClientAuthRequest;
+
+	// クライアントIDとシークレットの検証
+	if (
+		body.client_id !== c.env.GOOGLE_CLIENT_ID ||
+		body.client_secret !== c.env.GOOGLE_CLIENT_SECRET
+	) {
+		return c.json({ error: "Invalid client credentials" }, 401);
+	}
+
+	// 認証コードによる認証
+	if (
+		body.grant_type === "authorization_code" &&
+		body.code &&
+		body.redirect_uri
+	) {
+		// Googleからトークンを取得
+		const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: new URLSearchParams({
+				code: body.code,
+				client_id: body.client_id,
+				client_secret: body.client_secret,
+				redirect_uri: body.redirect_uri,
+				grant_type: "authorization_code",
+			}),
+		});
+
+		const tokens = (await tokenResponse.json()) as { access_token?: string };
+
+		if (!tokens.access_token) {
+			return c.json({ error: "Failed to get access token" }, 400);
+		}
+
+		// ユーザー情報の取得
+		const userInfoResponse = await fetch(
+			"https://www.googleapis.com/oauth2/v2/userinfo",
+			{
+				headers: {
+					Authorization: `Bearer ${tokens.access_token}`,
+				},
+			},
+		);
+
+		const userInfo = (await userInfoResponse.json()) as UserInfo;
+
+		// 許可されたメールアドレスかチェック
+		if (userInfo.email !== ALLOWED_EMAIL) {
+			return c.json({ error: "Unauthorized email" }, 403);
+		}
+
+		// JWTトークンの生成
+		const payload: JWTPayload = {
+			email: userInfo.email,
+			name: userInfo.name,
+			exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間有効
+		};
+
+		const jwtToken = await generateJWT(c, payload);
+
+		// トークンレスポンスの返却
+		return c.json({
+			access_token: jwtToken,
+			token_type: "Bearer",
+			expires_in: 60 * 60 * 24, // 24時間
+		} as TokenResponse);
+	}
+
+	// クライアント認証（client_credentials）
+	if (body.grant_type === "client_credentials") {
+		// 固定のユーザー情報を使用（実際のアプリケーションでは適切な認証が必要）
+		const payload: JWTPayload = {
+			email: ALLOWED_EMAIL,
+			name: "API Client",
+			exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1時間有効
+		};
+
+		const jwtToken = await generateJWT(c, payload);
+
+		// トークンレスポンスの返却
+		return c.json({
+			access_token: jwtToken,
+			token_type: "Bearer",
+			expires_in: 60 * 60, // 1時間
+		} as TokenResponse);
+	}
+
+	return c.json({ error: "Unsupported grant type" }, 400);
 });
 
 // ログアウトエンドポイント
