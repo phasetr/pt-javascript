@@ -114,6 +114,7 @@ app.get(
 					const response = await fetch(
 						// Different from node.js: here we use https, not wss
 						"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+						// "http://localhost:3500/ws-voice",
 						{
 							headers: {
 								Authorization: `Bearer ${OPENAI_API_KEY}`,
@@ -124,6 +125,8 @@ app.get(
 								"Sec-WebSocket-Key": btoa(
 									Math.random().toString(36).substring(2, 15),
 								),
+								"X-Original-URL":
+									"https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
 							},
 						},
 					);
