@@ -2,12 +2,15 @@
 	"name": "hono-api",
 	"version": "0.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"delete": "wrangler delete",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev --port 3000",
 		"start": "wrangler dev --port 3000",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
