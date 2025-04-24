@@ -13,7 +13,7 @@ Cloudflare Workers上でRemix+D1(+Drizzle ORM)での開発環境を構成する�
 
 ## プロジェクトの略称
 
-CRD(Clouflare Remix D1)
+CRD(Cloudflare Remix D1)
 
 ## 基本的なインフラ
 
