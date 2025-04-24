@@ -156,10 +156,9 @@ const wss = new WebSocketServer({
 
 // Set the event handler for the WebSocket server
 wss.on("connection", (ws, request) => {
-	const headers = request.headers;
-	const headersObj: Record<string, string | string[] | undefined> = {};
-	for (const [key, value] of Object.entries(headers)) {
-		headersObj[key] = value;
+	const headersObj: Record<string, string> = {};
+	for (let i = 0; i < request.rawHeaders.length; i += 2) {
+		headersObj[request.rawHeaders[i]] = request.rawHeaders[i + 1];
 	}
 
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

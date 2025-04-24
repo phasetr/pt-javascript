@@ -33,6 +33,7 @@
 		"libmp",
 		"mulaw",
 		"neverthrow",
+		"permessage",
 		"pids",
 		"twiml",
 		"ulaw"
