@@ -9,8 +9,14 @@
 		"dev": "react-router dev",
 		"preview": "pnpm run build && vite preview",
 		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b",
-		"db:push": "wrangler d1 execute DB --local --file=./schema.sql",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate:local": "ENV=local tsx ./scripts/migrate.ts",
+		"db:migrate:prod": "ENV=prod tsx ./scripts/migrate.ts",
+		"db:seed:local": "ENV=local tsx ./scripts/seed.ts",
+		"db:seed:prod": "ENV=prod tsx ./scripts/seed.ts",
+		"db:reset:local": "pnpm db:migrate:local && pnpm db:seed:local",
+		"db:reset:prod": "pnpm db:migrate:prod && pnpm db:seed:prod"
 	},
 	"dependencies": {
 		"@cloudflare/d1": "^1.4.1",
@@ -30,6 +36,8 @@
 		"@types/react-dom": "^19.0.1",
 		"drizzle-kit": "^0.31.0",
 		"tailwindcss": "^4.0.0",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.7.1",
 		"typescript": "^5.7.2",
 		"vite": "^6.2.1",
 		"vite-tsconfig-paths": "^5.1.4",

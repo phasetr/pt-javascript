@@ -74,6 +74,62 @@ npx wrangler versions deploy
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
 
+## Database
+
+This template uses [Cloudflare D1](https://developers.cloudflare.com/d1/) as the database and [Drizzle ORM](https://orm.drizzle.team/) for database access.
+
+### Database Schema
+
+The database schema is defined in `app/db/schema.ts` using Drizzle's type-safe schema builder.
+
+### Migrations
+
+Database migrations are managed using Drizzle Kit:
+
+1. Generate migration files from your schema:
+
+   ```bash
+   npm run db:generate
+   ```
+
+2. Apply migrations to your local development database:
+
+   ```bash
+   npm run db:migrate:local
+   ```
+
+3. Apply migrations to production:
+
+   ```bash
+   npm run db:migrate:prod
+   ```
+
+### Seed Data
+
+Seed data is defined in `drizzle/seed.sql` and can be applied with:
+
+```bash
+npm run db:seed:local  # For local development
+npm run db:seed:prod   # For production
+```
+
+### Reset Database
+
+To reset the database (apply migrations and seed data):
+
+```bash
+npm run db:reset:local  # For local development
+npm run db:reset:prod   # For production
+```
+
+### Database Studio
+
+Drizzle Kit provides a visual interface to explore your database:
+
+```bash
+npm run db:studio
+```
+
 ---
 
 Built with ❤️ using React Router.
