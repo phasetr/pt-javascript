@@ -7,14 +7,15 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
 
 ## プロジェクト概要
 
-Cloudflare Workers上でReact Router+D1(+Drizzle ORM)での開発環境を構成するサンプル.
+Cloudflare Workers上でReact Router+D1(+Drizzle ORM),
+Hono+D1での開発環境を構成するサンプル.
 三項目だけを持つごく簡潔なテーブルを作り,
 そのCRUD処理に関するページを作る.
 ローカル開発環境は自動リロードが効く上で`wrangler dev`で動作するようにしたい.
 
 ## プロジェクトの略称
 
-CRD(Cloudflare RR D1)
+CRD(Cloudflare React router D1, Honoは後付けなので入っていない)
 
 ## 基本的なインフラ
 
@@ -48,8 +49,9 @@ CRD(Cloudflare RR D1)
 3. `Drizzle ORM`を前提にユーザーのテーブルを作り,
    マイグレーション・初期データ作成・ローカルのテーブル作成・リモートへの反映を一通り済ませる.
 4. React RouterでCRUD処理のページを作る.
-5. (手動)動作確認する.
-6. 環境を削除する
+5. Honoのプロジェクトを初期化してReact Routerと同じデータベースから一覧を取得するAPIだけ作る
+6. (手動)動作確認する.
+7. 環境を削除する
 
 ### 自分用(都度消す)
 
