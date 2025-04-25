@@ -26,6 +26,8 @@
 		"frontmatter",
 		"Hono",
 		"isbot",
+		"libsql",
+		"miniflare",
 		"mizchi",
 		"moonbit",
 		"neverthrow",
