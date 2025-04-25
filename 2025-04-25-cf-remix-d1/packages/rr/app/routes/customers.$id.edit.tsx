@@ -1,5 +1,6 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
-import { Form, useActionData, useLoaderData, useNavigate, Link } from "react-router";
+import { Form, useActionData, useLoaderData, Link } from "react-router";
+import { redirect } from "react-router";
 import { type Customer, createDb, customers as customersTable } from "~/db";
 import { eq } from "drizzle-orm";
 
@@ -93,7 +94,8 @@ export async function action({ params, request, context }: ActionArgs) {
 			})
 			.where(eq(customersTable.CustomerId, customerId));
 		
-		return { success: true };
+		// 成功したら顧客詳細ページにリダイレクト
+		return redirect(`/customers/${customerId}`);
 	} catch (error) {
 		console.error("Error updating customer:", error);
 		return {
@@ -107,13 +109,6 @@ export async function action({ params, request, context }: ActionArgs) {
 export default function CustomerEdit() {
 	const { customer } = useLoaderData<{ customer: Customer }>();
 	const actionData = useActionData<ActionData>();
-	const navigate = useNavigate();
-	
-	// 成功したら顧客詳細ページにリダイレクト
-	if (actionData?.success) {
-		navigate(`/customers/${customer.CustomerId}`);
-		return null;
-	}
 	
 	return (
 		<div className="container mx-auto p-4 text-gray-800 dark:text-gray-200">
