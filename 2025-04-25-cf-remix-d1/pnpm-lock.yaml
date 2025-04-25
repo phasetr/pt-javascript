@@ -11,12 +11,18 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
+      drizzle-kit:
+        specifier: ^0.31.0
+        version: 0.31.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
       lint-staged:
         specifier: ^15.5.0
         version: 15.5.1
+      wrangler:
+        specifier: ^4.13.1
+        version: 4.13.1(@cloudflare/workers-types@4.20250424.0)
 
   packages/db:
     dependencies:
