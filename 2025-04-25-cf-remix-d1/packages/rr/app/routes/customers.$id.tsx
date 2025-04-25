@@ -1,7 +1,8 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
+import { type Customer, customers as customersTable } from "db";
 import { eq } from "drizzle-orm";
 import { Link, useLoaderData, useParams } from "react-router";
-import { type Customer, createDb, customers as customersTable } from "~/db";
+import { createDb } from "~/utils/db";
 
 interface LoaderArgs {
 	params: {

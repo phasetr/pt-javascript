@@ -1,6 +1,7 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
+import { type Customer, customers as customersTable } from "db";
 import { Link, useLoaderData } from "react-router";
-import { type Customer, createDb, customers as customersTable } from "db";
+import { createDb } from "~/utils/db";
 
 interface LoaderArgs {
 	context: {

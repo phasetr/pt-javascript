@@ -1,7 +1,8 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
+import { type NewCustomer, customers as customersTable } from "db";
 import { Form, Link, useActionData } from "react-router";
 import { redirect } from "react-router";
-import { type NewCustomer, createDb, customers as customersTable } from "~/db";
+import { createDb } from "~/utils/db";
 
 interface ActionArgs {
 	request: Request;
