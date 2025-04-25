@@ -1,6 +1,7 @@
 # README
 
 - [参考：2025-01-22 Remix + Cloudflare Pages + D1を使ってみる](https://zenn.dev/sinozu/articles/aa84ccc957ef1e)
+- [参考：Drizzle Kitでデータベースマイグレーションを行う](https://zenn.dev/satonopan/articles/9182a9eda4d574)
 
 AI向け注意：作業を進めるときはまず`.clinerules`を読むこと。
 
