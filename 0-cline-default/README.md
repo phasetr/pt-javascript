@@ -85,6 +85,9 @@ pnpm dlx create-remix@latest packages/remix
 
 #### cloudflare用
 
+`pnpm create cloudflare@latest -- --framework=remix`では,
+`Framework Starter`から`React Router (formerly Remix)`を選ぶ。
+
 ```sh
 npm install -g wrangler@latest
 
@@ -93,11 +96,37 @@ cd packages/<proj-name>-api
 pnpm create cloudflare@latest -- --framework=hono
 mv packages/<proj-name>-api packages/hono-api
 
+mkdir -p packages/remix
 pnpm create cloudflare@latest -- --framework=remix
+wrangler d1 create <proj-name>-db
+```
+
+`wrangler d1 create <proj-name>-db`で出てきた記述を`wrangler.jsonc`に追加する.
+
+次の内容で`schema.sql`を作成.
+
+```sql
+DROP TABLE IF EXISTS Customers;
+CREATE TABLE IF NOT EXISTS Customers (CustomerId INTEGER PRIMARY KEY, CompanyName TEXT, ContactName TEXT);
+INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (1, 'Alfreds Futterkiste', 'Maria Anders'), (4, 'Around the Horn', 'Thomas Hardy'), (11, 'Bs Beverages', 'Victoria Ashworth'), (13, 'Bs Beverages', 'Random Name');
+```
+
+```sh
+npx wrangler d1 execute crd-sample-db --local --file=./schema.sql
+npx wrangler d1 execute crd-sample-db --local --command="SELECT * FROM Customers"
+pnpm run typecheck
+```
+
+本番環境に反映する方法
+
+```sh
+npx wrangler d1 execute crd-sample-db --remote --file=./schema.sql
 ```
 
 `wrangler dev --port 3000`などとすれば`wrangler`での起動でもポートが固定できるため,
 必要に応じて利用すること.
+
+##### misc
 
 機密情報の設定・削除
 
