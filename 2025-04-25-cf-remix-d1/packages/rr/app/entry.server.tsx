@@ -12,12 +12,13 @@ export default async function handleRequest(
 ) {
   let shellRendered = false;
   const userAgent = request.headers.get("user-agent");
+  let currentResponseStatusCode = 200;
 
   const body = await renderToReadableStream(
     <ServerRouter context={routerContext} url={request.url} />,
     {
       onError(error: unknown) {
-        responseStatusCode = 500;
+        currentResponseStatusCode = 500;
         // Log streaming rendering errors from inside the shell.  Don't log
         // errors encountered during initial shell rendering since they'll
         // reject and get logged in handleDocumentRequest.
@@ -38,6 +39,6 @@ export default async function handleRequest(
   responseHeaders.set("Content-Type", "text/html");
   return new Response(body, {
     headers: responseHeaders,
-    status: responseStatusCode,
+    status: currentResponseStatusCode,
   });
 }

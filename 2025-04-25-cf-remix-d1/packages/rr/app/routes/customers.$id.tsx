@@ -1,7 +1,7 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
-import { useLoaderData, Link, useParams } from "react-router";
-import { type Customer, createDb, customers as customersTable } from "~/db";
 import { eq } from "drizzle-orm";
+import { Link, useLoaderData, useParams } from "react-router";
+import { type Customer, createDb, customers as customersTable } from "~/db";
 
 interface LoaderArgs {
 	params: {
@@ -57,7 +57,8 @@ export default function CustomerDetail() {
 					<span className="font-semibold">会社名:</span> {customer.CompanyName}
 				</div>
 				<div className="mb-4">
-					<span className="font-semibold">担当者名:</span> {customer.ContactName}
+					<span className="font-semibold">担当者名:</span>{" "}
+					{customer.ContactName}
 				</div>
 			</div>
 
