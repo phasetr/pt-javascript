@@ -5,6 +5,8 @@
 	"scripts": {
 		"build": "pnpm -r build",
 		"test": "pnpm -r test",
+		"hono:dev": "pnpm --filter=hono-api dev",
+		"hono:types": "pnpm --filter=hono-api run cf-typegen",
 		"rr:dev": "pnpm --filter=rr dev",
 		"rr:types": "pnpm --filter=rr run cf-typegen",
 		"prepare": "husky",
