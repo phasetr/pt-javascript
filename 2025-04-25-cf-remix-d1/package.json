@@ -9,15 +9,12 @@
 		"rr:types": "pnpm --filter=rr run cf-typegen",
 		"prepare": "husky",
 		"db:studio": "cd packages/db && drizzle-kit studio",
+		"db:studio:kill": "kill $(lsof -t -i:4983)",
 		"db:generate": "cd packages/db && drizzle-kit generate",
 		"db:push:local": "cd packages/db && drizzle-kit push:sqlite --config=drizzle.config.ts",
 		"db:push:prod": "cd packages/db && drizzle-kit push:sqlite --config=drizzle.config.ts",
 		"db:migrate:local": "cd packages/rr && wrangler d1 migrations apply DB --local --persist-to ../../.wrangler-persist",
-		"db:migrate:prod": "cd packages/rr && wrangler d1 migrations apply DB",
-		"db:seed:local": "cd packages/rr && wrangler d1 execute DB --local --persist-to ../../.wrangler-persist --command=\"DELETE FROM Customers; INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (1, 'Alfreds Futterkiste', 'Maria Anders'), (4, 'Around the Horn', 'Thomas Hardy'), (11, 'Bs Beverages', 'Victoria Ashworth'), (13, 'Bs Beverages', 'Random Name');\"",
-		"db:seed:prod": "cd packages/rr && wrangler d1 execute DB --command=\"DELETE FROM Customers; INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (1, 'Alfreds Futterkiste', 'Maria Anders'), (4, 'Around the Horn', 'Thomas Hardy'), (11, 'Bs Beverages', 'Victoria Ashworth'), (13, 'Bs Beverages', 'Random Name');\"",
-		"db:reset:local": "pnpm db:migrate:local && pnpm db:seed:local",
-		"db:reset:prod": "pnpm db:migrate:prod && pnpm db:seed:prod"
+		"db:migrate:prod": "cd packages/rr && wrangler d1 migrations apply DB"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
