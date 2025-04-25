@@ -5,8 +5,8 @@
 	"scripts": {
 		"build": "pnpm -r build",
 		"test": "pnpm -r test",
-		"remix:dev": "pnpm --filter=remix dev",
-		"remix:types": "pnpm --filter=remix run cf-typegen",
+		"rr:dev": "pnpm --filter=rr dev",
+		"rr:types": "pnpm --filter=rr run cf-typegen",
 		"prepare": "husky"
 	},
 	"devDependencies": {
