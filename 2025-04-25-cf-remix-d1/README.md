@@ -59,6 +59,9 @@ Clineへの定型文：まず.clinerulesを読んでください。
 
 #### cloudflare用
 
+`pnpm create cloudflare@latest -- --framework=remix`では,
+`Framework Starter`から`React Router (formerly Remix)`を選ぶ。
+
 ```sh
 npm install -g wrangler@latest
 mkdir -p packages/remix
