@@ -1,0 +1,23 @@
+{
+	"name": "db",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"scripts": {
+		"build": "tsc",
+		"db:studio": "drizzle-kit studio",
+		"db:generate": "drizzle-kit generate",
+		"db:push:local": "drizzle-kit push:sqlite --config=drizzle.config.ts",
+		"db:push:prod": "drizzle-kit push:sqlite --config=drizzle.config.ts"
+	},
+	"dependencies": {
+		"@cloudflare/workers-types": "^4.20250424.0",
+		"drizzle-orm": "^0.43.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.1.52",
+		"drizzle-kit": "^0.31.0",
+		"typescript": "^5.8.3"
+	}
+}

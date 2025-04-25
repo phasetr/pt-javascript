@@ -22,6 +22,7 @@
 	},
 	"dependencies": {
 		"@cloudflare/d1": "^1.4.1",
+		"db": "workspace:*",
 		"drizzle-orm": "^0.43.0",
 		"isbot": "^5.1.17",
 		"react": "^19.0.0",
