@@ -70,7 +70,9 @@ pnpm create cloudflare@latest -- --framework=remix
 wrangler d1 create crd-sample-db
 ```
 
-次の内容で`schema.sql`を作成
+`wrangler d1 create crd-sample-db`で出てきた記述を`wrangler.jsonc`に追加する.
+
+次の内容で`schema.sql`を作成.
 
 ```sql
 DROP TABLE IF EXISTS Customers;
@@ -81,6 +83,7 @@ INSERT INTO Customers (CustomerID, CompanyName, ContactName) VALUES (1, 'Alfreds
 ```sh
 npx wrangler d1 execute crd-sample-db --local --file=./schema.sql
 npx wrangler d1 execute crd-sample-db --local --command="SELECT * FROM Customers"
+pnpm run typecheck
 ```
 
 本番環境に反映する方法
