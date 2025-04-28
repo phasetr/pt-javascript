@@ -117,7 +117,7 @@ npx wrangler d1 execute crd-sample-db --local --command="SELECT * FROM Customers
 pnpm run typecheck
 ```
 
-本番環境に反映する方法
+本番環境に反映する方法：最終的にはきちんと`CI/CD`に設定すること.
 
 ```sh
 npx wrangler d1 execute crd-sample-db --remote --file=./schema.sql
