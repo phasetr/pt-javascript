@@ -1,7 +1,7 @@
 # Dockerfile for a TypeScript web application
 
 # Node.js LTS バージョンをベースイメージとして使用
-FROM node:22
+FROM node:23-slim
 
 WORKDIR /app
 

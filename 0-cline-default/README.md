@@ -45,14 +45,14 @@ AI向け注意：作業を進めるときはまず`.clinerules`を読むこと�
     - ルート直下に`package.json`と`pnpm-workspace.yaml`をコピーする
 2. (手動)：`packages/<プロジェクトの略称>`に`cdk init`する
 3. (手動)：`packages/hono-api`で`Hono`を初期化する
-4. (手動)：`packages/remix`で`Remix`を初期化する
+4. (手動)：`packages/rr`で`React Router`を初期化する
 5. 今のコードベースで`CDK`コードを書き換える.
    環境としては`dev`と`prod`を作る.
    どちらもスペックとしては最低限でよい.
    指定した構成でAWSにデプロイする.
 6. `DynamoDB`のプロジェクトを作り、簡単な二種類のテーブルを作り、
    それらに対するCRUD操作とテストを書く。
-7. `Hono`と`Remix`から`DynamoDB`を呼び出せるようにする。テストも書く。
+7. `Hono`と`React Router`から`DynamoDB`を呼び出せるようにする。テストも書く。
 8. ローカル・AWS上の開発環境に対する簡易結合テストを作成する。
    APIは全てを一通り叩いて結果が返るか確認する。
    環境指定で`local`・`dev`・`prod`を選べるようにし、適切な環境を指定して簡易結合テストできるようにする.
@@ -85,8 +85,8 @@ pnpm dlx create-remix@latest packages/remix
 
 #### cloudflare用
 
-`pnpm create cloudflare@latest -- --framework=remix`では,
-`Framework Starter`から`React Router (formerly Remix)`を選ぶ。
+`pnpm create cloudflare@latest`では、
+`Framework Starter`から`React Router`を選ぶ。
 
 ```sh
 npm install -g wrangler@latest
@@ -96,8 +96,14 @@ cd packages/<proj-name>-api
 pnpm create cloudflare@latest -- --framework=hono
 mv packages/<proj-name>-api packages/hono-api
 
-mkdir -p packages/remix
-pnpm create cloudflare@latest -- --framework=remix
+mkdir -p packages
+pnpm create cloudflare@latest rr \
+  --framework=react-router \
+  --platform=workers \
+  --lang=ts \
+  --no-deploy \
+  --no-git \
+  --auto-update
 wrangler d1 create <proj-name>-db
 ```
 

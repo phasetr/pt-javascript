@@ -11,7 +11,7 @@
 
 ### AWS CDK+Lambda利用時のTypeScriptとコンパイル設定
 
-CDK、Hono API、Remix、DBの構成でLambdaを使用する際のTypeScriptとコンパイル設定に統一感がなく、毎回混乱が生じていた。具体的には以下のような不統一な設定が存在していた：
+CDK、Hono API、React Router、DBの構成でLambdaを使用する際のTypeScriptとコンパイル設定に統一感がなく、毎回混乱が生じていた。具体的には以下のような不統一な設定が存在していた：
 2025-03時点でのベストプラクティスとして、以下の設定を推奨する.
 
 #### 1. モジュール形式の統一
@@ -187,4 +187,3 @@ const honoLambda = new NodejsFunction(
   }
 );
 ```
-
