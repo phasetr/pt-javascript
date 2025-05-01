@@ -130,9 +130,14 @@ aws lambda update-alias \
 
 ### コンテナイメージの更新
 
+特に初回の`ECR`リリース時,
+`Mac`のローカルでイメージをビルドする場合は`--platform=linux/amd64`を指定してビルドすること
+
 ```bash
 # イメージをビルド
 docker build -t ${ECR_REPO_URI}:${IMAGE_TAG} .
+# Macの場合のイメージビルド
+docker build -t ${ECR_REPO_URI}:${IMAGE_TAG} --platform=linux/amd64 .
 
 # ECRにログイン
 aws ecr get-login-password --region ap-northeast-1 | \
