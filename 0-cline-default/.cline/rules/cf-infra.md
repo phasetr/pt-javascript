@@ -17,7 +17,7 @@
     // packages/db/drizzle.config.ts
     export default {
       schema: "./src/schema.ts",
-      out: "./drizzle",
+      out: "./migrations",
       dialect: "sqlite",
       dbCredentials: {
         // ローカル開発時は共有永続化ディレクトリ内のSQLiteファイルを使用
@@ -37,7 +37,7 @@
           "binding": "DB",
           "database_name": "crd-sample-db",
           "database_id": "f2883ac9-8383-40c2-956c-4be15f5cc9de",
-          "migrations_dir": "../db/drizzle"
+          "migrations_dir": "../db/migrations"
         }
       ]
     }
