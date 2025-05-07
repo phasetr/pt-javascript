@@ -64,7 +64,7 @@ Cloudflare D1は、Cloudflare Workersプラットフォーム上で動作するS
 // packages/db/drizzle.config.ts
 export default {
   schema: "./src/schema.ts",
-  out: "./drizzle",
+  out: "./migrations",
   dialect: "sqlite",
   dbCredentials: {
     // ローカル開発時は共有永続化ディレクトリ内のSQLiteファイルを使用
@@ -89,7 +89,7 @@ export default {
       "binding": "DB",
       "database_name": "crd-sample-db",
       "database_id": "f2883ac9-8383-40c2-956c-4be15f5cc9de",
-      "migrations_dir": "../db/drizzle"
+      "migrations_dir": "../db/migrations"
     }
   ]
 }
@@ -100,10 +100,10 @@ export default {
 両方のパッケージが同じマイグレーションディレクトリを参照することで、スキーマの一貫性を確保します：
 
 ```jsonc
-"migrations_dir": "../db/drizzle"
+"migrations_dir": "../db/migrations"
 ```
 
-> **注意**: `migrations_dir`のデフォルト値は`./migrations`ですが、このプロジェクトではモノレポ構造を採用しているため、共通のマイグレーションファイルを`packages/db/drizzle`ディレクトリに集約しています。これにより、複数のパッケージ（React RouterとHono API）が同じマイグレーション定義を共有でき、データベーススキーマの一貫性を保つことができます。
+> **注意**: `migrations_dir`のデフォルト値は`./migrations`ですが、このプロジェクトではモノレポ構造を採用しているため、共通のマイグレーションファイルを`packages/db/migrations`ディレクトリに集約しています。これにより、複数のパッケージ（React RouterとHono API）が同じマイグレーション定義を共有でき、データベーススキーマの一貫性を保つことができます。
 
 ### 3. 共通のスキーマパッケージ
 
@@ -140,7 +140,7 @@ Drizzle ORMとWranglerを使用してマイグレーションを管理します�
 pnpm db:generate
 ```
 
-このコマンドは`packages/db/drizzle`ディレクトリにマイグレーションファイルを生成します。
+このコマンドは`packages/db/migrations`ディレクトリにマイグレーションファイルを生成します。
 
 ### 2. ローカル環境へのマイグレーション適用
 
@@ -229,7 +229,7 @@ pnpm deploy
 ローカル開発環境でReact RouterアプリケーションからD1データベース（.wrangler-persist内のSQLite）に接続する際の主な注意点：
 
 1. **wrangler.jsonc の設定**：
-   - `migrations_dir`が正しく設定されているか確認する（例：`"../db/drizzle"`）
+   - `migrations_dir`が正しく設定されているか確認する（例：`"../db/migrations"`）
    - `database_id`が全てのパッケージで同一であることを確認する
    - `binding`名（例：`"DB"`）が一致していることを確認する
 

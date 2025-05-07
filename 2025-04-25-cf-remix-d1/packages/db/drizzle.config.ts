@@ -2,7 +2,7 @@ import type { Config } from "drizzle-kit";
 
 export default {
 	schema: "./src/schema.ts",
-	out: "./drizzle",
+	out: "./migrations",
 	dialect: "sqlite",
 	// SQLiteとして設定（D1はSQLiteと互換性がある）
 	dbCredentials: {

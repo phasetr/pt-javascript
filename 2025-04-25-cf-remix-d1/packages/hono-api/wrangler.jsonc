@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "hono-api",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-04-25",
+	"compatibility_date": "2025-04-04",
 	"observability": {
 		"enabled": true
 	},
@@ -15,7 +15,7 @@
 			"binding": "DB",
 			"database_name": "crd-sample-db",
 			"database_id": "f2883ac9-8383-40c2-956c-4be15f5cc9de",
-			"migrations_dir": "../db/drizzle"
+			"migrations_dir": "../db/migrations"
 		}
 	]
 }
