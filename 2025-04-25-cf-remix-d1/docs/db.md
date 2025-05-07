@@ -103,6 +103,8 @@ export default {
 "migrations_dir": "../db/drizzle"
 ```
 
+> **注意**: `migrations_dir`のデフォルト値は`./migrations`ですが、このプロジェクトではモノレポ構造を採用しているため、共通のマイグレーションファイルを`packages/db/drizzle`ディレクトリに集約しています。これにより、複数のパッケージ（React RouterとHono API）が同じマイグレーション定義を共有でき、データベーススキーマの一貫性を保つことができます。
+
 ### 3. 共通のスキーマパッケージ
 
 `packages/db`パッケージでスキーマを定義し、他のパッケージから参照します：
