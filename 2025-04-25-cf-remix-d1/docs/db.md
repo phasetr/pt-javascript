@@ -224,7 +224,50 @@ pnpm deploy
 
 ## 8. トラブルシューティング
 
-### 1. .wrangler-persistディレクトリが見つからない
+### 1. React RouterからD1データベースへの接続に関する注意点
+
+ローカル開発環境でReact RouterアプリケーションからD1データベース（.wrangler-persist内のSQLite）に接続する際の主な注意点：
+
+1. **wrangler.jsonc の設定**：
+   - `migrations_dir`が正しく設定されているか確認する（例：`"../db/drizzle"`）
+   - `database_id`が全てのパッケージで同一であることを確認する
+   - `binding`名（例：`"DB"`）が一致していることを確認する
+
+2. **.wrangler-persist ディレクトリの設定**：
+   - `package.json`の`dev`スクリプトで`--persist-to`オプションが正しく設定されているか確認する：
+
+     ```json
+     "dev": "wrangler dev --persist-to ../../.wrangler-persist"
+     ```
+
+   - 相対パスが正しいことを確認する（モノレポ構造の場合、通常はプロジェクトルートからの相対パス）
+
+3. **SQLiteファイルのパス**：
+   - `drizzle.config.ts`で指定されているSQLiteファイルのパスが実際のファイルと一致しているか確認する
+   - 初回実行時は`.wrangler-persist`ディレクトリが自動生成されるため、パスが存在しない場合がある
+   - SQLiteファイルのパスは以下のようなパターンになる：
+
+     ```txt
+     .wrangler-persist/v3/d1/miniflare-D1DatabaseObject/[ハッシュ値].sqlite
+     ```
+
+   - ハッシュ値は環境によって異なるため、実際のファイルパスを確認する必要がある
+
+4. **実行順序**：
+   - 最初に`wrangler dev`を実行して`.wrangler-persist`ディレクトリを生成する
+   - 次にマイグレーションを適用する
+   - その後、drizzle-kitのコマンドを実行する
+
+5. **パーミッションの問題**：
+   - `.wrangler-persist`ディレクトリとSQLiteファイルの読み書き権限を確認する
+   - 特にチーム開発環境では、権限の問題が発生することがある
+
+6. **デバッグ方法**：
+   - SQLiteファイルが存在するか確認：`ls -la .wrangler-persist/v3/d1/miniflare-D1DatabaseObject/`
+   - SQLiteファイルが正しく作成されているか確認：`sqlite3 [SQLiteファイルのパス] .tables`
+   - wranglerのログレベルを上げる：`WRANGLER_LOG=debug wrangler dev --persist-to .wrangler-persist`
+
+### 2. .wrangler-persistディレクトリが見つからない
 
 `.wrangler-persist`ディレクトリが存在しない場合、以下のコマンドでローカル開発サーバーを起動すると自動的に作成されます：
 
