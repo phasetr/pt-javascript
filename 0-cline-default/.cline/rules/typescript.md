@@ -33,45 +33,7 @@ TypeScriptでのコーディングにおける一般的なベストプラクテ�
 
 ### エラー処理
 
-1. Result型の使用
-   ```ts
-   import { err, ok, Result } from "npm:neverthrow";
-
-   type ApiError =
-     | { type: "network"; message: string }
-     | { type: "notFound"; message: string }
-     | { type: "unauthorized"; message: string };
-
-   async function fetchUser(id: string): Promise<Result<User, ApiError>> {
-     try {
-       const response = await fetch(`/api/users/${id}`);
-       if (!response.ok) {
-         switch (response.status) {
-           case 404:
-             return err({ type: "notFound", message: "User not found" });
-           case 401:
-             return err({ type: "unauthorized", message: "Unauthorized" });
-           default:
-             return err({
-               type: "network",
-               message: `HTTP error: ${response.status}`,
-             });
-         }
-       }
-       return ok(await response.json());
-     } catch (error) {
-       return err({
-         type: "network",
-         message: error instanceof Error ? error.message : "Unknown error",
-       });
-     }
-   }
-   ```
-
-2. エラー型の定義
-   - 具体的なケースを列挙
-   - エラーメッセージを含める
-   - 型の網羅性チェックを活用
+1. 深いところで例外を潰さずになるべくフロントに近い箇所で例外を処理する
 
 ### 実装パターン
 
