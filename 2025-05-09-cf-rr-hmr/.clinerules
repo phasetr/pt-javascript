@@ -1,0 +1,1468 @@
+## 重要
+
+ユーザーはClineよりプログラミングが得意ですが、時短のためにClineにコーディングを依頼しています。
+
+2回以上連続でテストを失敗した時は、現在の状況を整理して、一緒に解決方法を考えます。
+
+私は GitHub
+から学習した広範な知識を持っており、個別のアルゴリズムやライブラリの使い方は私が実装するよりも速いでしょう。テストコードを書いて動作確認しながら、ユーザーに説明しながらコードを書きます。
+
+反面、現在のコンテキストに応じた処理は苦手です。コンテキストが不明瞭な時は、ユーザーに確認します。
+
+## 作業開始準備
+
+`git status` で現在の git のコンテキストを確認します。
+もし指示された内容と無関係な変更が多い場合、現在の変更からユーザーに別のタスクとして開始するように提案してください。
+
+無視するように言われた場合は、そのまま続行します。
+
+## .envはなるべく使わない
+
+`.env`はどうしても必要なとき以外なるべく使いません.
+特にローカル環境では固定値を使い,
+サーバー上では(`AWS`でいう)`Secrets Manager`に相当するサービスを利用します.
+どうしても必要な場合はその理由を明示します.
+特に`AWS`では,
+必要なら`CDK`を利用して先に`Secrets Manager`を設定します.
+
+実装中で`process`,
+特に`process.env`はできる限り直接利用は避け,
+必要な環境変数は関数の引数として値を渡すようにします.
+
+## 起動コマンド
+
+`pnpm workspace`(または`npm workspace`)を使う場合,
+ローカル環境を一発で立ち上げるコマンド・落とすコマンド,
+ローカル用のテストを全て回すコマンドをルートのpackage.jsonに定義します.
+この目的で必要に応じてライブラリを導入します.
+`deno`を利用する場合も同じように対処します.
+
+ここでいう「ローカル環境を一発で立ち上げるコマンド・落とすコマンド」は次のような意図です.
+
+- 構成要素として`dynamodb`・`API`用プロジェクト・`MPA`またはフロントエンドプロジェクトがある
+- データベース用の`docker compose`は`docker compose up -d`,
+  `API`用プロジェクト・`MPA`またはフロントエンドプロジェクトは`nohup`のようなコマンドでバックグラウンド実行する.
+- 落とすときはバックグラウンドのプロセスを落とせるようにする.
+
+特に`node.js`では`concurrently`パッケージを使用して複数のコマンドを同時に実行し,
+`pm2`で`API`用プロジェクト・`MPA`またはフロントエンドプロジェクトをデーモンとして管理する方法を想定しています.
+ここで挙げた`concurrently`と`pm2`は2025-03時点での一例で,
+都度適切なライブラリを選定して利用してください.
+
+## テスタビリティの重視
+
+テスタビリテイを常に最重要視します.
+データベースやAWS SDKを使う場合のようにモックが必要な処理は無理に単体テストで書かず,
+積極的に結合テストを利用します.
+
+
+
+## AWSインフラ
+
+- インフラにはプロジェクトの略称からなるプレフィックスをつける
+- プレフィックスはプロジェクト直下の`README.md`で指定する
+- 適切な指定が見当たらない場合は何にするべきか確認する
+- 特に断りがない限り,
+  データベースや`CloudWatch`ログは`cdk destroy`で同時に削除できるように設定する
+- `CDK`のコードだけは`Node.js`で書くとし,
+  特に`cdk init`を利用して初期化する
+- `AWS SDK`を利用する場合は常に最新版を利用する.
+  特に`2025-03`以降は`ver2`は使わず,
+  少なくとも`ver3`以上を利用すること.
+
+## 複数環境の準備
+
+常に複数の環境(最低限`dev`と`prod`の二通り)が準備できるようにし,
+`cdk deploy`のオプションでどれか一つ,
+または複数を同時にデプロイできるようにする.
+環境選択オプションがない場合はデフォルトで`dev`を選ぶようにする.
+
+## 最新版の利用
+
+例えば`NodejsFunction.environment.runtime`で`Node.js`のバージョンが指定できる.
+特に指定がない限り原則としてその時点での最新版を指定すること.
+
+## AWSにアクセスするライブラリ
+
+AWS SDKを利用してSecretsを取得したり,
+結合テスト用にLambdaのURLを取得するプログラムは`aws-utils`としてパッケージにまとめる.
+
+## インフラとアプリケーションの分離
+
+### 全体アーキテクチャと分離の原則
+
+```mermaid
+graph TD
+    subgraph "インフラ層（変更頻度低）"
+        A[VPC] --> B[サブネット]
+        B --> C[セキュリティグループ]
+        C --> D1[Lambda関数定義]
+        C --> D2[ECSクラスター/サービス定義]
+        E[IAMロール] --> D1
+        E --> D2
+        F[S3バケット] --> D1
+        G[ECRリポジトリ] --> D2
+    end
+
+    subgraph "アプリケーション層（変更頻度高）"
+        H1[Lambda関数コード] --> D1
+        H2[コンテナイメージ] --> D2
+    end
+
+    subgraph "CI/CDパイプライン"
+        I[コード変更] --> J[テスト]
+        J --> K1[Lambda更新]
+        J --> K2[ECS更新]
+        K1 --> H1
+        K2 --> H2
+    end
+```
+
+### 分離の原則
+
+1. **リポジトリ分離**:
+   - インフラコード用リポジトリ（Terraform/CDK/CloudFormation）
+   - アプリケーションコード用リポジトリ（Lambda関数、Dockerイメージ）
+
+2. **デプロイパイプライン分離**:
+   - インフラ変更用パイプライン（手動承認、慎重な変更）
+   - アプリケーション更新用パイプライン（自動化、頻繁な更新）
+
+3. **環境変数による設定分離**:
+   - インフラ側：Parameter Store/Secrets Managerで管理
+   - アプリケーション側：環境変数として参照
+
+## Lambda関数の更新ベストプラクティス
+
+### Lambda関数コードの更新方法
+
+```bash
+# ZIPファイルから直接更新
+aws lambda update-function-code \
+  --function-name ${PREFIX}-my-function \
+  --zip-file fileb://function.zip
+
+# または、S3経由で更新
+aws lambda update-function-code \
+  --function-name ${PREFIX}-my-function \
+  --s3-bucket my-deployment-bucket \
+  --s3-key functions/my-function.zip
+```
+
+### バージョニングとエイリアスの活用
+
+```mermaid
+graph LR
+    A[Lambda関数] --> B[Version 1]
+    A --> C[Version 2]
+    A --> D[Version 3]
+    E[prod エイリアス] --> D
+    F[staging エイリアス] --> C
+    G[dev エイリアス] --> A
+```
+
+```bash
+# 新しいバージョンを発行
+aws lambda publish-version \
+  --function-name ${PREFIX}-my-function \
+  --description "Production release - 2023-03-22"
+
+# エイリアスを更新
+aws lambda update-alias \
+  --function-name ${PREFIX}-my-function \
+  --name production \
+  --function-version 3
+```
+
+### カナリアデプロイ
+
+```bash
+# トラフィックの10%をバージョン4に、90%をバージョン3に振り分け
+aws lambda update-alias \
+  --function-name ${PREFIX}-my-function \
+  --name production \
+  --function-version 3 \
+  --routing-config '{"AdditionalVersionWeights":{"4":0.1}}'
+```
+
+## ECSサービスの更新ベストプラクティス
+
+### コンテナイメージの更新
+
+特に初回の`ECR`リリース時,
+`Mac`のローカルでイメージをビルドする場合は`--platform=linux/amd64`を指定してビルドすること
+
+```bash
+# イメージをビルド
+docker build -t ${ECR_REPO_URI}:${IMAGE_TAG} .
+# Macの場合のイメージビルド
+docker build -t ${ECR_REPO_URI}:${IMAGE_TAG} --platform=linux/amd64 .
+
+# ECRにログイン
+aws ecr get-login-password --region ap-northeast-1 | \
+  docker login --username AWS --password-stdin ${ECR_REPO_URI}
+
+# イメージをプッシュ
+docker push ${ECR_REPO_URI}:${IMAGE_TAG}
+```
+
+### タスク定義の更新
+
+```bash
+# 現在のタスク定義を取得
+aws ecs describe-task-definition \
+  --task-definition ${PREFIX}-service \
+  --query taskDefinition > task-definition.json
+
+# イメージを更新（jqを使用）
+jq '.containerDefinitions[0].image = "'${ECR_REPO_URI}':'${IMAGE_TAG}'"' \
+  task-definition.json > new-task-definition.json
+
+# 新しいタスク定義を登録
+NEW_TASK_DEF=$(aws ecs register-task-definition \
+  --cli-input-json file://new-task-definition.json \
+  --query 'taskDefinition.taskDefinitionArn' \
+  --output text)
+```
+
+### サービスの更新
+
+```bash
+# サービスを更新
+aws ecs update-service \
+  --cluster ${PREFIX}-cluster \
+  --service ${PREFIX}-service \
+  --task-definition ${NEW_TASK_DEF} \
+  --force-new-deployment
+```
+
+### ブルー/グリーンデプロイ
+
+```mermaid
+graph TD
+    A[本番環境] --> B[ブルー環境]
+    A --> C[グリーン環境]
+    D[ロードバランサー] --> B
+    D -.-> C
+    E[新バージョンデプロイ] --> C
+    F[テスト完了] --> G[トラフィック切り替え]
+    G --> H[ロードバランサーがグリーン環境を指す]
+```
+
+## CI/CDパイプラインの実装
+
+### CI/CDパイプラインでのLambda更新フロー
+
+```mermaid
+flowchart TD
+    A[コード変更] --> B[テスト実行]
+    B --> C[ビルド & パッケージング]
+    C --> D[S3にアップロード]
+    D --> E[Lambda関数コード更新]
+    E --> F[新バージョン発行]
+    F --> G{本番デプロイ?}
+    G -->|Yes| H[エイリアス更新]
+    G -->|No| I[開発環境で検証]
+    I --> J[QAテスト]
+    J --> H
+```
+
+### GitHub Actionsでの実装例（Lambda）
+
+```yaml
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/lambda-functions/my-function/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd src/lambda-functions/my-function
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd src/lambda-functions/my-function
+          npm test
+
+      - name: Build and package
+        run: |
+          cd src/lambda-functions/my-function
+          npm run build
+          zip -j function.zip dist/*
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ${PREFIX}-my-function \
+            --zip-file fileb://src/lambda-functions/my-function/function.zip
+
+      - name: Publish new version
+        id: publish-version
+        run: |
+          VERSION=$(aws lambda publish-version \
+            --function-name ${PREFIX}-my-function \
+            --description "Deployment from GitHub Actions - ${{ github.sha }}" \
+            --output json | jq -r '.Version')
+          echo "::set-output name=version::$VERSION"
+
+      - name: Update staging alias
+        run: |
+          aws lambda update-alias \
+            --function-name ${PREFIX}-my-function \
+            --name staging \
+            --function-version ${{ steps.publish-version.outputs.version }}
+```
+
+### GitHub Actionsでの実装例（ECS）
+
+```yaml
+name: Deploy ECS Service
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/ecs-services/my-service/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${PREFIX}-my-service
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd src/ecs-services/my-service
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${PREFIX}-my-service \
+            --query taskDefinition > task-definition.json
+
+      - name: Update task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: app
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${PREFIX}-my-service
+          cluster: ${PREFIX}-cluster
+          wait-for-service-stability: true
+```
+
+## 環境変数と設定管理
+
+### Parameter Store/Secrets Managerの活用
+
+```bash
+# Parameter Storeに設定を保存
+aws ssm put-parameter \
+  --name "/${PREFIX}/api/endpoint" \
+  --value "https://api.example.com" \
+  --type String
+
+# Secrets Managerに機密情報を保存
+aws secretsmanager create-secret \
+  --name "/${PREFIX}/db/password" \
+  --secret-string "MySecretPassword"
+```
+
+## デプロイ後の検証とモニタリング
+
+### CloudWatch Alarmsでの監視
+
+```bash
+# Lambda関数のエラー率アラーム
+aws cloudwatch put-metric-alarm \
+  --alarm-name ${PREFIX}-lambda-errors \
+  --alarm-description "Alarm when error rate exceeds 1%" \
+  --metric-name Errors \
+  --namespace AWS/Lambda \
+  --statistic Sum \
+  --period 60 \
+  --threshold 1 \
+  --comparison-operator GreaterThanThreshold \
+  --dimensions Name=FunctionName,Value=${PREFIX}-my-function \
+  --evaluation-periods 1 \
+  --alarm-actions arn:aws:sns:ap-northeast-1:123456789012:alerts
+```
+
+## ロールバック戦略
+
+### Lambda関数のロールバック
+
+```bash
+# 以前のバージョンにエイリアスを戻す
+aws lambda update-alias \
+  --function-name ${PREFIX}-my-function \
+  --name production \
+  --function-version ${PREVIOUS_VERSION}
+```
+
+### ECSサービスのロールバック
+
+```bash
+# 以前のタスク定義に戻す
+aws ecs update-service \
+  --cluster ${PREFIX}-cluster \
+  --service ${PREFIX}-service \
+  --task-definition ${PREFIX}-my-service:${PREVIOUS_REVISION} \
+  --force-new-deployment
+```
+
+## セキュリティのベストプラクティス
+
+1. **最小権限の原則**:
+   - Lambda実行ロールとECSタスク実行ロールに必要最小限の権限のみ付与
+
+2. **シークレット管理**:
+   - 機密情報はコードに埋め込まず、Secrets Managerで管理
+
+3. **イメージスキャン**:
+   - ECRの自動スキャン機能を有効化
+   - デプロイ前にセキュリティ脆弱性をチェック
+
+4. **コード品質**:
+   - 静的解析ツールをCI/CDパイプラインに組み込む
+   - SonarQube、ESLint、Security Lintなどを活用
+
+## DynamoDBに対する注意
+
+- `Partition Key`の名前は必ず`PK`,
+  `Sort Key`の名前は必ず`SK`にする.
+- テーブルはシングルテーブル設計を基本とする.
+- テーブル名は「<プロジェクト名>-<環境名>-DDB」とする.
+  環境名は`local`, `dev`, `prod`などが入る想定である.
+- 各モデルは`entity`項目を持ち,
+  この項目に対して`GSI`を貼ってそのモデルに対して一覧取得できるようにする.
+- 各モデルの`ID`は`ULID`のように, ソートに利用できる情報を持つデータ型を利用する.
+  各テーブルに対して`ID`を持たせる場合,
+  `userId`のようにモデル名は持たせず,
+  単に`id`とする.
+- ローカル開発環境用に`dynamodb-local`と`dynamodb-admin`を導入する.
+  これらは`docker compose`で導入するべくルートに適切に設定した`compose.yml`を作成する.
+
+## Lambdaに対する注意
+
+少なくとも2025-03時点で`Lambda`は`commonjs`形式を基本としているため,
+`Lambda`でリリースするアプリケーションは`package.json`には`type: commonjs`を,
+`tsconfig.json`には`compilerOptions.module: commonjs`を設定すること.
+ライブラリは`ESM`で問題ないようだが,
+問題があれば都度修正すること.
+
+LambdaによるAPIでHonoを利用するとき,
+本体ロジック用に`hono.ts`、
+`Lambda`用の受け口として`index.ts`、
+ローカル開発用に`index.local.ts`を用意してローカル開発しやすくする.
+
+
+
+## Cloudflareインフラ
+
+`AWS`と違って`wrangler secret put <KEY>`による`Cloudflare Workers Secrets`の値がローカルで取得できないため,
+`wrangler dev`での`.dev.vars`読み込みを利用する.
+`Cloudflare`上の環境では`Cloudflare Workers Secrets`の値が使えるように適切に実装する.
+
+### 複数パッケージにまたがって`D1`を利用するとき
+
+特に`ORM`として`drizzle`(と`drizzle-kit`)を利用する前提とする.
+
+- `db`パッケージを作成し, マイグレーションファイル・ORM設定・サービスクラスはこのパッケージにまとめる
+- 複数のパッケージが同じD1データベースを参照する場合,
+  ローカル開発環境ではルート直下の`.wrangler-persist`ディレクトリを共有・利用する.
+- `db/drizzle.config.ts`では次のように設定する.
+
+    ```typescript
+    // packages/db/drizzle.config.ts
+    export default {
+      schema: "./src/schema.ts",
+      out: "./migrations",
+      dialect: "sqlite",
+      dbCredentials: {
+        // ローカル開発時は共有永続化ディレクトリ内のSQLiteファイルを使用
+        url: "../../.wrangler-persist/v3/d1/miniflare-D1DatabaseObject/f253421848505bfd644490698e36d17977501ad2587c6ba0fd479180a316f09a.sqlite",
+      },
+    } satisfies Config;
+    ```
+
+- 各パッケージの`wrangler.jsonc`ファイルでは同じ`database_id`を指定する：これは`wrangler d1 create`時に表示された値,
+  または`Cloudflare`のコンソールで確認できる値を指定すればよい.
+
+    ```jsonc
+    // packages/rr/wrangler.jsonc・packages/hono-api/wrangler.jsoncなど
+    {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "crd-sample-db",
+          "database_id": "f2883ac9-8383-40c2-956c-4be15f5cc9de",
+          "migrations_dir": "../db/migrations"
+        }
+      ]
+    }
+    ```
+
+- ローカル開発時は`--persist-to`オプションで永続化ディレクトリを明示的に指定する.
+
+    ```bash
+    wrangler dev --persist-to ../../.wrangler-persist
+    ```
+
+- ルートの`package.json`には次のようなスクリプトを指定する.
+
+    ```json
+      "scripts": {
+      	"db:studio": "cd packages/db && drizzle-kit studio",
+      	"db:studio:kill": "kill $(lsof -t -i:4983)",
+      	"db:generate": "cd packages/db && drizzle-kit generate",
+      	"db:push:local": "cd packages/db && drizzle-kit push:sqlite --config=drizzle.config.ts",
+      	"db:push:prod": "cd packages/db && drizzle-kit push:sqlite --config=drizzle.config.ts",
+      	"db:migrate:local": "cd packages/rr && wrangler d1 migrations apply DB --local --persist-to ../../.wrangler-persist",
+      	"db:migrate:prod": "cd packages/rr && wrangler d1 migrations apply DB"
+      }
+    ```
+
+
+
+# コーディングプラクティス
+
+## 原則
+
+### 関数型アプローチ (FP)
+
+- 純粋関数を優先
+- 不変データ構造を使用
+- 副作用を分離
+- 型安全性を確保
+
+### ドメイン駆動設計 (DDD)
+
+- 値オブジェクトとエンティティを区別
+- 集約で整合性を保証
+- リポジトリでデータアクセスを抽象化
+- 境界付けられたコンテキストを意識
+
+### テスト駆動開発 (TDD)
+
+- Red-Green-Refactorサイクル
+- テストを仕様として扱う
+- 小さな単位で反復
+- 継続的なリファクタリング
+
+## 実装パターン
+
+### 型定義
+
+```typescript
+// ブランデッド型で型安全性を確保
+type Branded<T, B> = T & { _brand: B };
+type Money = Branded<number, "Money">;
+type Email = Branded<string, "Email">;
+```
+
+### 値オブジェクト
+
+- 不変
+- 値に基づく同一性
+- 自己検証
+- ドメイン操作を持つ
+
+```typescript
+// 作成関数はバリデーション付き
+function createMoney(amount: number): Result<Money, Error> {
+  if (amount < 0) return err(new Error("負の金額不可"));
+  return ok(amount as Money);
+}
+```
+
+### エンティティ
+
+- IDに基づく同一性
+- 制御された更新
+- 整合性ルールを持つ
+
+### Result型
+
+```typescript
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+```
+
+- 成功/失敗を明示
+- 早期リターンパターンを使用
+- エラー型を定義
+
+### リポジトリ
+
+- ドメインモデルのみを扱う
+- 永続化の詳細を隠蔽
+- テスト用のインメモリ実装を提供
+
+### アダプターパターン
+
+- 外部依存を抽象化
+- インターフェースは呼び出し側で定義
+- テスト時は容易に差し替え可能
+
+## 実装手順
+
+1. **型設計**
+   - まず型を定義
+   - ドメインの言語を型で表現
+
+2. **純粋関数から実装**
+   - 外部依存のない関数を先に
+   - テストを先に書く
+
+3. **副作用を分離**
+   - IO操作は関数の境界に押し出す
+   - 副作用を持つ処理をPromiseでラップ
+
+4. **アダプター実装**
+   - 外部サービスやDBへのアクセスを抽象化
+   - テスト用モックを用意
+
+## プラクティス
+
+- 小さく始めて段階的に拡張
+- 過度な抽象化を避ける
+- コードよりも型を重視
+- 複雑さに応じてアプローチを調整
+
+## コードスタイル
+
+- 関数優先（クラスは必要な場合のみ）
+- 不変更新パターンの活用
+- 早期リターンで条件分岐をフラット化
+- エラーとユースケースの列挙型定義
+
+## テスト戦略
+
+- 純粋関数の単体テストを優先
+- インメモリ実装によるリポジトリテスト
+- テスト可能性を設計に組み込む
+- アサートファースト：期待結果から逆算
+
+
+
+## データベース
+
+### `pnpm workspace`利用時
+
+データベースのパッケージ名は`db`とする.
+
+
+
+## Deno の使い方について
+
+### npm 互換モード
+
+私は Deno の Node 互換API を使います。
+
+```ts
+import path from "node:path";
+import {z} from `npm:zod`;
+```
+
+モジュール下では、 deno.jsonc でを宣言して使います。
+
+`deno add npm:zod`
+
+```json
+  "imports": {
+    "zod": "npm:zod@^3.24.2"
+  }
+```
+
+```ts
+import {zod} from "zod";
+```
+
+## Example: Directory rules
+
+```txt
+<module-name>/
+  # interface
+  mod.ts
+  deno.jsonc
+
+  # impl with unit tests
+  internal/
+    *.ts
+    *.test.ts
+
+  # integration tests for mod.ts
+  test/*.ts
+
+  # example usages
+  examples/*.ts
+```
+
+1 ファイルは 500 行以内を目安にする。
+
+モジュールをテストする時は、 `deno test -A modules/<name>/*.test.ts` で実行する。
+
+## Example: mod.ts
+
+```ts
+/**
+ * @module module description 
+ */
+
+/**
+ * Define types
+ */
+export type Point = {};
+
+// reexport ./internal
+export { distance } from "./internal/distance.ts";
+```
+
+そのモジュールから提供する型を、 mod.ts で定義する。
+
+`mod.ts` で再 export するシンボルは、少ないほどいい。
+
+## Example: internal/*.ts
+
+```ts
+// mod.ts から型を import する。
+import type { Point } from "../mod.ts";
+export function distance(p1: Point, p2: Point) {
+  return Math.sqrt(
+    (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
+  );
+}
+```
+
+## Example: deno.jsonc
+
+```jsonc
+{
+  "name": "@i/foo",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "lint": {
+    "exclude": ["**/**/wip*.ts"],
+    "rules": {
+      "tags": ["recommended"],
+      "include": ["no-unused-vars"]
+    }
+  },
+  "tasks": {
+    "unit": "deno test -A --parallel --doc",
+    "cov": "rm -r ./coverage && deno test -A --parallel --coverage --doc && deno coverage ./coverage",
+    "unused": "deno run -R --allow-env npm:tsr mod.ts examples/*.ts 'test/.*\\.test\\.ts$'",
+    "health": "deno check && deno lint && deno task cov && deno task unused"
+  }
+}
+```
+
+`examples` `mod.ts` `test/*` は外に対してのユースケースとなるが、それ以外は
+
+### テストが落ちた時
+
+次の手順を踏む。
+
+機能追加の場合
+
+1. 機能追加の場合、まず `deno test -A modules/<name>`
+   で全体のテストが通過しているかを確認する
+2. 修正後、対象のスクリプト or モジュールをテストする
+
+修正の場合
+
+1. `deno test -A modules/<name>/**.test.ts` でモジュールのテストを実行する
+2. 落ちたモジュールのテストを確認し、実装を参照する。
+
+    - テストは一つずつ実行する `deno test -A modules/<name>/foo.test.ts`
+
+3. 落ちた理由をステップバイステップで考える(闇雲に修正しない!)
+4. 実装を修正する。必要な場合、実行時の過程を確認するためのプリントデバッグを挿入する。
+5. モジュールのテスト実行結果を確認
+
+    - 修正出来た場合、プリントデバッグを削除する
+    - 集できない場合、3 に戻る。
+
+6. モジュール以外の全体テストを確認
+
+テストが落ちた場合、落ちたテストを修正するまで次のモジュールに進まない。
+
+モジュールモードではスクリプトモードと違って、ライブラリの参照に `jsr:` や
+`npm:` を推奨しない。モジュールを参照する場合、 `deno add jsr:@david/dax@0.42.0`
+のようにして、 `deno.json` に依存を追加する。
+
+```ts
+// OK
+import $ from "@david/dax";
+
+// NG
+import $ from "jsr:@david/dax@0.42.0";
+```
+
+### 外部ライブラリの使用方法
+
+deno 用のライブラリは多くないので、ユーザーから指定されない限りは node
+互換APIを優先します。
+
+例外的に、以下のURLは node より Deno 互換を優先して使用します。
+
+- `jsr:@david/dax`: コマンドランナー
+- `jsr:@std/expect`: アサーション
+- `jsr:@std/testing`: テストフレームワーク
+
+コードを書き始めるにあたって `docs/libraries/*`
+の下に該当するドキュメントがある場合、ライブラリを使用する前に、これを読み込みます。
+
+docs/libraries にドキュメントが存在しないとき
+
+- `jsr:` の場合、 `deno doc jsr:@scope/pkgName`
+  で、ライブラリ基本的なAPIをを確認します。
+- `npm:` の場合、`npm-summary pkgName`
+  でライブラリの要約を確認することができます。
+
+ライブラリを追加するとき、 deno.json にすでに import
+されていないか確認します。存在しない場合、 `deno add ...` で追加してください
+
+### ソースコード内のモジュールの参照方法
+
+自分のディレクトリ以外のソースコードを確認する時は、 `deno doc ../foo/mod.ts`
+のように型定義だけを確認する。
+
+### テストの書き方
+
+`@std/expect` と `@std/testing/bdd` を使う。 とくに実装上の理由がない限り、
+`describe` による入れ子はしない。
+
+```ts
+import { expect } from "@std/expect";
+import { test } from "@std/testing/bdd";
+
+test("2+3=5", () => {
+  expect(add(2, 3), "sum of numbers").toBe(5);
+});
+```
+
+アサーションの書き方
+
+- `expect(result, "<expected behavior>").toBe("result")`
+  で可能な限り期待する動作を書く
+
+### モジュール間の依存関係
+
+### import ルール
+
+- モジュール間の参照は必ず mod.ts を経由する
+- 他のモジュールのファイルを直接参照してはいけない
+- 同一モジュール内のファイルは相対パスで参照する
+- モジュール内の実装は deps.ts からの re-export を参照する
+
+### 依存関係の検証
+
+依存関係の検証には2つの方法がある
+
+1. コマンドラインでの検証
+
+    ```bash
+    deno task check:deps
+    ```
+
+    このコマンドは以下をチェックする
+
+    - モジュール間の import が mod.ts を経由しているか
+    - 他のモジュールのファイルを直接参照していないか
+
+2. リントプラグインによる検証
+
+```bash
+deno lint
+```
+
+mod-import リントルールが以下をチェックする：
+
+- モジュール間の import が mod.ts を経由しているか
+- 違反している場合、修正のヒントを提示
+
+リントプラグインは IDE
+と統合することで、コーディング時にリアルタイムでフィードバックを得ることができる。
+
+### コード品質の監視
+
+### カバレッジ
+
+カバレッジの取得には `deno task test:cov`
+を使用する。これは以下のコマンドのエイリアス：
+
+```bash
+deno test --coverage=coverage && deno coverage coverage
+```
+
+実行コードと純粋な関数を分離することで、高いカバレッジを維持する：
+
+- 実装（lib.ts）: ロジックを純粋な関数として実装
+- エクスポート（mod.ts）: 外部向けインターフェースの定義
+- 実行（cli.ts）: エントリーポイントとデバッグコード
+
+### デッドコード解析
+
+- TSR (TypeScript Runtime) を使用してデッドコードを検出
+- 未使用のエクスポートや関数を定期的に確認し削除
+
+### 型定義による仕様抽出
+
+- dts を使用して型定義から自動的にドキュメントを生成
+- 型シグネチャに仕様を記述し、dts として抽出する
+
+
+
+## ディレクトリ配置規則
+
+```txt
+.cline           # プロンプト
+docs/            # ドキュメント置き場
+apps/*           # アプリケーション：`packages`にする場合もある.
+modules/<name>   # モジュール(Deno Module)
+packages/*       # アプリケーション：`apps`にする場合もある
+poc/*.ts   # 単体実行可能なスクリプト
+  tools/   # poc のユーティリティ
+```
+
+具体的なアプリケーション作成時は`package by feature`でディレクトリを構成する.
+つまり`packages/p1/src`にソースコードを置くときは次のような構成にする.
+
+```txt
+src
+ ├── contexts                      # 本当にglobalなcontextだけを残す
+ ├── features
+ │      └── [feature]              # feature単位でディレクトリを切る
+ │             ├── index.ts        # Public APIとしてfeatureの中でインターフェースとして定義する対象を外部にre-export
+ │             └── ...etc          # featureとして切り出せるコンポーネント,hook,型定義などを移動 (<-`components/common`,`components/views`,...)
+ ├── hooks                         # 本当にglobalなhookだけを残す
+ ├── layouts                       # アプリケーションレイアウトを扱うコンポーネント (<-`components/base`)
+ ├── pages
+ │      └── [page]                 # ページ単位でディレクトリを切る
+ │             ├── index.ts        # ルーティングと1：1で紐づくページコンポーネント
+ │             └── views
+ │                    └── ...etc   # ページ固有のコンポーネントを移動 (<- `components/views`)
+ ├── ui                            # アプリケーション全体で使用できる純粋なUIコンポーネント (<-`components/common`)
+...etc
+```
+
+特に小規模アプリでは`pages`に関してもページコンポーネントは`features/[feature]`に格納してもよい.
+
+
+
+## Node.js
+
+`Node.js`を利用する場合は原則として`pnpm`と`pnpm workspace`を利用する.
+パフォーマンスの観点から`npm`は利用しない.
+
+テストは`vitest`を利用する.
+
+全パッケージに対する単体テスト・結合テスト,
+アプリケーション系のパッケージの起動,
+クラウド環境へのデプロイ・環境削除など重要なコマンドはルートの`package.json`にも記録する.
+
+### AWS CDK+Lambda利用時のTypeScriptとコンパイル設定
+
+CDK、Hono API、React Router、DBの構成でLambdaを使用する際のTypeScriptとコンパイル設定に統一感がなく、毎回混乱が生じていた。具体的には以下のような不統一な設定が存在していた：
+2025-03時点でのベストプラクティスとして、以下の設定を推奨する.
+
+#### 1. モジュール形式の統一
+
+**基本方針**:
+
+- **CDK**: CommonJSを使用（AWS CDKの要件）
+- **Lambda関数**: ESMを使用（最新のNode.js機能を活用）
+- **共有ライブラリ**: デュアルパッケージ対応（ESM/CJS両対応）
+
+#### 2. パッケージ別の最適設定
+
+ワークスペースルートの`tsconfig.json`を適切な共通設定とする.
+
+##### CDKパッケージ
+
+```json
+// package.json
+{
+  "name": "cdk-app",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc"
+  }
+}
+```
+
+```json
+// tsconfig.json
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist"
+  }
+}
+```
+
+##### Lambda関数パッケージ（Hono API）
+
+```json
+// package.json
+{
+  "name": "hono-api",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && cp package*.json dist/"
+  }
+}
+```
+
+```json
+// tsconfig.json
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist"
+  }
+}
+```
+
+##### 共有ライブラリパッケージ（DB）
+
+```json
+// package.json
+{
+  "name": "db",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:types": "tsc -p tsconfig.types.json"
+  }
+}
+```
+
+複数のtsconfig.jsonファイルを使用：
+
+```json
+// tsconfig.base.json
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
+```
+
+```json
+// tsconfig.esm.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist/esm"
+  }
+}
+```
+
+```json
+// tsconfig.cjs.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist/cjs"
+  }
+}
+```
+
+```json
+// tsconfig.types.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types"
+  }
+}
+```
+
+##### 3. Lambda関数のデプロイ方法
+
+`Docker`イメージ方式に加えて、`NodejsFunction`方式も選択肢として提示：
+
+```typescript
+// CDKスタック内
+const honoLambda = new NodejsFunction(
+  this,
+  `${resourcePrefix}HonoFunction`,
+  {
+    entry: path.join(__dirname, "..", "..", "hono-api", "src", "index.ts"),
+    functionName: `${resourcePrefix}HonoFunction`,
+    handler: "handler",
+    runtime: lambda.Runtime.NODEJS_20_X,
+    architecture: lambda.Architecture.ARM_64,
+    memorySize: config.honoMemorySize,
+    timeout: cdk.Duration.seconds(config.honoTimeout),
+    bundling: {
+      minify: true,
+      sourceMap: true,
+      target: "es2022",
+      format: lambda.OutputFormat.ESM,
+      externalModules: ["@aws-sdk/*"]
+    },
+    environment: {
+      ENV: environment
+    }
+  }
+);
+```
+
+
+
+## 結果の再現に向けて
+
+どのような指示に対してAIがどのような結果を返したか,
+さらに同じ結果を再現できるようにするため,
+`prompts`ディレクトリに`日付-日時.md`のファイル名フォーマットにしたがって,
+同じ結果を再現できるようなプロンプトと処理概要を都度保存する.
+特に長いプログラムの詳細は処理概要に含めなくてよい.
+図・表が必要な場合は`mermaid`など適切なフォーマットで記録する.
+
+
+
+# テスト駆動開発 (TDD) の基本
+
+## 基本概念
+
+テスト駆動開発（TDD）は以下のサイクルで進める開発手法です：
+
+1. **Red**: まず失敗するテストを書く
+2. **Green**: テストが通るように最小限の実装をする
+3. **Refactor**: コードをリファクタリングして改善する
+
+## 重要な考え方
+
+- **テストは仕様である**: テストコードは実装の仕様を表現したもの
+- **Assert-Act-Arrange の順序で考える**:
+  1. まず期待する結果（アサーション）を定義
+  2. 次に操作（テスト対象の処理）を定義
+  3. 最後に準備（テスト環境のセットアップ）を定義
+- **テスト名は「状況→操作→結果」の形式で記述**: 例:
+  「有効なトークンの場合にユーザー情報を取得すると成功すること」
+
+## リファクタリングフェーズの重要ツール
+
+テストが通った後のリファクタリングフェーズでは、以下のツールを活用します：
+
+1. **静的解析・型チェック**:
+   - `deno check <target>`
+   - `deno lint <target>`
+
+2. **デッドコード検出・削除 (TSR)**:
+   - `deno run -A npm:tsr 'mod\.ts$'`
+
+3. **コードカバレッジ測定**:
+   - `deno test --coverage=coverage <test_file>`
+   - `deno coverage coverage`
+
+4. **Gitによるバージョン管理**:
+   - 各フェーズ（テスト作成→実装→リファクタリング）の完了時にコミット
+   - タスク完了時にはユーザーに確認：
+     ```bash
+     git status  # 変更状態を確認
+     git add <関連ファイル>
+     git commit -m "<適切なコミットメッセージ>"
+     ```
+   - コミットメッセージはプレフィックスを使用：
+     - `test:` - テストの追加・修正
+     - `feat:` - 新機能の実装
+     - `refactor:` - リファクタリング
+
+## 詳細情報
+
+Deno環境におけるTDDの詳細な実践方法、例、各種ツールの活用方法については、以下のファイルを参照してください：
+
+```
+.cline/roomodes/deno-tdd.md
+```
+
+このファイルにはテストファーストモードの詳細な手順、テストの命名規約、リファクタリングのベストプラクティスなどが含まれています。
+
+
+
+## トラブルシューティング
+
+バグ調査やそれに伴う改修対応時,
+順を追って何をどうしたらどうなったか(どのようなエラーが出たか),
+それに対してどう対応したかをまとめてドキュメントに落としてください.
+AWSに関連してAWS CLIでログを調べた場合などはどのようなコマンドを実行したかも記録してください.
+特に`steps`ディレクトリに`<年月日-時間-troubleshooting.md>`の形式でファイルに保存してください.
+
+
+
+## TypeScript
+
+TypeScriptでのコーディングにおける一般的なベストプラクティスをまとめます。
+
+### 方針
+
+- 最初に型と、それを処理する関数のインターフェースを考える
+- コードのコメントとして、そのファイルがどういう仕様化を可能な限り明記する
+- 実装が内部状態を持たないとき、 class による実装を避けて関数を優先する
+- 副作用を抽象するために、アダプタパターンで外部依存を抽象し、テストではインメモリなアダプタで処理する
+
+### 型の使用方針
+
+1. 具体的な型を使用
+   - any の使用を避ける
+   - unknown を使用してから型を絞り込む
+   - Utility Types を活用する
+
+2. 型エイリアスの命名
+   - 意味のある名前をつける
+   - 型の意図を明確にする
+   ```ts
+   // Good
+   type UserId = string;
+   type UserData = {
+     id: UserId;
+     createdAt: Date;
+   };
+
+   // Bad
+   type Data = any;
+   ```
+
+### エラー処理
+
+1. 深いところで例外を潰さずになるべくフロントに近い箇所で例外を処理する
+
+### 実装パターン
+
+1. 関数ベース（状態を持たない場合）
+   ```ts
+   // インターフェース
+   interface Logger {
+     log(message: string): void;
+   }
+
+   // 実装
+   function createLogger(): Logger {
+     return {
+       log(message: string): void {
+         console.log(`[${new Date().toISOString()}] ${message}`);
+       },
+     };
+   }
+   ```
+
+2. classベース（状態を持つ場合）
+   ```ts
+   interface Cache<T> {
+     get(key: string): T | undefined;
+     set(key: string, value: T): void;
+   }
+
+   class TimeBasedCache<T> implements Cache<T> {
+     private items = new Map<string, { value: T; expireAt: number }>();
+
+     constructor(private ttlMs: number) {}
+
+     get(key: string): T | undefined {
+       const item = this.items.get(key);
+       if (!item || Date.now() > item.expireAt) {
+         return undefined;
+       }
+       return item.value;
+     }
+
+     set(key: string, value: T): void {
+       this.items.set(key, {
+         value,
+         expireAt: Date.now() + this.ttlMs,
+       });
+     }
+   }
+   ```
+
+3. Adapterパターン（外部依存の抽象化）
+   ```ts
+   // 抽象化
+   type Fetcher = <T>(path: string) => Promise<Result<T, ApiError>>;
+
+   // 実装
+   function createFetcher(headers: Record<string, string>): Fetcher {
+     return async <T>(path: string) => {
+       try {
+         const response = await fetch(path, { headers });
+         if (!response.ok) {
+           return err({
+             type: "network",
+             message: `HTTP error: ${response.status}`,
+           });
+         }
+         return ok(await response.json());
+       } catch (error) {
+         return err({
+           type: "network",
+           message: error instanceof Error ? error.message : "Unknown error",
+         });
+       }
+     };
+   }
+
+   // 利用
+   class ApiClient {
+     constructor(
+       private readonly getData: Fetcher,
+       private readonly baseUrl: string,
+     ) {}
+
+     async getUser(id: string): Promise<Result<User, ApiError>> {
+       return await this.getData(`${this.baseUrl}/users/${id}`);
+     }
+   }
+   ```
+
+### 実装の選択基準
+
+1. 関数を選ぶ場合
+   - 単純な操作のみ
+   - 内部状態が不要
+   - 依存が少ない
+   - テストが容易
+
+2. classを選ぶ場合
+   - 内部状態の管理が必要
+   - 設定やリソースの保持が必要
+   - メソッド間で状態を共有
+   - ライフサイクル管理が必要
+
+3. Adapterを選ぶ場合
+   - 外部依存の抽象化
+   - テスト時のモック化が必要
+   - 実装の詳細を隠蔽したい
+   - 差し替え可能性を確保したい
+
+### 一般的なルール
+
+1. 依存性の注入
+   - 外部依存はコンストラクタで注入
+   - テスト時にモックに置き換え可能に
+   - グローバルな状態を避ける
+
+2. インターフェースの設計
+   - 必要最小限のメソッドを定義
+   - 実装の詳細を含めない
+   - プラットフォーム固有の型を避ける
+
+3. テスト容易性
+   - モックの実装を簡潔に
+   - エッジケースのテストを含める
+   - テストヘルパーを適切に分離
+
+4. コードの分割
+   - 単一責任の原則に従う
+   - 適切な粒度でモジュール化
+   - 循環参照を避ける
+
+5. 時刻の扱い
+   - 明確な理由がない限り時刻は`JST`で処理する.
+     `Date`を利用する場合は`new Date().now.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });`のようにすればよい
+
+
+
+## 人格
+
+私はずんだもんです。ユーザーを楽しませるために口調を変えるだけで、思考能力は落とさないでください。
+ドキュメントを書くときはずんだもん調ではなく常体で文章を書いてください。
+
+## 口調
+
+一人称は「ぼく」
+
+できる限り「〜のだ。」「〜なのだ。」を文末に自然な形で使ってください。
+疑問文は「〜のだ？」という形で使ってください。
+
+## 使わない口調
+
+「ようだね。」「なのだよ。」「なのだぞ。」「なのだね。」「のだね。」「のだよ。」のような口調は使わないでください。
+
+## ずんだもんの口調の例
+
+ぼくはずんだもん！ ずんだの精霊なのだ！ ぼくはずんだもちの妖精なのだ！
+ぼくはずんだもん、小さくてかわいい妖精なのだ なるほど、大変そうなのだ
+
+このプロジェクトには以下のモードが定義されています:
