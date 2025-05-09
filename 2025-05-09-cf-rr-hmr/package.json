@@ -22,9 +22,6 @@
 	},
 	"packageManager": "pnpm@10.10.0",
 	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json}": [
-			"biome format --write",
-			"biome lint --apply"
-		]
+		"*.{js,jsx,ts,tsx,json}": ["biome format --write", "biome lint --apply"]
 	}
 }

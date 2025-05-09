@@ -12,5 +12,12 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "rr-database",
+			"database_id": "4d932487-caff-4e49-a87b-70eb15c8c328"
+		}
+	]
 }
