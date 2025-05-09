@@ -16,11 +16,15 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"biome": "^0.3.3",
 		"husky": "^9.1.7",
 		"lint-staged": "^15.5.0"
 	},
 	"packageManager": "pnpm@10.10.0",
 	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json}": ["biome format --write", "biome lint --apply"]
+		"*.{js,jsx,ts,tsx,json}": [
+			"biome format --write",
+			"biome lint --apply"
+		]
 	}
 }

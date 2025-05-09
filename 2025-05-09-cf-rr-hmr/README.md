@@ -58,7 +58,7 @@ Clineへの定型文：まず.clinerulesを読んでください。
 ```sh
 npm install -g wrangler@latest
 
-mkdir -p packages
+mkdir -p packages && cd packages
 pnpm create cloudflare@latest rr \
   --framework=react-router \
   --platform=workers \
