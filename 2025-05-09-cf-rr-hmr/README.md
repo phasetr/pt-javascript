@@ -2,6 +2,10 @@
 
 AI向け注意：作業を進めるときはまず`.clinerules`を読むこと。
 
+次のドキュメントではD1データベースの設定方法とHMRの設定方法について説明しています。
+
+- [React Router + Cloudflare D1 連携ガイド](docs/cloudflare-d1-react-router-hmr.md)
+
 ## プロジェクト概要
 
 `Cloudflare`上、特に`wrangler dev`で起動した`React Router`に`HMR`を連携させるための調査プロジェクト。
