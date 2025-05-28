@@ -7,6 +7,7 @@ ROOMODES_DIR="./.cline/roomodes"
 NODEMODES_DIR="./.cline/nodemodes"
 OUTPUT_FILE_DENO=".clinerules-deno"
 OUTPUT_FILE_NODE=".clinerules"
+OUTPUT_FILE_AIDER="CONVENTIONS.md"
 
 # ディレクトリが存在するか確認
 if [ ! -d "$RULES_DIR" ]; then
@@ -17,6 +18,7 @@ fi
 # 出力ファイルを初期化
 > "$OUTPUT_FILE_DENO"
 > "$OUTPUT_FILE_NODE"
+> "$OUTPUT_FILE_AIDER"
 
 # ルールファイルを読み込んで結合
 echo "ルールファイルを処理中..."
@@ -26,12 +28,15 @@ for file in $(find "$RULES_DIR" -name "*.md" -not -name "_*" | sort); do
     if [ "$first_file" = true ]; then
       cat "$file" > "$OUTPUT_FILE_DENO"
       cat "$file" > "$OUTPUT_FILE_NODE"
+      cat "$file" >> "$OUTPUT_FILE_AIDER"
       first_file=false
     else
       echo "\n\n" >> "$OUTPUT_FILE_DENO"
       cat "$file" >> "$OUTPUT_FILE_DENO"
       echo "\n\n" >> "$OUTPUT_FILE_NODE"
       cat "$file" >> "$OUTPUT_FILE_NODE"
+      echo "\n\n" >> "$OUTPUT_FILE_AIDER"
+      cat "$file" >> "$OUTPUT_FILE_AIDER"
     fi
   fi
 done
@@ -68,7 +73,7 @@ if [ -d "$NODEMODES_DIR" ]; then
   echo "カスタムモードを処理中..."
 
   # カスタムモードの情報を追加
-  echo "\nこのプロジェクトには以下のモードが定義されています:" >> "$OUTPUT_FILE_NODE"
+  # echo "\nこのプロジェクトには以下のモードが定義されています:" >> "$OUTPUT_FILE_NODE"
 
   for file in "$NODEMODES_DIR"/*.md; do
     if [ -f "$file" ]; then
@@ -85,6 +90,7 @@ if [ -d "$NODEMODES_DIR" ]; then
 
         # 結果にモード情報を追加
         echo -e "- ${slug} ${name} at ${file#./}" >> "$OUTPUT_FILE_NODE"
+        echo -e "- ${slug} ${name} at ${file#./}" >> "$OUTPUT_FILE_AIDER"
       fi
     fi
   done
@@ -92,3 +98,4 @@ fi
 
 echo "生成: $OUTPUT_FILE_DENO"
 echo "生成: $OUTPUT_FILE_NODE"
+echo "生成: $OUTPUT_FILE_AIDER"
