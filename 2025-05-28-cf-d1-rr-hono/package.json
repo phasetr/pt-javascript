@@ -1,0 +1,26 @@
+{
+	"name": "<proj-name>-monorepo",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"build": "pnpm -r build",
+		"test": "pnpm -r test",
+		"hono:delete": "pnpm --filter=hono-api run delete",
+		"hono:deploy": "pnpm --filter=hono-api run deploy",
+		"hono:dev": "pnpm --filter=hono-api dev",
+		"hono:types": "pnpm --filter=hono-api run cf-typegen",
+		"rr:dev": "pnpm --filter=rr dev",
+		"ngrok": "ngrok http 3000",
+		"twilio": "twilio profiles:use caller && twilio dev-phone",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.5.0"
+	},
+	"packageManager": "pnpm@10.10.0",
+	"lint-staged": {
+		"*.{js,jsx,ts,tsx,json}": ["biome format --write", "biome lint --apply"]
+	}
+}
