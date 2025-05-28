@@ -1,3 +1,5 @@
-export * from "./schema.js";
-export { drizzle } from "drizzle-orm/d1";
-export type { DrizzleD1Database } from "drizzle-orm/d1";
+import { PrismaClient } from '@prisma/client'
+
+export const prisma = new PrismaClient()
+
+export * from '@prisma/client'
