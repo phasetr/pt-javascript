@@ -67,12 +67,16 @@ CDRH(Cloudflare D1-React router-Hono)
 ```sh
 npm install -g wrangler@latest
 
-mkdir -p packages/cdrh-api
-cd packages/cdrh-api
-pnpm create cloudflare@latest -- --framework=hono
+mkdir -p packages
+pnpm create cloudflare@latest packages/cdrh-api \
+  --framework=hono \
+  --platform=workers \
+  --lang=ts \
+  --no-deploy \
+  --no-git \
+  --auto-update
 mv packages/cdrh-api packages/hono-api
 
-mkdir -p packages
 pnpm create cloudflare@latest rr \
   --framework=react-router \
   --platform=workers \
@@ -81,6 +85,18 @@ pnpm create cloudflare@latest rr \
   --no-git \
   --auto-update
 wrangler d1 create cdrh-db
+```
+
+```jsonc
+{
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cdrh-db",
+      "database_id": "321e9293-4b2a-419b-971d-a0d44c5a98cf"
+    }
+  ]
+}
 ```
 
 `wrangler d1 create cdrh-db`で出てきた記述を`wrangler.jsonc`に追加する.

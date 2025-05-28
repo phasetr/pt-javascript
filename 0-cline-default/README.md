@@ -85,15 +85,16 @@ pnpm dlx create-remix@latest packages/remix
 
 #### cloudflare用
 
-`pnpm create cloudflare@latest`では、
-`Framework Starter`から`React Router`を選ぶ。
-
 ```sh
 npm install -g wrangler@latest
 
-mkdir -p packages/<proj-name>-api
-cd packages/<proj-name>-api
-pnpm create cloudflare@latest -- --framework=hono
+pnpm create cloudflare@latest packages/<proj-name>-api \
+  --framework=hono \
+  --platform=workers \
+  --lang=ts \
+  --no-deploy \
+  --no-git \
+  --auto-update
 mv packages/<proj-name>-api packages/hono-api
 
 mkdir -p packages

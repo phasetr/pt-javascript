@@ -22,6 +22,7 @@
 		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"cSpell.words": [
+		"cdrh",
 		"clinerules",
 		"envrc",
 		"frontmatter",
