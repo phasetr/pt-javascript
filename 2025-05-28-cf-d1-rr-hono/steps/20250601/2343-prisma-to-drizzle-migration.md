@@ -14,7 +14,7 @@
 - **データベースタイプ**: SQLite（`file:./dev.db`）
 - **Prismaスキーマ**: `/packages/db/prisma/schema.prisma`
 - **モデル定義**: Userモデル（id, email, name, createdAt, updatedAt）
-- **依存関係**: 
+- **依存関係**:
   - `@prisma/client`: ^5.22.0
   - `prisma`: ^5.22.0
 - **問題点**: Cloudflare D1との統合が正しく実装されていない
@@ -36,6 +36,7 @@ pnpm add -D drizzle-kit @types/better-sqlite3
 Prismaスキーマから変換してDrizzle用のスキーマを作成：
 
 `packages/db/src/schema/users.ts`:
+
 ```typescript
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
@@ -57,6 +58,7 @@ export const users = sqliteTable('users', {
 #### 2.3 Drizzle設定ファイルの作成
 
 `packages/db/drizzle.config.ts`:
+
 ```typescript
 import type { Config } from 'drizzle-kit';
 
@@ -76,6 +78,7 @@ export default {
 #### 2.4 データベース接続設定
 
 `packages/db/src/client.ts`:
+
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
@@ -165,7 +168,8 @@ Prisma用からDrizzle用に変更：
 
 ### 問題1: better-sqlite3がCloudflare Workers環境で使用不可
 
-**解決**: 
+**解決**:
+
 - better-sqlite3を削除
 - Drizzleのd1ドライバーを使用
 - `drizzle-orm/d1`からインポート
@@ -173,6 +177,7 @@ Prisma用からDrizzle用に変更：
 ### 問題2: パッケージ間の依存関係解決
 
 **解決**:
+
 - 相対パスインポートを使用（`../../db/src`）
 - wranglerの設定でnodejs_compatフラグを有効化
 
