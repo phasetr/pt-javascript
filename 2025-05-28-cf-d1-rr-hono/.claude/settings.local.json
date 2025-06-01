@@ -19,7 +19,8 @@
       "Bash(WRANGLER_PERSIST_TO=../../.wrangler-persist npx wrangler dev --port 8787)",
       "Bash(npx wrangler d1 migrations apply:*)",
       "Bash(mv:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

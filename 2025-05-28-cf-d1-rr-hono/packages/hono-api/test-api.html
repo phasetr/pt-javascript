@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hono API テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hono API テスト</h1>
+    
+    <h2>ユーザー操作</h2>
+    <button onclick="getUsers()">ユーザー一覧取得</button>
+    <button onclick="createUser()">新規ユーザー作成</button>
+    <button onclick="getUser()">ユーザー詳細取得</button>
+    <button onclick="updateUser()">ユーザー更新</button>
+    <button onclick="deleteUser()">ユーザー削除</button>
+    
+    <h2>結果</h2>
+    <div id="result">ここに結果が表示されます</div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8787/api';
+        const resultDiv = document.getElementById('result');
+        
+        async function showResult(promise, operation) {
+            try {
+                const response = await promise;
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="success">${operation}成功！</span>\n\n` + 
+                                          JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.innerHTML = `<span class="error">${operation}失敗</span>\n\n` + 
+                                          JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">エラー: ${error.message}</span>`;
+            }
+        }
+        
+        function getUsers() {
+            showResult(fetch(`${API_BASE}/users`), 'ユーザー一覧取得');
+        }
+        
+        function createUser() {
+            const email = prompt('メールアドレスを入力してください:');
+            const name = prompt('名前を入力してください (任意):');
+            
+            if (email) {
+                showResult(
+                    fetch(`${API_BASE}/users`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, name })
+                    }),
+                    'ユーザー作成'
+                );
+            }
+        }
+        
+        function getUser() {
+            const id = prompt('ユーザーIDを入力してください:');
+            if (id) {
+                showResult(fetch(`${API_BASE}/users/${id}`), 'ユーザー詳細取得');
+            }
+        }
+        
+        function updateUser() {
+            const id = prompt('更新するユーザーIDを入力してください:');
+            const email = prompt('新しいメールアドレスを入力してください (空欄で変更なし):');
+            const name = prompt('新しい名前を入力してください (空欄で変更なし):');
+            
+            if (id) {
+                const updateData = {};
+                if (email) updateData.email = email;
+                if (name) updateData.name = name;
+                
+                showResult(
+                    fetch(`${API_BASE}/users/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    }),
+                    'ユーザー更新'
+                );
+            }
+        }
+        
+        function deleteUser() {
+            const id = prompt('削除するユーザーIDを入力してください:');
+            if (id && confirm('本当に削除しますか？')) {
+                showResult(
+                    fetch(`${API_BASE}/users/${id}`, {
+                        method: 'DELETE'
+                    }),
+                    'ユーザー削除'
+                );
+            }
+        }
+        
+        // 初期表示でユーザー一覧を取得
+        getUsers();
+    </script>
+</body>
+</html>
