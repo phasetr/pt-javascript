@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --persist-to ../../.wrangler-persist",
     "start": "wrangler dev",
     "cf-typegen": "wrangler types"
   },

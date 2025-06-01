@@ -25,7 +25,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <nav className="bg-gray-800 text-white p-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <a href="/" className="text-xl font-bold">D1 CRUD Demo</a>
+            <div className="space-x-4">
+              <a href="/" className="hover:text-gray-300">ホーム</a>
+              <a href="/users" className="hover:text-gray-300">ユーザー管理</a>
+            </div>
+          </div>
+        </nav>
+        <main className="min-h-screen bg-gray-50">
+          {children}
+        </main>
         <ScrollRestoration />
         <Scripts />
       </body>
