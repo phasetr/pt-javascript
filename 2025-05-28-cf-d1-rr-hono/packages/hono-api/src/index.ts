@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
-import { PrismaClient } from 'db'
+import { createD1Db, users } from '../../db/src'
+import { eq } from 'drizzle-orm'
 
 type Bindings = {
   DB: D1Database
@@ -7,26 +8,16 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-// Prismaクライアントの初期化（D1データベースを使用）
-const createPrismaClient = (db: D1Database) => {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: 'file:./dev.db' // D1の場合は実際のD1インスタンスを使用
-      }
-    }
-  })
-}
 
 app.get('/', (c) => {
   return c.html(`
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Hono API with Prisma</title>
+        <title>Hono API with Drizzle</title>
       </head>
       <body>
-        <h1>Hono API with Prisma</h1>
+        <h1>Hono API with Drizzle</h1>
         <p>API endpoints:</p>
         <ul>
           <li><a href="/api/users">GET /api/users</a> - Get all users</li>
@@ -41,9 +32,9 @@ app.get('/', (c) => {
 // ユーザー一覧取得
 app.get('/api/users', async (c) => {
   try {
-    const prisma = createPrismaClient(c.env.DB)
-    const users = await prisma.user.findMany()
-    return c.json(users)
+    const db = createD1Db(c.env.DB)
+    const result = await db.select().from(users)
+    return c.json(result)
   } catch (error) {
     console.error('Error fetching users:', error)
     return c.json({ error: 'Failed to fetch users' }, 500)
@@ -60,15 +51,13 @@ app.post('/api/users', async (c) => {
       return c.json({ error: 'Email is required' }, 400)
     }
 
-    const prisma = createPrismaClient(c.env.DB)
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: name || null
-      }
-    })
+    const db = createD1Db(c.env.DB)
+    const result = await db.insert(users).values({
+      email,
+      name: name || null
+    }).returning()
     
-    return c.json(user, 201)
+    return c.json(result[0], 201)
   } catch (error) {
     console.error('Error creating user:', error)
     return c.json({ error: 'Failed to create user' }, 500)
@@ -79,16 +68,14 @@ app.post('/api/users', async (c) => {
 app.get('/api/users/:id', async (c) => {
   try {
     const id = c.req.param('id')
-    const prisma = createPrismaClient(c.env.DB)
-    const user = await prisma.user.findUnique({
-      where: { id }
-    })
+    const db = createD1Db(c.env.DB)
+    const result = await db.select().from(users).where(eq(users.id, id))
     
-    if (!user) {
+    if (result.length === 0) {
       return c.json({ error: 'User not found' }, 404)
     }
     
-    return c.json(user)
+    return c.json(result[0])
   } catch (error) {
     console.error('Error fetching user:', error)
     return c.json({ error: 'Failed to fetch user' }, 500)

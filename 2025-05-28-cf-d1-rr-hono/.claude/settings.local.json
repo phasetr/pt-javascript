@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(pnpm add:*)",
+      "Bash(mkdir:*)",
+      "Bash(wrangler d1 create:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(wrangler d1 migrations apply:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(wrangler dev:*)",
+      "Bash(npm view:*)",
+      "Bash(pnpm install:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

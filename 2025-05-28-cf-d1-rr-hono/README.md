@@ -48,7 +48,7 @@ CDRH(Cloudflare D1-React router-Hono)
     - ルート直下に`package.json`と`pnpm-workspace.yaml`をコピーする
 2. (手動)：`packages/hono-api`で`Hono`を初期化する
 3. (手動)：`packages/rr`で`React Router`を初期化する
-4. データベースのプロジェクトを作り, `Prisma`でスキーマを作り,
+4. データベースのプロジェクトを作り, `Drizzle`でスキーマを作り,
    マイグレーションする.
    データベースはローカルの`D1`を利用し,
    ファイルはルート配下にディレクトリを作って各パッケージで共有する.
