@@ -1,0 +1,27 @@
+{
+  "name": "mcp-hello-world-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript MCP Server and Client workspace",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev:server": "pnpm --filter hello-world-mcp-server dev",
+    "dev:client": "pnpm --filter hello-world-mcp-client dev",
+    "dev:chat": "pnpm --filter hello-world-mcp-chat-client dev",
+    "start:server": "pnpm --filter hello-world-mcp-server start",
+    "start:client": "pnpm --filter hello-world-mcp-client start",
+    "start:chat": "pnpm --filter hello-world-mcp-chat-client start",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "keywords": ["mcp", "workspace", "monorepo"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
