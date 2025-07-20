@@ -1,0 +1,32 @@
+{
+  "name": "create-s3vectors-index",
+  "version": "1.0.0",
+  "description": "S3Vectors index creation tool for TypeScript",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:dev": "vitest --coverage",
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "vitest --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
+    "clean": "rm -rf dist",
+    "start": "node bin/create-s3vectors-index.js",
+    "create-index": "node bin/create-s3vectors-index.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3vectors": "^3.692.0",
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.1.2",
+    "@types/node": "^24.0.15",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

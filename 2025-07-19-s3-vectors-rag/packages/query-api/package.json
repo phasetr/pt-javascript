@@ -1,0 +1,27 @@
+{
+  "name": "@s3vectors-rag/query-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js",
+    "clean": "rm -rf dist node_modules",
+    "start": "node dist/index.js",
+    "query": "node dist/index.js",
+    "test": "vitest run",
+    "test:dev": "vitest --coverage",
+    "test:coverage": "vitest --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "esbuild": "^0.25.8"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.692.0"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "s3vectors-rag-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run build",
+    "clean": "pnpm -r run clean",
+    "clean:build": "pnpm clean && pnpm build",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "test:dev": "pnpm -r run test:dev",
+    "dev:check": "echo 'No dev server configured for this monorepo'"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.1.2",
+    "@types/node": "^24.0.15",
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "packageManager": "pnpm@10.13.1"
+}

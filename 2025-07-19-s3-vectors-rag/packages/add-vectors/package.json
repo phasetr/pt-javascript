@@ -1,0 +1,37 @@
+{
+  "name": "@s3vectors-rag/add-vectors",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "add-vectors": "./bin/add-vectors"
+  },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js",
+    "clean": "rm -rf dist node_modules",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "^0.25.8",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.692.0",
+    "@aws-sdk/client-s3vectors": "^3.692.0",
+    "@langchain/aws": "^0.1.12",
+    "@langchain/textsplitters": "^0.1.0",
+    "commander": "^14.0.0",
+    "uuid": "^11.1.0"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@s3vectors-rag/cdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cdk": "bin/cdk.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist node_modules cdk.out",
+    "watch": "tsc -w",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "test:coverage": "vitest --coverage",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --require-approval never",
+    "destroy": "cdk destroy",
+    "synth": "cdk synth",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.15",
+    "@vitest/coverage-v8": "^3.2.4",
+    "aws-cdk": "2.1021.0",
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.206.0",
+    "constructs": "^10.0.0"
+  }
+}
