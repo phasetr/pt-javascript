@@ -1,0 +1,29 @@
+{
+  "name": "hono-honox-d1-vite",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "api:dev": "pnpm --filter api dev",
+    "api:dev:wrangler": "pnpm --filter api dev:wrangler",
+    "honox:dev": "pnpm --filter honox dev",
+    "honox:dev:wrangler": "pnpm --filter honox preview",
+    "honox:dev:preview": "pnpm --filter honox preview",
+    "honox:dev:preview:pages": "pnpm --filter honox preview:pages",
+    "rr:dev": "pnpm --filter rr dev",
+    "clean:build": "rm -rf dist && rm -rf packages/*/dist",
+    "lint:fix": "biome check --write .",
+    "lint": "biome check .",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test:dev": "pnpm -r test",
+    "check": "pnpm clean:build && pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck && pnpm test:dev",
+    "db:generate": "pnpm --filter db db:generate",
+    "db:migrate": "pnpm --filter db db:migrate",
+    "db:studio": "pnpm --filter db db:studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.3",
+    "typescript": "^5.6.0"
+  },
+  "packageManager": "pnpm@10.0.0"
+}

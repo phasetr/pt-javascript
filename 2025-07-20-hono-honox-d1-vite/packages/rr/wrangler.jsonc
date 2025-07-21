@@ -1,0 +1,22 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"name": "rr",
+	"compatibility_date": "2025-04-04",
+	"main": "./workers/app.ts",
+	"observability": {
+		"enabled": true
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "rr-local-db",
+			"database_id": "rr-local-db",
+			"migrations_dir": "./migrations",
+			"preview_database_id": "rr-local-db"
+		}
+	],
+	"compatibility_flags": ["nodejs_compat"]
+}

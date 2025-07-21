@@ -1,0 +1,35 @@
+{
+  "name": "honox",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "wrangler pages dev --persist-to ../../.wrangler-persist",
+    "deploy": "$npm_execpath wrangler pages deploy",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "test:dev": "vitest run",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:push": "drizzle-kit push --config=drizzle.config.ts"
+  },
+  "dependencies": {
+    "@hono/vite-cloudflare-pages": "^0.4.2",
+    "@hono/vite-dev-server": "^0.20.0",
+    "db": "workspace:*",
+    "drizzle-orm": "^0.44.3",
+    "hono": "^4.8.5",
+    "honox": "^0.1.43"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250719.0",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/node": "^24.0.15",
+    "eslint": "^9.31.0",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.5",
+    "wrangler": "^4.25.0"
+  }
+}

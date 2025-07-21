@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "allow": ["Bash(drizzle-kit generate:*)", "Bash(cat:*)", "Bash(cp:*)"],
+    "deny": []
+  }
+}
