@@ -1,0 +1,5 @@
+.wrangler-persist/
+.wrangler/
+dist/
+.dev.vars
+global.d.ts
