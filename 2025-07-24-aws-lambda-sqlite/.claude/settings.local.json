@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(zip:*)",
+      "Bash(cdk deploy:*)"
     ],
     "deny": []
   }

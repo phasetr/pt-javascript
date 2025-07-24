@@ -1,7 +1,32 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as cdk from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AwsLambdaSqliteStack } from "../aws-lambda-sqlite-stack";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dummyZipPath = path.join(__dirname, "../../../api/lambda.zip");
+
+beforeAll(() => {
+	// テスト用のダミーZIPファイルを作成
+	const dir = path.dirname(dummyZipPath);
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir, { recursive: true });
+	}
+	if (!fs.existsSync(dummyZipPath)) {
+		fs.writeFileSync(dummyZipPath, Buffer.from("PK"));
+	}
+});
+
+afterAll(() => {
+	// テスト後にダミーファイルを削除
+	if (fs.existsSync(dummyZipPath)) {
+		fs.unlinkSync(dummyZipPath);
+	}
+});
 
 describe("AwsLambdaSqliteStack", () => {
 	it("should create a VPC with public and private subnets", () => {

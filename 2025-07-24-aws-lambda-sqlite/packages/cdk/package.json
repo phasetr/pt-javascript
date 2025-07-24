@@ -7,12 +7,16 @@
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc -w",
-		"test": "vitest",
-		"test:dev": "vitest --maxWorkers=1",
+		"clean": "rm -rf dist tsconfig.tsbuildinfo cdk.out",
+		"clean:build": "rm -rf dist tsconfig.tsbuildinfo",
+		"test": "vitest run --pool=forks",
+		"test:dev": "vitest run --pool=forks",
 		"cdk": "cdk",
 		"synth": "cdk synth",
 		"deploy": "cdk deploy",
+		"deploy:force": "cdk deploy --require-approval never",
 		"destroy": "cdk destroy",
+		"destroy:force": "cdk destroy --force",
 		"lint": "biome check --no-errors-on-unmatched",
 		"lint:fix": "biome check --write --no-errors-on-unmatched",
 		"typecheck": "tsc --noEmit"

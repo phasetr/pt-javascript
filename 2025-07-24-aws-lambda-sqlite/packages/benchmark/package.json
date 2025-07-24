@@ -10,8 +10,8 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsx src/cli.ts",
-		"clean": "rm -rf dist",
-		"clean:build": "rm -rf dist",
+		"clean": "rm -rf dist tsconfig.tsbuildinfo",
+		"clean:build": "rm -rf dist tsconfig.tsbuildinfo",
 		"lint": "biome check .",
 		"lint:fix": "biome check --fix .",
 		"typecheck": "tsc --noEmit",

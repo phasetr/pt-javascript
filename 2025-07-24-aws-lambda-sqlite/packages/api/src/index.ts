@@ -66,3 +66,8 @@ app.get("/ddb", async (c) => {
 });
 
 export default app;
+
+/**
+ * Lambda handler export for AWS Lambda
+ */
+export const handler = app.fetch;

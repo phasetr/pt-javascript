@@ -37,7 +37,7 @@ export class AwsLambdaSqliteStack extends cdk.Stack {
 			],
 			enableDnsHostnames: true,
 			enableDnsSupport: true,
-		});
+		}) as ec2.IVpc;
 
 		// EFSファイルシステムの作成
 		const fileSystem = new efs.FileSystem(this, "LambdaSqliteEfs", {
@@ -123,10 +123,7 @@ export class AwsLambdaSqliteStack extends cdk.Stack {
 			runtime: lambda.Runtime.NODEJS_20_X,
 			handler: "index.handler",
 			code: lambda.Code.fromAsset(
-				path.join(__dirname, "..", "..", "api", "dist"),
-				{
-					exclude: ["**/*.test.*", "**/test/**"],
-				},
+				path.join(__dirname, "..", "..", "api", "lambda.zip"),
 			),
 			memorySize: 1024,
 			timeout: cdk.Duration.seconds(300),

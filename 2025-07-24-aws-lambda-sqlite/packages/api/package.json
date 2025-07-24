@@ -16,9 +16,10 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"build": "tsc --build",
+		"build:lambda": "../../scripts/build-lambda.sh",
 		"dev": "tsx src/index.ts",
-		"clean": "rm -rf dist",
-		"clean:build": "rm -rf dist",
+		"clean": "rm -rf dist lambda.zip tsconfig.tsbuildinfo",
+		"clean:build": "rm -rf dist tsconfig.tsbuildinfo",
 		"lint": "biome check .",
 		"lint:fix": "biome check --fix .",
 		"typecheck": "tsc --noEmit",

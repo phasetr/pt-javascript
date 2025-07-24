@@ -1,32 +1,36 @@
 {
-  "name": "aws-lambda-sqlite-efs",
-  "version": "1.0.0",
-  "description": "AWS Lambda SQLite with EFS performance comparison",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "clean": "pnpm -r clean",
-    "clean:build": "pnpm -r clean:build",
-    "lint": "pnpm -r lint",
-    "lint:fix": "pnpm -r lint:fix",
-    "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
-    "test:dev": "pnpm -r test:dev",
-    "check": "pnpm clean:build && pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck && pnpm test:dev",
-    "console:seed": "pnpm --filter console seed",
-    "benchmark:run": "pnpm --filter benchmark run",
-    "cdk:deploy": "pnpm --filter cdk deploy",
-    "api:dev": "pnpm --filter api dev"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.1.2",
-    "typescript": "5.8.3"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
-  }
+	"name": "aws-lambda-sqlite-efs",
+	"version": "1.0.0",
+	"description": "AWS Lambda SQLite with EFS performance comparison",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"clean": "pnpm -r clean",
+		"clean:build": "pnpm -r clean:build",
+		"lint": "pnpm -r lint",
+		"lint:fix": "biome check --write",
+		"build": "pnpm -r build",
+		"build:lambda": "pnpm --filter api build:lambda",
+		"typecheck": "pnpm -r typecheck",
+		"test": "pnpm -r test",
+		"test:dev": "pnpm -r test:dev",
+		"check": "pnpm clean:build && pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck && pnpm test:dev",
+		"console:seed": "pnpm --filter console seed",
+		"benchmark:run": "pnpm --filter benchmark run",
+		"cdk:deploy": "pnpm build:lambda && pnpm --filter cdk deploy",
+		"cdk:deploy:force": "pnpm build:lambda && pnpm --filter cdk deploy --require-approval never",
+		"cdk:destroy": "pnpm --filter cdk destroy",
+		"api:dev": "pnpm --filter api dev"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.1.2",
+		"typescript": "5.8.3"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"pnpm": ">=9.0.0"
+	},
+	"packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }

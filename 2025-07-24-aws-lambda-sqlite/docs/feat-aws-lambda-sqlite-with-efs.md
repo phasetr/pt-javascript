@@ -366,17 +366,87 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 - [x] CDKのテスト実装100%カバレッジ
 - [x] 全ファイルでリント・テストエラーなし
 - [x] `cdk synth`が成功
-- [ ] `cdk deploy`でリソース作成成功
+- [x] `cdk deploy`でリソース作成成功
 
-### フェーズ4: 動作確認
+## フェーズ3完了
 
-**TDD最重視**: 統合テスト・E2Eテストを先行実装
+CDK実装とデプロイが完了しました：
+
+- ✅ VPC、EFS、Lambda、DynamoDB、API Gatewayの全リソース定義
+- ✅ TDDによる全テスト実装（100%カバレッジ）
+- ✅ CDK synthが成功
+- ✅ CDK deploy成功
+
+### デプロイ結果
+
+以下のコマンドで取得可能：
+
+```bash
+# API URLの取得
+aws cloudformation describe-stacks \
+  --stack-name aws-lambda-sqlite-efs-stack \
+  --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+  --output text
+
+# EFS IDの取得
+aws cloudformation describe-stacks \
+  --stack-name aws-lambda-sqlite-efs-stack \
+  --query 'Stacks[0].Outputs[?OutputKey==`EfsFileSystemId`].OutputValue' \
+  --output text
+
+# DynamoDB Table名の取得
+aws cloudformation describe-stacks \
+  --stack-name aws-lambda-sqlite-efs-stack \
+  --query 'Stacks[0].Outputs[?OutputKey==`DynamoDbTableName`].OutputValue' \
+  --output text
+
+# 全出力を表形式で確認
+aws cloudformation describe-stacks \
+  --stack-name aws-lambda-sqlite-efs-stack \
+  --query 'Stacks[0].Outputs' \
+  --output table
+```
+
+### Lambda デプロイエラー修正記録
+
+#### エラー概要
+
+Lambda関数デプロイ後、API実行時に以下のエラーが発生：
+
+- 初回: `Cannot use import statement outside a module`
+- 修正後: `Cannot find package 'hono'`
+- 再修正後: `Cannot read properties of undefined (reading 'indexOf')`
+
+#### 原因
+
+1. **ESモジュール設定不足**: Lambda実行環境でESモジュールを使用するには、package.jsonに`"type": "module"`が必要
+2. **依存関係の欠落**: node_modulesがLambda ZIPファイルに含まれていなかった
+3. **Lambda用アダプター未使用**: HonoをLambdaで使用するには専用アダプター`hono/aws-lambda`が必要
+
+#### 解決策
+
+1. Lambda用package.json生成（`"type": "module"`含む）
+2. AWS Lambda アダプター使用: `import { handle } from "hono/aws-lambda"`
+3. ビルドスクリプト作成: `scripts/build-lambda.sh`でZIPファイル作成を自動化
+4. package.jsonスクリプト簡素化:
+   - `pnpm build:lambda`: Lambda ZIPビルド
+   - `pnpm cdk:deploy`: ビルド＆デプロイ
+   - `pnpm cdk:deploy:force`: 承認なし強制デプロイ
+
+#### 結果
+
+全APIエンドポイントが正常動作（0件データ返却）を確認
+
+## フェーズ4: 動作確認
 
 1. **実際のAWS環境テスト**
    - コンソールアプリでのデータ投入
    - EFS vs /tmp vs DynamoDBパフォーマンス比較
    - **1ファイル修正完了ごと**: リント実行 + テスト実行
    - **TDD**: 統合・E2Eテストファースト開発で100%カバレッジ
+2. **TDD最重視**: 統合テスト・E2Eテスト
+   - まず対応を詳細化：そもそも何をどこまで実装するか検討
+   - 上記方針に沿って実装または実装放棄
 
 **評価項目**:
 
@@ -394,9 +464,16 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 - **型安全性**: `any`の使用厳禁
 - **シンプル実装**: 複雑な抽象化は避ける
 
-## 次のステップ
+## フェーズ5: ベンチマーク
 
-ユーザーに作業計画の確認を求めます。指摘・修正があれば対応してから実装開始します。
+- 改めて対応を詳細化
+- 日付付きでベンチマーク結果をコミット
+
+## フェーズ6: 環境削除
+
+- 漏れなく環境削除対応できるように対応を詳細化
+- 実際に削除
+- 完全削除を確認
 
 ## コマンド設計
 

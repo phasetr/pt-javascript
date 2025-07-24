@@ -1,3 +1,6 @@
 *.csv
-dist/
+*.zip
 cdk.out/
+dist/
+tsconfig.tsbuildinfo
+*.tsbuildinfo

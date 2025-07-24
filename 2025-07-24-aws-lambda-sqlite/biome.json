@@ -1,32 +1,32 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "nursery": {
-        "useSortedClasses": "off"
-      },
-      "style": {
-        "useConst": "error",
-        "noUnusedTemplateLiteral": "error"
-      },
-      "correctness": {
-        "noUnusedVariables": "error"
-      }
-    }
-  },
-  "formatter": {
-    "enabled": true
-  },
-  "files": {
-    "includes": [
-      "packages/**/*.ts",
-      "packages/**/*.json",
-      "docs/**/*.md",
-      "*.json",
-      "*.md"
-    ],
-    "ignoreUnknown": true
-  }
+	"$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"nursery": {
+				"useSortedClasses": "off"
+			},
+			"style": {
+				"useConst": "error",
+				"noUnusedTemplateLiteral": "error"
+			},
+			"correctness": {
+				"noUnusedVariables": "error"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true
+	},
+	"files": {
+		"includes": [
+			"packages/**/*.ts",
+			"packages/**/*.json",
+			"docs/**/*.md",
+			"*.json",
+			"*.md"
+		],
+		"ignoreUnknown": true
+	}
 }
