@@ -331,9 +331,11 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 1. **Hono API実装**
    - [x] 基本APIプロジェクト構成作成
    - [x] 5つのエンドポイント基本構造（health, insert, sqlite-efs, sqlite-tmp, ddb）
-   - [ ] DynamoDB操作実装
-   - [ ] SQLite with drizzle ORM実装
-   - [ ] EFS/tmpアクセスパターン実装
+   - [x] DynamoDB操作実装（シングルテーブル設計でCRUD操作）
+   - [x] SQLite with drizzle ORM実装（スキーマ定義+CRUD操作）
+   - [x] 単体テスト実装（100%カバレッジ達成、any型エラー修正完了）
+   - [x] TypeScriptビルドエラー修正と全体定期確認完了
+   - [ ] EFS/tmpアクセスパターン実装（ファイルコピー+読み取り最適化）
    - **1ファイル修正完了ごと**: リント実行 + テスト実行
    - **TDD**: テストファースト開発で100%カバレッジ
 
@@ -341,7 +343,10 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 
 - [x] API基本テスト実装・通過
 - [x] 全ファイルでリント・テストエラーなし（any型除去完了）
-- [ ] 単体テスト100%カバレッジ
+- [x] 単体テスト100%カバレッジ達成
+- [x] TypeScriptビルド成功・全体定期確認完了
+- [ ] EFS/tmpアクセスパターン実装
+- [ ] 統合テスト実装とエンドポイント動作確認
 - [ ] ローカルでの動作確認
 
 ### フェーズ3: AWS CDK実装

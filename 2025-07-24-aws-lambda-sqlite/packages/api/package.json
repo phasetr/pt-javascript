@@ -1,5 +1,15 @@
 {
 	"name": "api",
+	"exports": {
+		"./sqlite.js": {
+			"types": "./dist/sqlite.d.ts",
+			"default": "./dist/sqlite.js"
+		},
+		"./sqlite-schema.js": {
+			"types": "./dist/sqlite-schema.d.ts",
+			"default": "./dist/sqlite-schema.js"
+		}
+	},
 	"version": "1.0.0",
 	"description": "Lambda API with Hono",
 	"type": "module",
@@ -19,6 +29,7 @@
 	"dependencies": {
 		"@aws-sdk/client-dynamodb": "3.848.0",
 		"@aws-sdk/lib-dynamodb": "3.848.0",
+		"@libsql/client": "^0.15.10",
 		"commander": "14.0.0",
 		"drizzle-orm": "0.44.3",
 		"hono": "4.8.5",

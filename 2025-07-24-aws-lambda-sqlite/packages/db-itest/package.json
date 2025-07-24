@@ -1,0 +1,28 @@
+{
+	"name": "db-itest",
+	"version": "1.0.0",
+	"description": "Database integration tests",
+	"type": "module",
+	"scripts": {
+		"build": "tsc",
+		"clean": "rm -rf dist",
+		"clean:build": "rm -rf dist",
+		"lint": "biome check .",
+		"lint:fix": "biome check --fix .",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:dev": "vitest run --maxWorkers=1",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"drizzle-orm": "0.44.3",
+		"sql.js": "1.13.0"
+	},
+	"devDependencies": {
+		"@types/node": "24.1.0",
+		"@types/sql.js": "1.4.9",
+		"tsx": "4.20.3",
+		"typescript": "5.8.3",
+		"vitest": "3.2.4"
+	}
+}
