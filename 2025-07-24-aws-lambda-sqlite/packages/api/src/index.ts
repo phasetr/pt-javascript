@@ -2,6 +2,8 @@
  * @fileoverview Hono Lambda API with SQLite and DynamoDB endpoints
  */
 import { Hono } from "hono";
+import { handleSqliteEfsRequest } from "./sqlite-efs-handler.js";
+import { handleSqliteTmpRequest } from "./sqlite-tmp-handler.js";
 
 export const app = new Hono();
 
@@ -22,27 +24,33 @@ app.post("/insert", async (c) => {
 });
 
 app.get("/sqlite-efs", async (c) => {
-	const startTime = Date.now();
-
-	// TODO: Implement EFS SQLite reading
-	const responseTime = Date.now() - startTime;
-
-	return c.json({
-		data: [],
-		response_time_ms: responseTime,
-	});
+	try {
+		const result = await handleSqliteEfsRequest();
+		return c.json(result);
+	} catch (error) {
+		return c.json(
+			{
+				error: "Failed to read from EFS SQLite",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			500,
+		);
+	}
 });
 
 app.get("/sqlite-tmp", async (c) => {
-	const startTime = Date.now();
-
-	// TODO: Implement tmp SQLite reading (copy from EFS first)
-	const responseTime = Date.now() - startTime;
-
-	return c.json({
-		data: [],
-		response_time_ms: responseTime,
-	});
+	try {
+		const result = await handleSqliteTmpRequest();
+		return c.json(result);
+	} catch (error) {
+		return c.json(
+			{
+				error: "Failed to copy and read from tmp SQLite",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			500,
+		);
+	}
 });
 
 app.get("/ddb", async (c) => {
