@@ -404,7 +404,7 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 
 ### 完了フェーズ
 
-**フェーズ1: プロジェクト基盤構築 ✅**
+#### フェーズ1: プロジェクト基盤構築 ✅
 
 - [x] pnpm workspace初期化（package.json, pnpm-workspace.yaml, tsconfig.json, biome.json）
 - [x] データ投入コンソールアプリ（console パッケージ）
@@ -428,7 +428,7 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 
 ### 現在実行中フェーズ
 
-**フェーズ2: Lambda API実装 🔄**
+#### フェーズ2: Lambda API実装 🔄
 
 packages/apiパッケージでHono APIの実装
 
