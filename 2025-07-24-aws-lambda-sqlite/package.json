@@ -1,0 +1,32 @@
+{
+  "name": "aws-lambda-sqlite-efs",
+  "version": "1.0.0",
+  "description": "AWS Lambda SQLite with EFS performance comparison",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "clean": "pnpm -r clean",
+    "clean:build": "pnpm -r clean:build",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:dev": "pnpm -r test:dev",
+    "check": "pnpm clean:build && pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck && pnpm test:dev",
+    "console:seed": "pnpm --filter console seed",
+    "benchmark:run": "pnpm --filter benchmark run",
+    "cdk:deploy": "pnpm --filter cdk deploy",
+    "api:dev": "pnpm --filter api dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

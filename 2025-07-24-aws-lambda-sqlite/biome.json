@@ -1,0 +1,42 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "nursery": {
+        "useSortedClasses": "off"
+      },
+      "style": {
+        "useConst": "error",
+        "noUnusedTemplateLiteral": "error"
+      },
+      "correctness": {
+        "noUnusedVariables": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true
+  },
+  "files": {
+    "include": [
+      "packages/**/*.ts",
+      "packages/**/*.json",
+      "docs/**/*.md",
+      "*.json",
+      "*.md"
+    ],
+    "ignore": [
+      "node_modules",
+      "dist",
+      "cdk.out",
+      ".wrangler",
+      "**/*.d.ts",
+      "**/*.js"
+    ]
+  }
+}
