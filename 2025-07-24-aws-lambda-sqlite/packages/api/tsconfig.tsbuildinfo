@@ -1,0 +1,1 @@
+{"root":["./src/ddb.ts","./src/index.ts","./src/sqlite-efs-handler.ts","./src/sqlite-schema.ts","./src/sqlite-tmp-handler.ts","./src/sqlite.ts","./src/test/ddb.test.ts","./src/test/index.test.ts","./src/test/sqlite-efs-handler.test.ts","./src/test/sqlite-tmp-handler.test.ts","./src/test/sqlite.test.ts"],"version":"5.8.3"}

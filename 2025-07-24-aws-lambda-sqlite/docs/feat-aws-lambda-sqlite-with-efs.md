@@ -354,18 +354,18 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 **TDD最重視**: CDKスタック・リソースごとにテストを先行実装
 
 1. **CDKインフラ定義**
-   - Lambda関数設定
-   - EFS設定とマウント
-   - DynamoDB randomsテーブル
-   - API Gateway設定
+   - [x] Lambda関数設定
+   - [x] EFS設定とマウント
+   - [x] DynamoDB randomsテーブル
+   - [x] API Gateway設定
    - **1ファイル修正完了ごと**: リント実行 + テスト実行
    - **TDD**: CDKテストファースト開発で100%カバレッジ
 
 **評価項目**:
 
-- [ ] CDKのテスト実装100%カバレッジ
-- [ ] 全ファイルでリント・テストエラーなし
-- [ ] `cdk synth`が成功
+- [x] CDKのテスト実装100%カバレッジ
+- [x] 全ファイルでリント・テストエラーなし
+- [x] `cdk synth`が成功
 - [ ] `cdk deploy`でリソース作成成功
 
 ### フェーズ4: 動作確認

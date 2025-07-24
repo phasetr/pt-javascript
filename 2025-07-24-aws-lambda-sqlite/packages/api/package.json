@@ -15,7 +15,7 @@
 	"type": "module",
 	"main": "dist/index.js",
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc --build",
 		"dev": "tsx src/index.ts",
 		"clean": "rm -rf dist",
 		"clean:build": "rm -rf dist",
