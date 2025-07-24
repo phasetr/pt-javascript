@@ -430,14 +430,17 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 - HTTPベンチマーク測定
 
 ### 現在の状況
+
 - **全定期確認**: 無エラー完了（lint, build, typecheck, test全て通過）
 - **テスト状況**: 41テスト100%カバレッジ（console: 16テスト、benchmark: 25テスト）
 - **コミット状況**: 全ファイルコミット完了、漏れなし
 
 ### 次のフェーズ: Lambda API実装開始
+
 packages/apiパッケージでHono APIの実装に移行します。
 
 #### Lambda API 実装予定
+
 - **エンドポイント**: insert, sqlite-efs, sqlite-tmp, ddb
 - **技術スタック**: Hono + drizzle ORM + AWS Lambda
 - **テスト方針**: TDD、100%カバレッジ
