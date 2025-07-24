@@ -411,11 +411,23 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
   - console パッケージ実装（data-generator.ts, cli.ts, dynamodb-seeder.ts）
   - TDD実装: 16テスト100%カバレッジ
   - 定期確認無エラー完了
+- [x] **フェーズ1.5完了**: ベンチマークアプリ実装完了
+  - benchmark パッケージ実装（lambda-url-resolver.ts, http-client.ts, benchmark-runner.ts, cli.ts）
+  - CloudFormation stackからLambda URL自動取得
+  - HTTPクライアントでのエンドポイントベンチマーク測定
+  - CSV/Markdownレポート自動生成機能
+  - CLI実行インターフェース
+  - TDD実装: 25テスト100%カバレッジ
+  - 定期確認無エラー完了
 
 ### 実装完了機能
 - `pnpm console:seed --count 1000` - ランダムデータをDynamoDBに投入
+- `pnpm benchmark:run` - ベンチマーク実行（結果を`docs/benchmarks/`に自動保存）
 - DynamoDBシングルテーブル設計対応（PK: RANDOM#date, SK: ITEM#ulid）
 - CLI引数パース・バリデーション
 - エラーハンドリング
+- AWS SDK CloudFormation連携
+- HTTPベンチマーク測定
 
-作業計画についてご確認をお願いします。修正・追加のご指摘があれば対応してから実装を開始します。
+### 次のフェーズ: Lambda API実装
+packages/apiパッケージでHono APIの実装に移行します。
