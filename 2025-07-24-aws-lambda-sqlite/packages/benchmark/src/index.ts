@@ -26,7 +26,7 @@ async function main(): Promise<void> {
 			}
 
 			try {
-				console.log(`Starting benchmark...`);
+				console.log("Starting benchmark...");
 				console.log(`Stack: ${options.stackName}`);
 				console.log(`Iterations: ${iterations} per endpoint`);
 				console.log(`Output: ${options.outputDir}`);

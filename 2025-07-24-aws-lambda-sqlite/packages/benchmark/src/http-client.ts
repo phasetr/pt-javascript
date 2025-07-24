@@ -40,7 +40,7 @@ export async function benchmarkEndpoint(url: string, endpointName: string): Prom
 			success: response.ok,
 			measured_at: measuredAt
 		};
-	} catch (error) {
+	} catch {
 		const endTime = Date.now();
 		const responseTimeMs = endTime - startTime;
 
