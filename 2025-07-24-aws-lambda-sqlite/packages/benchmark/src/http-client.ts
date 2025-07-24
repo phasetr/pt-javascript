@@ -19,7 +19,10 @@ export type BenchmarkResult = {
  * @param endpointName - エンドポイント識別名
  * @returns ベンチマーク結果
  */
-export async function benchmarkEndpoint(url: string, endpointName: string): Promise<BenchmarkResult> {
+export async function benchmarkEndpoint(
+	url: string,
+	endpointName: string,
+): Promise<BenchmarkResult> {
 	const startTime = Date.now();
 	const measuredAt = new Date().toISOString();
 
@@ -38,7 +41,7 @@ export async function benchmarkEndpoint(url: string, endpointName: string): Prom
 			response_time_ms: responseTimeMs,
 			status_code: response.status,
 			success: response.ok,
-			measured_at: measuredAt
+			measured_at: measuredAt,
 		};
 	} catch {
 		const endTime = Date.now();
@@ -49,7 +52,7 @@ export async function benchmarkEndpoint(url: string, endpointName: string): Prom
 			response_time_ms: responseTimeMs,
 			status_code: 0, // Network error
 			success: false,
-			measured_at: measuredAt
+			measured_at: measuredAt,
 		};
 	}
 }

@@ -1,16 +1,29 @@
 /**
  * @fileoverview Benchmark runner tests
  */
-import { describe, expect, it, vi } from "vitest";
-import { executeBenchmark, generateReport, generateCsvContent, generateMarkdownContent } from "../benchmark-runner.js";
-import { benchmarkEndpoint } from "../http-client.js";
-import { ulid } from "ulid";
+
 import { promises as fs } from "node:fs";
+import { ulid } from "ulid";
+import { describe, expect, it, type MockedFunction, vi } from "vitest";
+import {
+	executeBenchmark,
+	generateCsvContent,
+	generateMarkdownContent,
+	generateReport,
+} from "../benchmark-runner.js";
+import { type BenchmarkResult, benchmarkEndpoint } from "../http-client.js";
 
 // Mock dependencies
 vi.mock("../http-client.js");
 vi.mock("ulid");
 vi.mock("node:fs");
+
+// Typed mocks
+const mockBenchmarkEndpoint = vi.mocked(benchmarkEndpoint) as MockedFunction<
+	typeof benchmarkEndpoint
+>;
+const mockUlid = vi.mocked(ulid) as MockedFunction<typeof ulid>;
+const mockFs = vi.mocked(fs);
 
 describe("executeBenchmark", () => {
 	beforeEach(() => {
@@ -24,36 +37,50 @@ describe("executeBenchmark", () => {
 				response_time_ms: 64.5,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
+				measured_at: "2025-07-24T10:30:00.000Z",
 			},
 			{
 				endpoint: "sqlite-tmp",
 				response_time_ms: 5.2,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:01.000Z"
+				measured_at: "2025-07-24T10:30:01.000Z",
 			},
 			{
 				endpoint: "ddb",
 				response_time_ms: 12.3,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:02.000Z"
-			}
+				measured_at: "2025-07-24T10:30:02.000Z",
+			},
 		];
 
-		(benchmarkEndpoint as any)
-			.mockResolvedValueOnce(mockResults[0])
-			.mockResolvedValueOnce(mockResults[1])
-			.mockResolvedValueOnce(mockResults[2]);
+		const [result0, result1, result2] = mockResults as [
+			BenchmarkResult,
+			BenchmarkResult,
+			BenchmarkResult,
+		];
+		mockBenchmarkEndpoint
+			.mockResolvedValueOnce(result0)
+			.mockResolvedValueOnce(result1)
+			.mockResolvedValueOnce(result2);
 
 		const results = await executeBenchmark("https://api.example.com", 1);
 
 		expect(results).toEqual(mockResults);
 		expect(benchmarkEndpoint).toHaveBeenCalledTimes(3);
-		expect(benchmarkEndpoint).toHaveBeenCalledWith("https://api.example.com/sqlite-efs", "sqlite-efs");
-		expect(benchmarkEndpoint).toHaveBeenCalledWith("https://api.example.com/sqlite-tmp", "sqlite-tmp");
-		expect(benchmarkEndpoint).toHaveBeenCalledWith("https://api.example.com/ddb", "ddb");
+		expect(benchmarkEndpoint).toHaveBeenCalledWith(
+			"https://api.example.com/sqlite-efs",
+			"sqlite-efs",
+		);
+		expect(benchmarkEndpoint).toHaveBeenCalledWith(
+			"https://api.example.com/sqlite-tmp",
+			"sqlite-tmp",
+		);
+		expect(benchmarkEndpoint).toHaveBeenCalledWith(
+			"https://api.example.com/ddb",
+			"ddb",
+		);
 	});
 
 	it("should execute benchmark multiple iterations", async () => {
@@ -62,10 +89,10 @@ describe("executeBenchmark", () => {
 			response_time_ms: 12.3,
 			status_code: 200,
 			success: true,
-			measured_at: "2025-07-24T10:30:00.000Z"
+			measured_at: "2025-07-24T10:30:00.000Z",
 		};
 
-		(benchmarkEndpoint as any).mockResolvedValue(mockResult);
+		mockBenchmarkEndpoint.mockResolvedValue(mockResult);
 
 		const results = await executeBenchmark("https://api.example.com", 2);
 
@@ -79,7 +106,7 @@ describe("executeBenchmark", () => {
 			response_time_ms: 12.3,
 			status_code: 200,
 			success: true,
-			measured_at: "2025-07-24T10:30:00.000Z"
+			measured_at: "2025-07-24T10:30:00.000Z",
 		};
 
 		const errorResult = {
@@ -87,10 +114,10 @@ describe("executeBenchmark", () => {
 			response_time_ms: 100,
 			status_code: 500,
 			success: false,
-			measured_at: "2025-07-24T10:30:01.000Z"
+			measured_at: "2025-07-24T10:30:01.000Z",
 		};
 
-		(benchmarkEndpoint as any)
+		mockBenchmarkEndpoint
 			.mockResolvedValueOnce(errorResult)
 			.mockResolvedValueOnce(successResult)
 			.mockResolvedValueOnce(successResult);
@@ -112,29 +139,31 @@ describe("generateCsvContent", () => {
 				response_time_ms: 64.5,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
+				measured_at: "2025-07-24T10:30:00.000Z",
 			},
 			{
 				endpoint: "sqlite-tmp",
 				response_time_ms: 5.2,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:01.000Z"
-			}
+				measured_at: "2025-07-24T10:30:01.000Z",
+			},
 		];
 
 		const csvContent = generateCsvContent(results);
 
 		expect(csvContent).toBe(
 			"endpoint,response_time_ms,status_code,success,measured_at\n" +
-			"sqlite-efs,64.5,200,true,2025-07-24T10:30:00.000Z\n" +
-			"sqlite-tmp,5.2,200,true,2025-07-24T10:30:01.000Z"
+				"sqlite-efs,64.5,200,true,2025-07-24T10:30:00.000Z\n" +
+				"sqlite-tmp,5.2,200,true,2025-07-24T10:30:01.000Z",
 		);
 	});
 
 	it("should handle empty results", () => {
 		const csvContent = generateCsvContent([]);
-		expect(csvContent).toBe("endpoint,response_time_ms,status_code,success,measured_at");
+		expect(csvContent).toBe(
+			"endpoint,response_time_ms,status_code,success,measured_at",
+		);
 	});
 });
 
@@ -146,22 +175,22 @@ describe("generateMarkdownContent", () => {
 				response_time_ms: 64.5,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
+				measured_at: "2025-07-24T10:30:00.000Z",
 			},
 			{
 				endpoint: "sqlite-efs",
 				response_time_ms: 89.3,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:01.000Z"
+				measured_at: "2025-07-24T10:30:01.000Z",
 			},
 			{
 				endpoint: "sqlite-tmp",
 				response_time_ms: 5.2,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:02.000Z"
-			}
+				measured_at: "2025-07-24T10:30:02.000Z",
+			},
 		];
 
 		const markdownContent = generateMarkdownContent(results);
@@ -180,15 +209,15 @@ describe("generateMarkdownContent", () => {
 				response_time_ms: 64.5,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
+				measured_at: "2025-07-24T10:30:00.000Z",
 			},
 			{
 				endpoint: "sqlite-efs",
 				response_time_ms: 100,
 				status_code: 500,
 				success: false,
-				measured_at: "2025-07-24T10:30:01.000Z"
-			}
+				measured_at: "2025-07-24T10:30:01.000Z",
+			},
 		];
 
 		const markdownContent = generateMarkdownContent(results);
@@ -209,37 +238,47 @@ describe("generateReport", () => {
 				response_time_ms: 12.3,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
-			}
+				measured_at: "2025-07-24T10:30:00.000Z",
+			},
 		];
 
-		(ulid as any).mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+		mockUlid.mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2025-07-24T10:30:00.000Z"));
 
-		(fs.mkdir as any).mockResolvedValue(undefined);
-		(fs.writeFile as any).mockResolvedValue(undefined);
+		mockFs.mkdir.mockResolvedValue(undefined);
+		mockFs.writeFile.mockResolvedValue(undefined);
 
 		const markdownFile = await generateReport(results, "docs/benchmarks");
 
-		expect(markdownFile).toMatch(/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.md$/);
+		expect(markdownFile).toMatch(
+			/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.md$/,
+		);
 
-		expect(fs.mkdir).toHaveBeenCalledWith("docs/benchmarks", { recursive: true });
+		expect(fs.mkdir).toHaveBeenCalledWith("docs/benchmarks", {
+			recursive: true,
+		});
 		expect(fs.writeFile).toHaveBeenCalledTimes(2);
 
 		// Check CSV file creation
-		const csvCall = (fs.writeFile as any).mock.calls.find((call: any[]) =>
-			call[0].endsWith(".csv")
+		const csvCall = mockFs.writeFile.mock.calls.find(
+			(call: unknown[]) =>
+				typeof call[0] === "string" && call[0].endsWith(".csv"),
 		);
 		expect(csvCall).toBeDefined();
-		expect(csvCall[0]).toMatch(/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.csv$/);
+		expect(csvCall?.[0]).toMatch(
+			/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.csv$/,
+		);
 
 		// Check Markdown file creation
-		const mdCall = (fs.writeFile as any).mock.calls.find((call: any[]) =>
-			call[0].endsWith(".md")
+		const mdCall = mockFs.writeFile.mock.calls.find(
+			(call: unknown[]) =>
+				typeof call[0] === "string" && call[0].endsWith(".md"),
 		);
 		expect(mdCall).toBeDefined();
-		expect(mdCall[0]).toMatch(/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.md$/);
+		expect(mdCall?.[0]).toMatch(
+			/^docs\/benchmarks\/\d{8}-\d{6}-benchmark\.md$/,
+		);
 	});
 
 	it("should handle file system errors", async () => {
@@ -249,14 +288,16 @@ describe("generateReport", () => {
 				response_time_ms: 12.3,
 				status_code: 200,
 				success: true,
-				measured_at: "2025-07-24T10:30:00.000Z"
-			}
+				measured_at: "2025-07-24T10:30:00.000Z",
+			},
 		];
 
-		(ulid as any).mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
-		(fs.mkdir as any).mockRejectedValue(new Error("Permission denied"));
+		mockUlid.mockReturnValue("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+		mockFs.mkdir.mockRejectedValue(new Error("Permission denied"));
 
-		await expect(generateReport(results, "docs/benchmarks")).rejects.toThrow("Permission denied");
+		await expect(generateReport(results, "docs/benchmarks")).rejects.toThrow(
+			"Permission denied",
+		);
 	});
 
 	afterEach(() => {

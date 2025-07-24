@@ -7,9 +7,9 @@ import { ulid } from "ulid";
  * Random data structure for DynamoDB
  */
 export type RandomData = {
-  readonly id: string;
-  readonly random_value: number;
-  readonly created_at: string;
+	readonly id: string;
+	readonly random_value: number;
+	readonly created_at: string;
 };
 
 /**
@@ -17,9 +17,9 @@ export type RandomData = {
  * @returns {RandomData} Generated random data
  */
 export function generateRandomData(): RandomData {
-  return {
-    id: ulid(),
-    random_value: Math.random(),
-    created_at: new Date().toISOString(),
-  };
+	return {
+		id: ulid(),
+		random_value: Math.random(),
+		created_at: new Date().toISOString(),
+	};
 }

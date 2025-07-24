@@ -21,14 +21,14 @@
 		"run": "tsx src/cli.ts"
 	},
 	"dependencies": {
-		"@aws-sdk/client-cloudformation": "^3.654.0",
-		"commander": "^12.1.0",
-		"ulid": "^2.3.0"
+		"@aws-sdk/client-cloudformation": "3.848.0",
+		"commander": "14.0.0",
+		"ulid": "2.3.0"
 	},
 	"devDependencies": {
-		"@types/node": "^22.7.9",
-		"tsx": "^4.19.1",
-		"typescript": "^5.5.4",
-		"vitest": "^2.1.2"
+		"@types/node": "24.1.0",
+		"tsx": "4.20.3",
+		"typescript": "5.8.3",
+		"vitest": "3.2.4"
 	}
 }

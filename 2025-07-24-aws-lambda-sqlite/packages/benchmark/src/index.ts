@@ -14,12 +14,24 @@ async function main(): Promise<void> {
 		.version("1.0.0");
 
 	program
-		.option("-s, --stack-name <name>", "CloudFormation stack name", "aws-lambda-sqlite-dev")
-		.option("-i, --iterations <count>", "Number of iterations per endpoint", "100")
-		.option("-o, --output-dir <path>", "Output directory for benchmark results", "docs/benchmarks")
+		.option(
+			"-s, --stack-name <name>",
+			"CloudFormation stack name",
+			"aws-lambda-sqlite-dev",
+		)
+		.option(
+			"-i, --iterations <count>",
+			"Number of iterations per endpoint",
+			"100",
+		)
+		.option(
+			"-o, --output-dir <path>",
+			"Output directory for benchmark results",
+			"docs/benchmarks",
+		)
 		.action(async (options) => {
 			const iterations = Number.parseInt(options.iterations, 10);
-			
+
 			if (Number.isNaN(iterations) || iterations <= 0) {
 				console.error("Error: iterations must be a positive number");
 				process.exit(1);
@@ -35,7 +47,7 @@ async function main(): Promise<void> {
 				const result = await runBenchmark({
 					stackName: options.stackName,
 					iterations,
-					outputDir: options.outputDir
+					outputDir: options.outputDir,
 				});
 
 				console.log("✓ Benchmark completed successfully!");

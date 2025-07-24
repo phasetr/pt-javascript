@@ -1,15 +1,12 @@
 {
-	"name": "console",
+	"name": "api",
 	"version": "1.0.0",
-	"description": "Data seeding console application",
+	"description": "Lambda API with Hono",
 	"type": "module",
 	"main": "dist/index.js",
-	"bin": {
-		"console-seed": "dist/cli.js"
-	},
 	"scripts": {
 		"build": "tsc",
-		"dev": "tsx src/cli.ts",
+		"dev": "tsx src/index.ts",
 		"clean": "rm -rf dist",
 		"clean:build": "rm -rf dist",
 		"lint": "biome check .",
@@ -17,13 +14,14 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:dev": "vitest run --maxWorkers=1",
-		"test:watch": "vitest",
-		"seed": "tsx src/cli.ts"
+		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"@aws-sdk/client-dynamodb": "3.848.0",
 		"@aws-sdk/lib-dynamodb": "3.848.0",
 		"commander": "14.0.0",
+		"drizzle-orm": "0.44.3",
+		"hono": "4.8.5",
 		"ulid": "2.3.0"
 	},
 	"devDependencies": {

@@ -22,8 +22,8 @@
     "api:dev": "pnpm --filter api dev"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
-    "typescript": "^5.5.4"
+    "@biomejs/biome": "2.1.2",
+    "typescript": "5.8.3"
   },
   "engines": {
     "node": ">=20.0.0",

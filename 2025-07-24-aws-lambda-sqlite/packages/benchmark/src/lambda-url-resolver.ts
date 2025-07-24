@@ -1,7 +1,10 @@
 /**
  * @fileoverview CloudFormation stack からLambda URLを取得するためのリゾルバー
  */
-import { CloudFormationClient, DescribeStacksCommand } from "@aws-sdk/client-cloudformation";
+import {
+	CloudFormationClient,
+	DescribeStacksCommand,
+} from "@aws-sdk/client-cloudformation";
 
 /**
  * CloudFormation stackからApiUrl outputを取得してLambda URLを返す
@@ -11,11 +14,11 @@ import { CloudFormationClient, DescribeStacksCommand } from "@aws-sdk/client-clo
  */
 export async function resolveLambdaUrl(stackName: string): Promise<string> {
 	const client = new CloudFormationClient({
-		region: process.env.AWS_REGION || "us-east-1"
+		region: process.env.AWS_REGION || "us-east-1",
 	});
 
 	const command = new DescribeStacksCommand({
-		StackName: stackName
+		StackName: stackName,
 	});
 
 	const response = await client.send(command);
@@ -29,7 +32,9 @@ export async function resolveLambdaUrl(stackName: string): Promise<string> {
 		throw new Error(`ApiUrl output not found in stack '${stackName}'`);
 	}
 
-	const apiUrlOutput = stack.Outputs.find(output => output.OutputKey === "ApiUrl");
+	const apiUrlOutput = stack.Outputs.find(
+		(output) => output.OutputKey === "ApiUrl",
+	);
 	if (!apiUrlOutput || !apiUrlOutput.OutputValue) {
 		throw new Error(`ApiUrl output not found in stack '${stackName}'`);
 	}

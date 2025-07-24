@@ -9,29 +9,38 @@ import { resolveLambdaUrl } from "../lambda-url-resolver.js";
 vi.mock("@aws-sdk/client-cloudformation");
 
 const mockSend = vi.fn();
+const MockedCloudFormationClient = vi.mocked(CloudFormationClient);
 
 describe("resolveLambdaUrl", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		(CloudFormationClient as any)
-			.mockImplementation(() => ({ send: mockSend }));
+		MockedCloudFormationClient.mockImplementation(
+			() =>
+				({
+					send: mockSend,
+				}) as unknown as CloudFormationClient,
+		);
 	});
 
 	it("should resolve Lambda URL from CloudFormation stack", async () => {
 		mockSend.mockResolvedValue({
-			Stacks: [{
-				Outputs: [{
-					OutputKey: "ApiUrl",
-					OutputValue: "https://abc123.lambda-url.us-east-1.on.aws/"
-				}]
-			}]
+			Stacks: [
+				{
+					Outputs: [
+						{
+							OutputKey: "ApiUrl",
+							OutputValue: "https://abc123.lambda-url.us-east-1.on.aws/",
+						},
+					],
+				},
+			],
 		});
 
 		const result = await resolveLambdaUrl("test-stack");
 
 		expect(result).toBe("https://abc123.lambda-url.us-east-1.on.aws/");
 		expect(CloudFormationClient).toHaveBeenCalledWith({
-			region: process.env.AWS_REGION || "us-east-1"
+			region: process.env.AWS_REGION || "us-east-1",
 		});
 		expect(mockSend).toHaveBeenCalledTimes(1);
 		const command = mockSend.mock.calls[0]?.[0];
@@ -40,51 +49,62 @@ describe("resolveLambdaUrl", () => {
 
 	it("should handle stack not found", async () => {
 		mockSend.mockResolvedValue({
-			Stacks: []
+			Stacks: [],
 		});
 
-		await expect(resolveLambdaUrl("nonexistent-stack"))
-			.rejects.toThrow("Stack 'nonexistent-stack' not found");
+		await expect(resolveLambdaUrl("nonexistent-stack")).rejects.toThrow(
+			"Stack 'nonexistent-stack' not found",
+		);
 	});
 
 	it("should handle missing ApiUrl output", async () => {
 		mockSend.mockResolvedValue({
-			Stacks: [{
-				Outputs: [{
-					OutputKey: "SomeOtherOutput",
-					OutputValue: "some-value"
-				}]
-			}]
+			Stacks: [
+				{
+					Outputs: [
+						{
+							OutputKey: "SomeOtherOutput",
+							OutputValue: "some-value",
+						},
+					],
+				},
+			],
 		});
 
-		await expect(resolveLambdaUrl("test-stack"))
-			.rejects.toThrow("ApiUrl output not found in stack 'test-stack'");
+		await expect(resolveLambdaUrl("test-stack")).rejects.toThrow(
+			"ApiUrl output not found in stack 'test-stack'",
+		);
 	});
 
 	it("should handle CloudFormation errors", async () => {
 		mockSend.mockRejectedValue(new Error("CloudFormation error"));
 
-		await expect(resolveLambdaUrl("test-stack"))
-			.rejects.toThrow("CloudFormation error");
+		await expect(resolveLambdaUrl("test-stack")).rejects.toThrow(
+			"CloudFormation error",
+		);
 	});
 
 	it("should use custom AWS region", async () => {
 		process.env.AWS_REGION = "ap-northeast-1";
-		
+
 		mockSend.mockResolvedValue({
-			Stacks: [{
-				Outputs: [{
-					OutputKey: "ApiUrl",
-					OutputValue: "https://xyz789.lambda-url.ap-northeast-1.on.aws/"
-				}]
-			}]
+			Stacks: [
+				{
+					Outputs: [
+						{
+							OutputKey: "ApiUrl",
+							OutputValue: "https://xyz789.lambda-url.ap-northeast-1.on.aws/",
+						},
+					],
+				},
+			],
 		});
 
 		const result = await resolveLambdaUrl("test-stack");
 
 		expect(result).toBe("https://xyz789.lambda-url.ap-northeast-1.on.aws/");
 		expect(CloudFormationClient).toHaveBeenCalledWith({
-			region: "ap-northeast-1"
+			region: "ap-northeast-1",
 		});
 
 		// Reset environment variable

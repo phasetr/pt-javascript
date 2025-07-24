@@ -1,9 +1,10 @@
 /**
  * @fileoverview ベンチマークアプリのCLIエントリーポイント
  */
-import { resolveLambdaUrl } from "./lambda-url-resolver.js";
+
 import { executeBenchmark, generateReport } from "./benchmark-runner.js";
 import type { BenchmarkResult } from "./http-client.js";
+import { resolveLambdaUrl } from "./lambda-url-resolver.js";
 
 /**
  * ベンチマーク実行のパラメータ型
@@ -28,7 +29,9 @@ export type BenchmarkRunResult = {
  * @param options - ベンチマーク実行オプション
  * @returns ベンチマーク実行結果
  */
-export async function runBenchmark(options: BenchmarkOptions): Promise<BenchmarkRunResult> {
+export async function runBenchmark(
+	options: BenchmarkOptions,
+): Promise<BenchmarkRunResult> {
 	// 1. CloudFormation stackからLambda URLを取得
 	const lambdaUrl = await resolveLambdaUrl(options.stackName);
 
@@ -41,6 +44,6 @@ export async function runBenchmark(options: BenchmarkOptions): Promise<Benchmark
 	return {
 		resultsFile,
 		totalMeasurements: results.length,
-		summary: results
+		summary: results,
 	};
 }

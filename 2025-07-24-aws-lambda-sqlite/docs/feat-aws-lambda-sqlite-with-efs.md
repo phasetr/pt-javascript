@@ -329,16 +329,19 @@ URL: <https://github.com/phasetr/pt-javascript/pull/2>
 **TDD最重視**: 各エンドポイント・機能ごとにテストを先行実装
 
 1. **Hono API実装**
-   - 4つのエンドポイント（insert, sqlite-efs, sqlite-tmp, ddb）
-   - randomsテーブル（drizzle schema）
-   - DynamoDB操作
+   - [x] 基本APIプロジェクト構成作成
+   - [x] 5つのエンドポイント基本構造（health, insert, sqlite-efs, sqlite-tmp, ddb）
+   - [ ] DynamoDB操作実装
+   - [ ] SQLite with drizzle ORM実装
+   - [ ] EFS/tmpアクセスパターン実装
    - **1ファイル修正完了ごと**: リント実行 + テスト実行
    - **TDD**: テストファースト開発で100%カバレッジ
 
 **評価項目**:
 
+- [x] API基本テスト実装・通過
+- [x] 全ファイルでリント・テストエラーなし（any型除去完了）
 - [ ] 単体テスト100%カバレッジ
-- [ ] 全ファイルでリント・テストエラーなし
 - [ ] ローカルでの動作確認
 
 ### フェーズ3: AWS CDK実装
