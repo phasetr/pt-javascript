@@ -67,25 +67,12 @@ export default createRoute(
 										>
 											Edit
 										</a>
-										<form
-											method="post"
-											action={`/numbers/${number.id}/delete`}
-											style={{ display: "inline" }}
+										<a
+											href={`/numbers/${number.id}/delete`}
+											style={{ color: "#f44336" }}
 										>
-											<button
-												type="submit"
-												style={{
-													backgroundColor: "#f44336",
-													color: "white",
-													border: "none",
-													padding: "0.25rem 0.5rem",
-													borderRadius: "4px",
-													cursor: "pointer",
-												}}
-											>
-												Delete
-											</button>
-										</form>
+											Delete
+										</a>
 									</td>
 								</tr>
 							))}
