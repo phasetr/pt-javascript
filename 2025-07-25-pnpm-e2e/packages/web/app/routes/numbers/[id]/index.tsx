@@ -4,7 +4,7 @@ import { createRoute } from "honox/factory";
 import { dbMiddleware } from "../../../middleware/db";
 import type { Bindings, Variables } from "../../../types/bindings";
 
-export const POST = createRoute(
+export const GET = createRoute(
 	dbMiddleware,
 	async (c: Context<{ Bindings: Bindings; Variables: Variables }>) => {
 		try {
@@ -13,11 +13,31 @@ export const POST = createRoute(
 				return c.text("Invalid ID", 400);
 			}
 
-			const formData = await c.req.formData();
-			const name = (formData.get("name") as string)?.trim();
-			const numberValue = formData.get("number") as string;
-			const number = Number(numberValue);
+			const db = c.get("db");
+			const number = await findNumberById(db, id);
 
+			return c.render(<EditNumberForm id={id} existingValues={number} />);
+		} catch (error) {
+			console.error("Error fetching number:", error);
+			return c.text("Number not found", 404);
+		}
+	},
+);
+
+export const POST = createRoute(
+	dbMiddleware,
+	async (c: Context<{ Bindings: Bindings; Variables: Variables }>) => {
+		const id = Number.parseInt(c.req.param("id"));
+		if (Number.isNaN(id)) {
+			return c.text("Invalid ID", 400);
+		}
+
+		const formData = await c.req.formData();
+		const name = (formData.get("name") as string)?.trim();
+		const numberValue = formData.get("number") as string;
+		const number = Number(numberValue);
+
+		try {
 			const errors: string[] = [];
 			if (!name) {
 				errors.push("Name is required");
@@ -40,14 +60,36 @@ export const POST = createRoute(
 			}
 
 			const db = c.get("db");
-			await updateNumber(db, id, { name, number });
-
-			return c.redirect("/", 303);
+			try {
+				await updateNumber(db, id, { name, number });
+				return c.redirect("/", 303);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message.includes("UNIQUE constraint failed")
+				) {
+					errors.push("Name already exists");
+					const existingNumber = await findNumberById(db, id);
+					return c.render(
+						<EditNumberForm
+							id={id}
+							errors={errors}
+							values={{ name: name || "", number: numberValue || "" }}
+							existingValues={existingNumber}
+						/>,
+					);
+				}
+				throw error;
+			}
 		} catch (error) {
 			console.error("Error updating number:", error);
 			const id = Number.parseInt(c.req.param("id"));
 			return c.render(
-				<EditNumberForm id={id} errors={["Failed to update number"]} />,
+				<EditNumberForm
+					id={id}
+					errors={["Failed to update number"]}
+					existingValues={{ name, number }}
+				/>,
 			);
 		}
 	},
@@ -163,23 +205,3 @@ function EditNumberForm({
 		</div>
 	);
 }
-
-export const GET = createRoute(
-	dbMiddleware,
-	async (c: Context<{ Bindings: Bindings; Variables: Variables }>) => {
-		try {
-			const id = Number.parseInt(c.req.param("id"));
-			if (Number.isNaN(id)) {
-				return c.text("Invalid ID", 400);
-			}
-
-			const db = c.get("db");
-			const number = await findNumberById(db, id);
-
-			return c.render(<EditNumberForm id={id} existingValues={number} />);
-		} catch (error) {
-			console.error("Error fetching number:", error);
-			return c.text("Number not found", 404);
-		}
-	},
-);

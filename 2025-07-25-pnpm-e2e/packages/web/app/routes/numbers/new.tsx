@@ -31,9 +31,24 @@ export const POST = createRoute(
 			}
 
 			const db = c.get("db");
-			await createNumber(db, { name, number });
-
-			return c.redirect("/", 303);
+			try {
+				await createNumber(db, { name, number });
+				return c.redirect("/", 303);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					error.message.includes("UNIQUE constraint failed")
+				) {
+					errors.push("Name already exists");
+					return c.render(
+						<NewNumberForm
+							errors={errors}
+							values={{ name: name || "", number: numberValue || "" }}
+						/>,
+					);
+				}
+				throw error;
+			}
 		} catch (error) {
 			console.error("Error creating number:", error);
 			return c.render(<NewNumberForm errors={["Failed to create number"]} />);
