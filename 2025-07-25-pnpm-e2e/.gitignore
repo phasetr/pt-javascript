@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.cache
+
+# Test
+coverage
+.nyc_output
+
+# Environment
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Cloudflare
+.wrangler
+.wrangler-persist
+
+# DynamoDB Local
+.dynamodb
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# AI Instructions
+AI_INSTRUCTIONS.md

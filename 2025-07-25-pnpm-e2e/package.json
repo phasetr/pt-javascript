@@ -1,0 +1,24 @@
+{
+	"name": "pnpm-e2e-test-sample",
+	"version": "1.0.0",
+	"private": true,
+	"description": "pnpm E2Eテストサンプルプロジェクト",
+	"type": "module",
+	"scripts": {
+		"clean:build": "rm -rf packages/*/dist packages/*/.cache",
+		"lint:fix": "biome check . --fix --diagnostic-level=error",
+		"lint": "biome check .",
+		"build": "pnpm -r --filter './packages/*' build",
+		"typecheck": "pnpm -r --filter './packages/*' typecheck",
+		"check": "pnpm clean:build ; pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.1.2",
+		"typescript": "5.7.3"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"pnpm": ">=10.0.0"
+	},
+	"packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+}
