@@ -140,13 +140,13 @@ pnpmモノレポ構成でE2Eテストのサンプルプロジェクトを実装�
    - numbersテーブルのname属性にUNIQUE制約を追加
    - 重複エラー時の適切なエラーハンドリング実装
    - **詳細計画**:
-     1. データベーススキーマとマイグレーション
+     1. データベーススキーマとマイグレーション - 完了
         - packages/core/db/schema.tsでnameカラムにUNIQUE制約を追加
         - 新しいマイグレーションファイルの生成（drizzle-kit使用）
         - ローカルD1データベースへのマイグレーション適用
-          - `cd packages/dkit && pnpm migrate:local`を実行
+          - プロジェクトルートから`pnpm d1:migrate:local`を実行
         - sqlite3コマンドでUNIQUE制約の確認
-          - `sqlite3 .wrangler-persist/ptdev/db.sqlite`でデータベースに接続
+          - sqlite3で`.wrangler-persist`のファイルを確認
           - `.schema numbers`でテーブル定義を確認
           - `UNIQUE`制約が`name`カラムに追加されていることを確認
           - `.exit`で終了

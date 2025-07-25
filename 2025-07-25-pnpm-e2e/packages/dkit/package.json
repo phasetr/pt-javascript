@@ -12,8 +12,8 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
-		"drizzle-kit": "0.31.4",
-		"@libsql/client": "0.15.10"
+		"@libsql/client": "0.15.10",
+		"drizzle-kit": "0.31.4"
 	},
 	"dependencies": {
 		"@pnpm-e2e/core": "workspace:*"

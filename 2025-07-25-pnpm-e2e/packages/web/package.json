@@ -9,7 +9,7 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check . --diagnostic-level=error",
 		"lint:fix": "biome check . --fix --diagnostic-level=error",
-		"db:migrate": "wrangler d1 migrations apply ptdev --local --persist-to ../../.wrangler-persist"
+		"d1:migrate:local": "wrangler d1 migrations apply ptdev --local --persist-to ../../.wrangler-persist"
 	},
 	"dependencies": {
 		"@hono/vite-cloudflare-pages": "0.4.2",
