@@ -5,6 +5,7 @@ node_modules
 # Build outputs
 dist
 .cache
+packages/web/dist/
 
 # Test
 coverage
