@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `numbers_name_unique` ON `numbers` (`name`);
