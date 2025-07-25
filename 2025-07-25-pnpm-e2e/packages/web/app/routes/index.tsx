@@ -8,15 +8,8 @@ type Variables = {
 
 export default createRoute(async (c: Context<{ Variables: Variables }>) => {
   try {
-    // const db = c.get("db");
-    // console.log("db in route:", db);
-    // const numbers = await findAllNumbers(db);
-    const numbers: Array<{
-      id: number;
-      name: string;
-      number: number;
-      createdAt: string;
-    }> = [];
+    const db = c.get("db");
+    const numbers = await findAllNumbers(db);
 
     return c.render(
       <div>

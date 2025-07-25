@@ -1,18 +1,7 @@
-import devServer from "@hono/vite-dev-server";
+import cloudflare from "@hono/vite-cloudflare-pages";
 import honox from "honox/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [
-		honox(),
-		devServer({
-			entry: "app/server.ts",
-		}),
-	],
-	optimizeDeps: {
-		include: ["sql.js"],
-	},
-	ssr: {
-		noExternal: ["sql.js"],
-	},
+	plugins: [honox(), cloudflare()],
 });

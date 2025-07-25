@@ -5,6 +5,6 @@ export default {
 	out: "../core/migrations",
 	dialect: "sqlite",
 	dbCredentials: {
-		url: "../../dev.db", // プロジェクトルートに配置
+		url: "../../.wrangler-persist/v3/d1/miniflare-D1DatabaseObject/ptdev.sqlite", // D1ローカルデータベースのパス
 	},
 } satisfies Config;

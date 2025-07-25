@@ -13,7 +13,7 @@
 		"check": "pnpm clean:build ; pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck",
 		"db:generate": "pnpm --filter dkit db:generate",
 		"db:migrate": "pnpm --filter dkit db:migrate",
-		"dev": "pnpm --filter web dev"
+		"dev": "pnpm build && pnpm --filter web dev"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.2",

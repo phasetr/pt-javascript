@@ -18,8 +18,9 @@
 		"clean:build": "rm -rf dist"
 	},
 	"dependencies": {
-		"@types/sql.js": "1.4.9",
-		"drizzle-orm": "0.44.3",
-		"sql.js": "1.13.0"
+		"drizzle-orm": "0.44.3"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "4.20250725.0"
 	}
 }

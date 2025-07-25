@@ -3,12 +3,13 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "wrangler dev --local --persist-to ../../.wrangler-persist",
 		"build": "vite build",
 		"preview": "vite preview",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check . --diagnostic-level=error",
-		"lint:fix": "biome check . --fix --diagnostic-level=error"
+		"lint:fix": "biome check . --fix --diagnostic-level=error",
+		"db:migrate": "wrangler d1 migrations apply ptdev --local --persist-to ../../.wrangler-persist"
 	},
 	"dependencies": {
 		"@hono/vite-cloudflare-pages": "0.4.2",
@@ -16,12 +17,13 @@
 		"@pnpm-e2e/core": "workspace:*",
 		"drizzle-orm": "0.44.3",
 		"hono": "4.8.5",
-		"honox": "0.1.43",
-		"sql.js": "1.13.0"
+		"honox": "0.1.43"
 	},
 	"devDependencies": {
+		"@cloudflare/workers-types": "4.20250725.0",
 		"@types/node": "22.12.0",
 		"@types/sql.js": "1.4.9",
-		"vite": "7.0.6"
+		"vite": "7.0.6",
+		"wrangler": "4.26.0"
 	}
 }
