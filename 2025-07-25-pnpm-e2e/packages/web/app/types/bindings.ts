@@ -8,4 +8,8 @@ export type Bindings = {
 	ENVIRONMENT?: string;
 };
 
-export type Variables = Record<string, unknown>;
+import type { Database } from "@pnpm-e2e/core";
+
+export type Variables = {
+	db: Database;
+};
