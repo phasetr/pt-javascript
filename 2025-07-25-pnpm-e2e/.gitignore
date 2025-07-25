@@ -47,3 +47,4 @@ AI_INSTRUCTIONS.md
 
 # sqlite
 dev.db
+*.wasm

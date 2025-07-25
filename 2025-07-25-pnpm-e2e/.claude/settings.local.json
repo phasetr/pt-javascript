@@ -1,6 +1,6 @@
 {
 	"permissions": {
-		"allow": ["Bash(git commit:*)"],
+		"allow": ["Bash(git commit:*)", "Bash(cp:*)", "Bash(gemini:*)"],
 		"deny": []
 	}
 }
