@@ -23,6 +23,6 @@
 			"@/*": ["packages/*/src"]
 		}
 	},
-	"include": ["packages/*/src/**/*"],
+	"include": ["packages/*/src/**/*", "packages/dkit/drizzle.config.ts"],
 	"exclude": ["node_modules", "dist"]
 }

@@ -37,3 +37,13 @@ pnpm-debug.log*
 
 # AI Instructions
 AI_INSTRUCTIONS.md
+
+# Typescript
+*.tsbuildinfo
+*.d.ts
+*.js
+*.js.map
+*.ts.map
+
+# sqlite
+dev.db
