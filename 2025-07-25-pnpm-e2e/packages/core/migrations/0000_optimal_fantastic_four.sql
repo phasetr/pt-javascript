@@ -5,8 +5,7 @@ CREATE TABLE `numbers` (
 	`created_at` text NOT NULL,
 	`updated_at` text NOT NULL
 );
-
--- 初期データ5件
+--> statement-breakpoint
 INSERT INTO `numbers` (`name`, `number`, `created_at`, `updated_at`) VALUES 
 ('One', 1, datetime('now'), datetime('now')),
 ('Two', 2, datetime('now'), datetime('now')),
