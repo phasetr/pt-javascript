@@ -5,7 +5,7 @@
 	"description": "pnpm E2Eテストサンプルプロジェクト",
 	"type": "module",
 	"scripts": {
-		"clean:build": "rm -rf packages/*/dist packages/*/.cache",
+		"clean:build": "rm -rf packages/*/dist packages/*/.cache packages/*/.wrangler",
 		"lint:fix": "biome check . --fix --diagnostic-level=error",
 		"lint": "biome check .",
 		"build": "pnpm -r --filter './packages/*' build",
