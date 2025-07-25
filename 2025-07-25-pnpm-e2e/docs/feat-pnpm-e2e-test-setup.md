@@ -60,6 +60,9 @@ pnpmモノレポ構成でE2Eテストのサンプルプロジェクトを実装�
 
 2. webパッケージの作成（HonoX）とCRUD実装
    - HonoXのセットアップ
+   - 重ねて注意：厳格なモジュラーモノリス・鉄道指向・TDDは採用しない
+   - 画面のレイアウトは`_renderer.tsx`利用
+   - `tailwind`ライクに各要素に直接css適用
    - numbersテーブルに対するCRUD画面
    - sql.js/wrangler/DynamoDB切り替え可能な設計（実装はsql.jsのみ）
    - **評価項目**: sql.jsでの開発サーバー起動と画面での動作確認（ユーザー確認必須）
