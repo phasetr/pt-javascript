@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
-import { numbers } from "./schema.js";
-import type { Database, NumbersInsert, NumbersSelect } from "./types.js";
+import { numbers } from "../db/schema.js";
+import type { Database } from "../db/types.js";
+import type { NumbersInsert, NumbersSelect } from "./types.js";
 
 /**
  * 全件取得
@@ -60,11 +61,11 @@ export async function updateNumber(
 		})
 		.where(eq(numbers.id, id))
 		.returning();
-	
+
 	if (!result[0]) {
 		throw new Error(`Number with id ${id} not found`);
 	}
-	
+
 	return result[0];
 }
 
