@@ -9,7 +9,23 @@ type Variables = {
 export default createRoute(async (c: Context<{ Variables: Variables }>) => {
   try {
     const db = c.get("db");
-    const numbers = await findAllNumbers(db);
+    // TODO ミドルウェアをきちんと設定する
+    console.log("Database instance:", db);
+    // const numbers = await findAllNumbers(db);
+    const numbers = [
+      {
+        id: "1",
+        name: "One",
+        number: 1,
+        createdAt: new Date(),
+      },
+      {
+        id: "2",
+        name: "Two",
+        number: 2,
+        createdAt: new Date(),
+      },
+    ];
 
     return c.render(
       <div>

@@ -8,12 +8,4 @@ export type Bindings = {
 	ENVIRONMENT?: string;
 };
 
-export type Variables = {
-	user?: {
-		id: string;
-		email: string;
-		name: string;
-		user_type: string;
-		company_id: string;
-	};
-};
+export type Variables = Record<string, unknown>;
