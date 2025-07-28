@@ -13,7 +13,9 @@
 		"check": "pnpm clean:build ; pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck",
 		"d1:migrate:local": "pnpm --filter wrangler d1:migrate:local",
 		"dev": "pnpm build && pnpm --filter wrangler dev",
+		"dev:node": "pnpm --filter node-onmemsqlite dev",
 		"test:e2e": "pnpm --filter wrangler-e2e test",
+		"test:e2e:node": "pnpm --filter node-onmemsqlite-e2e test",
 		"test:e2e:docker": "docker-compose up e2e-test --build",
 		"test:coverage": "pnpm -r --filter './packages/*' run test:coverage",
 		"test:dev": "pnpm -r --filter './packages/*' run test:dev"
