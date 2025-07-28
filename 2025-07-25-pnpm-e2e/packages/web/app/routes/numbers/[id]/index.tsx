@@ -143,6 +143,7 @@ function EditNumberForm({
 						type="text"
 						id="name"
 						name="name"
+						data-testid="edit-name-input"
 						value={displayValues.name}
 						style={{
 							padding: "0.5rem",
@@ -164,6 +165,7 @@ function EditNumberForm({
 						type="number"
 						id="number"
 						name="number"
+						data-testid="edit-number-input"
 						value={displayValues.number}
 						style={{
 							padding: "0.5rem",
@@ -177,6 +179,7 @@ function EditNumberForm({
 				<div style={{ display: "flex", gap: "1rem" }}>
 					<button
 						type="submit"
+						data-testid="edit-submit-button"
 						style={{
 							backgroundColor: "#4CAF50",
 							color: "white",

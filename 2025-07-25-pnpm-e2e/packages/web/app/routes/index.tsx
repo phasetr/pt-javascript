@@ -27,6 +27,7 @@ export default createRoute(
 						<h2 style={{ margin: 0 }}>Numbers List</h2>
 						<a
 							href="/numbers/new"
+							data-testid="create-new-button"
 							style={{
 								backgroundColor: "#4CAF50",
 								color: "white",
@@ -63,12 +64,14 @@ export default createRoute(
 									<td style={{ padding: "1rem" }}>
 										<a
 											href={`/numbers/${number.id}`}
+											data-testid={`edit-link-${number.id}`}
 											style={{ marginRight: "1rem", color: "#2196F3" }}
 										>
 											Edit
 										</a>
 										<a
 											href={`/numbers/${number.id}/delete`}
+											data-testid={`delete-link-${number.id}`}
 											style={{ color: "#f44336" }}
 										>
 											Delete

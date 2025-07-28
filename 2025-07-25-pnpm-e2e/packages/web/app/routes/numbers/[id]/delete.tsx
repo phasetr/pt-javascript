@@ -98,6 +98,7 @@ function DeleteNumberConfirm({
 				<form method="post" style={{ margin: 0 }}>
 					<button
 						type="submit"
+						data-testid="confirm-delete-button"
 						style={{
 							backgroundColor: "#dc3545",
 							color: "white",

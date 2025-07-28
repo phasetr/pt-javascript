@@ -95,6 +95,7 @@ function NewNumberForm({
 						type="text"
 						id="name"
 						name="name"
+						data-testid="name-input"
 						defaultValue={values.name}
 						style={{
 							padding: "0.5rem",
@@ -116,6 +117,7 @@ function NewNumberForm({
 						type="number"
 						id="number"
 						name="number"
+						data-testid="number-input"
 						defaultValue={values.number}
 						style={{
 							padding: "0.5rem",
@@ -129,6 +131,7 @@ function NewNumberForm({
 				<div style={{ display: "flex", gap: "1rem" }}>
 					<button
 						type="submit"
+						data-testid="submit-button"
 						style={{
 							backgroundColor: "#4CAF50",
 							color: "white",
