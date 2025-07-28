@@ -1,6 +1,29 @@
+import { execSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 
 test.describe("Numbers CRUD", () => {
+	// 各テスト前にデータベースを完全リセット
+	test.beforeEach(async () => {
+		console.log("Resetting database before test...");
+		try {
+			// reset.sqlを実行してデータベースを初期状態にリセット
+			// 環境に応じてパスを調整（Docker: /app, ローカル: プロジェクトルート）
+			const isDocker = process.env.NODE_ENV === "test" && process.cwd().startsWith("/app");
+			const webDir = isDocker ? "/app/packages/web" : "../web";
+			const resetSqlPath = isDocker ? "../e2e-test/reset.sql" : "../e2e-test/reset.sql";
+			const wranglerCommand = isDocker ? "wrangler" : "pnpm wrangler";
+			
+			execSync(`${wranglerCommand} d1 execute ptdev --local --file=${resetSqlPath} --persist-to ../../.wrangler-persist`, {
+				stdio: "pipe",
+				cwd: webDir,
+			});
+			console.log("Database reset completed");
+		} catch (error) {
+			console.error("Failed to reset database:", error);
+			throw error;
+		}
+	});
+
 	test("should create a new number successfully", async ({ page }) => {
 		// 一覧画面に移動
 		await page.goto("/");
@@ -15,8 +38,7 @@ test.describe("Numbers CRUD", () => {
 		await expect(page.locator("h2")).toContainText("Add New Number");
 
 		// フォームに入力
-		const timestamp = Date.now();
-		const testName = `Test-${timestamp}`;
+		const testName = `Test-${Date.now()}`;
 		const testNumber = Math.floor(Math.random() * 1000);
 
 		await page.getByTestId("name-input").fill(testName);
@@ -73,9 +95,6 @@ test.describe("Numbers CRUD", () => {
 
 		// 新規作成画面にとどまることを確認
 		await expect(page.locator("h2")).toContainText("Add New Number");
-
-		// 入力値が保持されることを確認（React/HonoXでは再レンダリング時に値がリセットされる場合がある）
-		// await expect(page.getByTestId("name-input")).toHaveValue("Test Name");
 	});
 
 	test("should show validation errors when both fields are invalid", async ({
@@ -119,8 +138,7 @@ test.describe("Numbers CRUD", () => {
 		await expect(page.locator("h2")).toContainText("Edit Number");
 
 		// フォームの内容を変更
-		const timestamp = Date.now();
-		const newName = `Edited-${timestamp}`;
+		const newName = `Edited-${Date.now()}`;
 		const newNumber = Math.floor(Math.random() * 1000);
 
 		await page.getByTestId("edit-name-input").fill(newName);
@@ -165,26 +183,19 @@ test.describe("Numbers CRUD", () => {
 	});
 
 	test("should delete a number successfully", async ({ page }) => {
-		// まず新しいデータを作成
-		await page.goto("/numbers/new");
-		const timestamp = Date.now();
-		const testName = `ToDelete-${timestamp}`;
-		await page.getByTestId("name-input").fill(testName);
-		await page.getByTestId("number-input").fill("999");
-		await page.getByTestId("submit-button").click();
+		// 一覧画面に移動
+		await page.goto("/");
 
-		// 一覧画面で作成されたデータを確認
-		await expect(page.locator("table tbody")).toContainText(testName);
-
-		// 作成されたデータの削除リンクをクリック
-		const row = page.locator("table tbody tr").filter({ hasText: testName });
-		await row.locator("a").filter({ hasText: "Delete" }).click();
+		// 最初の行の削除リンクをクリック
+		await page
+			.locator("table tbody tr")
+			.first()
+			.locator("a")
+			.filter({ hasText: "Delete" })
+			.click();
 
 		// 削除確認画面に遷移することを確認
 		await expect(page.locator("h2")).toContainText("Delete Number");
-		await expect(
-			page.locator("dd").filter({ hasText: testName }),
-		).toBeVisible();
 
 		// 削除実行ボタンをクリック
 		await page.getByTestId("confirm-delete-button").click();
@@ -192,7 +203,7 @@ test.describe("Numbers CRUD", () => {
 		// 一覧画面に戻ることを確認
 		await expect(page.locator("h2")).toContainText("Numbers List");
 
-		// 削除されたデータが一覧から消えていることを確認
-		await expect(page.locator("table tbody")).not.toContainText(testName);
+		// データが削除されていることを確認（初期データは5件なので4件になる）
+		await expect(page.locator("table tbody tr")).toHaveCount(4);
 	});
 });

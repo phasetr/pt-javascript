@@ -9,8 +9,10 @@ services:
     volumes:
       - ./.wrangler-persist:/app/.wrangler-persist
       - ./packages/core/migrations:/app/packages/core/migrations
+      - ./.test-databases:/app/.test-databases
     environment:
       - NODE_ENV=development
+      - WORKER_DB_ENABLED=true
     networks:
       - e2e-network
     # ヘルスチェック一時無効化
