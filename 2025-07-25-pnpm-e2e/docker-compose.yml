@@ -3,7 +3,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: packages/web/Dockerfile
+      dockerfile: packages/wrangler/Dockerfile
     ports:
       - "8788:8788"
     volumes:
@@ -27,12 +27,12 @@ services:
   e2e-test:
     build:
       context: .
-      dockerfile: packages/e2e-test/Dockerfile
+      dockerfile: packages/wrangler-e2e/Dockerfile
     depends_on:
       - web
     volumes:
-      - ./packages/e2e-test/test-results:/app/packages/e2e-test/test-results
-      - ./packages/e2e-test/playwright-report:/app/packages/e2e-test/playwright-report
+      - ./packages/wrangler-e2e/test-results:/app/packages/wrangler-e2e/test-results
+      - ./packages/wrangler-e2e/playwright-report:/app/packages/wrangler-e2e/playwright-report
       - ./.test-databases:/app/.test-databases
     environment:
       - NODE_ENV=test

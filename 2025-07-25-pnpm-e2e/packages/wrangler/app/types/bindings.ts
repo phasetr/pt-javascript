@@ -13,3 +13,8 @@ import type { Database } from "@pnpm-e2e/core";
 export type Variables = {
 	db: Database;
 };
+
+export type Env = {
+	Bindings: Bindings;
+	Variables: Variables;
+};

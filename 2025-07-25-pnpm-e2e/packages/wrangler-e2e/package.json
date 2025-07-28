@@ -1,5 +1,5 @@
 {
-	"name": "e2e-test",
+	"name": "wrangler-e2e",
 	"version": "1.0.0",
 	"private": true,
 	"type": "module",

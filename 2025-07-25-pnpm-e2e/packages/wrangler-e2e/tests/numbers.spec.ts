@@ -10,10 +10,10 @@ test.describe("Numbers CRUD", () => {
 			// 環境に応じてパスを調整（Docker: /app, ローカル: プロジェクトルート）
 			const isDocker =
 				process.env.NODE_ENV === "test" && process.cwd().startsWith("/app");
-			const webDir = isDocker ? "/app/packages/web" : "../web";
+			const webDir = isDocker ? "/app/packages/wrangler" : "../wrangler";
 			const resetSqlPath = isDocker
-				? "../e2e-test/reset.sql"
-				: "../e2e-test/reset.sql";
+				? "../wrangler-e2e/reset.sql"
+				: "../wrangler-e2e/reset.sql";
 			const wranglerCommand = isDocker ? "wrangler" : "pnpm wrangler";
 
 			execSync(
