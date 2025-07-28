@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.cache
+packages/web/dist/
+
+# Test
+coverage
+.nyc_output
+
+# Environment
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Cloudflare
+.wrangler
+.wrangler-persist
+
+# DynamoDB Local
+.dynamodb
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# AI Instructions
+AI_INSTRUCTIONS.md
+
+# Typescript
+*.tsbuildinfo
+*.d.ts
+*.js
+*.js.map
+*.ts.map
+
+# sqlite
+dev.db
+*.wasm
+
+# Playwright E2E Tests
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.test-databases/

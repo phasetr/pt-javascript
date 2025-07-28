@@ -1,0 +1,17 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"module": "ESNext",
+		"target": "ES2022",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": false,
+		"types": ["node"],
+		"lib": ["dom", "es2022"],
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx"
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
+}

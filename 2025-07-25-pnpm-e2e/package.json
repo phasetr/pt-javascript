@@ -1,0 +1,32 @@
+{
+	"name": "pnpm-e2e-test-sample",
+	"version": "1.0.0",
+	"private": true,
+	"description": "pnpm E2Eテストサンプルプロジェクト",
+	"type": "module",
+	"scripts": {
+		"clean:build": "rm -rf packages/*/dist packages/*/.cache packages/*/.wrangler",
+		"lint:fix": "biome check . --fix --diagnostic-level=error",
+		"lint": "biome check .",
+		"build": "pnpm -r --filter './packages/*' build",
+		"typecheck": "pnpm -r --filter './packages/*' typecheck",
+		"check": "pnpm clean:build ; pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck",
+		"d1:migrate:local": "pnpm --filter wrangler d1:migrate:local",
+		"dev": "pnpm build && pnpm --filter wrangler dev",
+		"dev:node": "pnpm --filter node-onmemsqlite dev",
+		"test:e2e": "pnpm --filter wrangler-e2e test",
+		"test:e2e:node": "pnpm --filter node-onmemsqlite-e2e test",
+		"test:e2e:docker": "docker-compose up e2e-test --build",
+		"test:coverage": "pnpm -r --filter './packages/*' run test:coverage",
+		"test:dev": "pnpm -r --filter './packages/*' run test:dev"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.1.2",
+		"typescript": "5.7.3"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"pnpm": ">=10.0.0"
+	},
+	"packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+}

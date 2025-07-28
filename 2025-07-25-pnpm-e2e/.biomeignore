@@ -1,0 +1,15 @@
+node_modules
+dist
+.cache
+coverage
+.wrangler
+.wrangler-persist
+migrations
+*.js
+*.min.js
+*.d.ts
+pnpm-lock.yaml
+package-lock.json
+.test-databases
+test-results
+playwright-report
