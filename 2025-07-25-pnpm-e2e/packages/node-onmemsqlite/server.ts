@@ -1,12 +1,7 @@
 import { serve } from "@hono/node-server";
+import { createNumber, findAllNumbers } from "@pnpm-e2e/core";
 import { Hono } from "hono";
-import { setupDatabase, getDatabase } from "./src/db/setup.js";
-import {
-	findAllNumbers,
-	createNumber,
-	updateNumber,
-	deleteNumber,
-} from "@pnpm-e2e/core";
+import { getDatabase, setupDatabase } from "./src/db/setup.js";
 
 const app = new Hono();
 

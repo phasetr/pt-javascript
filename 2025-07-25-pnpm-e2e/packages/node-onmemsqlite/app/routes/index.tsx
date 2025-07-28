@@ -56,32 +56,41 @@ export default createRoute(
 							</tr>
 						</thead>
 						<tbody>
-							{Array.isArray(numbers) ? numbers.map((number) => (
-								<tr key={number.id} style={{ borderBottom: "1px solid #ddd" }}>
-									<td style={{ padding: "1rem" }}>{number.id}</td>
-									<td style={{ padding: "1rem" }}>{number.name}</td>
-									<td style={{ padding: "1rem" }}>{number.number}</td>
-									<td style={{ padding: "1rem" }}>
-										{new Date(number.createdAt).toLocaleString()}
-									</td>
-									<td style={{ padding: "1rem" }}>
-										<a
-											href={`/numbers/${number.id}`}
-											data-testid={`edit-link-${number.id}`}
-											style={{ marginRight: "1rem", color: "#2196F3" }}
-										>
-											Edit
-										</a>
-										<a
-											href={`/numbers/${number.id}/delete`}
-											data-testid={`delete-link-${number.id}`}
-											style={{ color: "#f44336" }}
-										>
-											Delete
-										</a>
-									</td>
+							{Array.isArray(numbers) ? (
+								numbers.map((number) => (
+									<tr
+										key={number.id}
+										style={{ borderBottom: "1px solid #ddd" }}
+									>
+										<td style={{ padding: "1rem" }}>{number.id}</td>
+										<td style={{ padding: "1rem" }}>{number.name}</td>
+										<td style={{ padding: "1rem" }}>{number.number}</td>
+										<td style={{ padding: "1rem" }}>
+											{new Date(number.createdAt).toLocaleString()}
+										</td>
+										<td style={{ padding: "1rem" }}>
+											<a
+												href={`/numbers/${number.id}`}
+												data-testid={`edit-link-${number.id}`}
+												style={{ marginRight: "1rem", color: "#2196F3" }}
+											>
+												Edit
+											</a>
+											<a
+												href={`/numbers/${number.id}/delete`}
+												data-testid={`delete-link-${number.id}`}
+												style={{ color: "#f44336" }}
+											>
+												Delete
+											</a>
+										</td>
+									</tr>
+								))
+							) : (
+								<tr>
+									<td colSpan={5}>No data available or invalid data format</td>
 								</tr>
-							)) : <tr><td colSpan={5}>No data available or invalid data format</td></tr>}
+							)}
 						</tbody>
 					</table>
 				</div>,

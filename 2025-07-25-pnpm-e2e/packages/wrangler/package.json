@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "concurrently \"vite build --watch\" \"wrangler dev --local --persist-to ../../.wrangler-persist\"",
+		"dev": "concurrently \"vite build --watch\" \"wrangler dev --local --persist-to ../../.wrangler-persist --port 8787\"",
 		"dev:docker": "vite build && wrangler dev --local --persist-to ../../.wrangler-persist --ip 0.0.0.0 --port 8788",
 		"build": "vite build",
 		"preview": "vite preview",

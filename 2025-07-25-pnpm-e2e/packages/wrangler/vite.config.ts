@@ -3,5 +3,6 @@ import honox from "honox/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [honox(), cloudflare()],
+	// @ts-ignore - Vite version mismatch between honox and cloudflare plugins
+	plugins: [...honox(), cloudflare()],
 });

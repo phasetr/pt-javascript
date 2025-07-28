@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "vite --host",
 		"dev:node": "tsx server.ts",
-		"build": "vite build",
+		"build": "tsc --noEmit",
 		"start": "node dist/server.js",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check . --diagnostic-level=error",

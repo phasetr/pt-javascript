@@ -20,7 +20,7 @@ export async function setupDatabase() {
 		path.resolve(process.cwd(), "../core/migrations"),
 		path.resolve(process.cwd(), "packages/core/migrations"),
 	];
-	
+
 	let migrationsPath: string | null = null;
 	for (const testPath of possiblePaths) {
 		if (fs.existsSync(testPath)) {
@@ -28,11 +28,13 @@ export async function setupDatabase() {
 			break;
 		}
 	}
-	
+
 	if (!migrationsPath) {
-		throw new Error(`Migration directory not found. Tried: ${possiblePaths.join(", ")}`);
+		throw new Error(
+			`Migration directory not found. Tried: ${possiblePaths.join(", ")}`,
+		);
 	}
-	
+
 	console.log(`Found migrations in: ${migrationsPath}`);
 
 	try {
@@ -42,7 +44,10 @@ export async function setupDatabase() {
 			.filter((file) => file.endsWith(".sql"))
 			.sort();
 
-		console.log(`Found ${migrationFiles.length} migration files:`, migrationFiles);
+		console.log(
+			`Found ${migrationFiles.length} migration files:`,
+			migrationFiles,
+		);
 
 		for (const file of migrationFiles) {
 			const filePath = path.join(migrationsPath, file);
@@ -52,7 +57,7 @@ export async function setupDatabase() {
 		}
 
 		console.log("Database migration completed successfully");
-		
+
 		// データが正しく挿入されたか確認
 		const result = sqlite.exec("SELECT COUNT(*) as count FROM numbers");
 		if (result.length > 0) {
