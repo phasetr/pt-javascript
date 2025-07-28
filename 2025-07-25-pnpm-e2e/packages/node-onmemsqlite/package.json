@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
-		"dev:node": "tsx server.js",
+		"dev:node": "tsx server.ts",
 		"build": "vite build",
 		"start": "node dist/server.js",
 		"typecheck": "tsc --noEmit",

@@ -373,6 +373,50 @@ pnpmモノレポ構成でE2Eテストのサンプルプロジェクトを実装�
 - オンメモリDB並列実行での21/21テスト成功
 - Docker環境での動作確認
 
+#### 対応録：HonoX + Node.js環境構築の問題解決
+
+##### 問題1：HonoX 0.1.43でのSpread syntaxエラー
+
+- **現象**: `createApp()`実行時に`Spread syntax requires ...iterable[Symbol.iterator] to be a function`エラーが発生
+- **調査結果**: Vite + HonoXの組み合わせでNode.js v23.9.0環境において発生する互換性問題
+- **試行した対処法**:
+  1. HonoXバージョンを0.1.40にダウングレード → 効果なし
+  2. vite.config.tsのSSR設定を無効化 → 効果なし
+  3. tsconfig.jsonの設定確認 → 問題なし
+- **最終解決策**: HonoXフレームワークから@hono/node-serverを使った純粋なHonoアプリケーションに切り替え
+  - `server.ts`を作成してNode.js単体起動を実装
+  - vite非依存の構成に変更
+  - `tsx server.ts`で直接実行
+
+##### 問題2：モジュール解決エラー
+
+- **現象**: `Cannot find module 'src/db/setup.js'`エラー
+- **原因**: TypeScriptファイル（.ts）をJavaScript拡張子（.js）でインポートしようとした
+- **解決策**: `tsx`コマンドでTypeScriptファイルを直接実行
+
+##### 問題3：起動コマンドの設定
+
+- **問題**: `pnpm dev:node`が誤ってviteサーバー（ポート5173）を起動
+- **原因**: package.jsonの設定ミス
+- **解決策**:
+  - `"dev:node": "tsx server.ts"`に修正
+  - server.jsをserver.tsにリネーム
+
+**最終実装**:
+
+- **サーバー構成**: 純粋なHono + @hono/node-server
+- **データベース**: sql.js（オンメモリSQLite）
+- **起動方法**: `cd packages/node-onmemsqlite && pnpm dev:node`
+- **ポート**: <http://localhost:3000>
+- **機能**: CRUD操作対応のHTML画面（data-testid属性付き）
+
+**技術スタック**:
+
+- Hono 4.8.5（HonoXではなく純粋なHono）
+- @hono/node-server 1.15.1
+- sql.js 1.12.0
+- tsx 4.20.3（TypeScript実行用）
+
 ### フェーズ7: Node.js + DynamoDB実装
 
 **要注意**：原則としてオンメモリSQLiteと同じように対処したい。後でもう少し調整が必要。統合テストにアクセスするデータベース名など。
