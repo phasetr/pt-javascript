@@ -12,7 +12,8 @@
 		"typecheck": "pnpm -r --filter './packages/*' typecheck",
 		"check": "pnpm clean:build ; pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck",
 		"d1:migrate:local": "pnpm --filter web d1:migrate:local",
-		"dev": "pnpm build && pnpm --filter web dev"
+		"dev": "pnpm build && pnpm --filter web dev",
+		"test:e2e": "pnpm --filter e2e-test test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.2",
