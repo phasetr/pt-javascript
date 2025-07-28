@@ -8,15 +8,21 @@ test.describe("Numbers CRUD", () => {
 		try {
 			// reset.sqlを実行してデータベースを初期状態にリセット
 			// 環境に応じてパスを調整（Docker: /app, ローカル: プロジェクトルート）
-			const isDocker = process.env.NODE_ENV === "test" && process.cwd().startsWith("/app");
+			const isDocker =
+				process.env.NODE_ENV === "test" && process.cwd().startsWith("/app");
 			const webDir = isDocker ? "/app/packages/web" : "../web";
-			const resetSqlPath = isDocker ? "../e2e-test/reset.sql" : "../e2e-test/reset.sql";
+			const resetSqlPath = isDocker
+				? "../e2e-test/reset.sql"
+				: "../e2e-test/reset.sql";
 			const wranglerCommand = isDocker ? "wrangler" : "pnpm wrangler";
-			
-			execSync(`${wranglerCommand} d1 execute ptdev --local --file=${resetSqlPath} --persist-to ../../.wrangler-persist`, {
-				stdio: "pipe",
-				cwd: webDir,
-			});
+
+			execSync(
+				`${wranglerCommand} d1 execute ptdev --local --file=${resetSqlPath} --persist-to ../../.wrangler-persist`,
+				{
+					stdio: "pipe",
+					cwd: webDir,
+				},
+			);
 			console.log("Database reset completed");
 		} catch (error) {
 			console.error("Failed to reset database:", error);
