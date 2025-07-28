@@ -1,0 +1,50 @@
+services:
+  # Webアプリケーション（wrangler dev）
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    ports:
+      - "8788:8788"
+    volumes:
+      - ./.wrangler-persist:/app/.wrangler-persist
+      - ./packages/core/migrations:/app/packages/core/migrations
+    environment:
+      - NODE_ENV=development
+    networks:
+      - e2e-network
+    # ヘルスチェック一時無効化
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://0.0.0.0:8787/"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
+
+  # E2Eテスト実行環境
+  e2e-test:
+    build:
+      context: .
+      dockerfile: packages/e2e-test/Dockerfile
+    depends_on:
+      - web
+    volumes:
+      - ./packages/e2e-test/test-results:/app/packages/e2e-test/test-results
+      - ./packages/e2e-test/playwright-report:/app/packages/e2e-test/playwright-report
+      - ./.test-databases:/app/.test-databases
+    environment:
+      - NODE_ENV=test
+      - PLAYWRIGHT_BASE_URL=http://web:8788
+      - PLAYWRIGHT_WORKERS=4
+      - TEST_DB_DIR=/app/.test-databases
+    networks:
+      - e2e-network
+    command: ["pnpm", "test:docker"]
+
+networks:
+  e2e-network:
+    driver: bridge
+
+volumes:
+  wrangler-persist:
+    driver: local
