@@ -18,7 +18,7 @@ RUN npm install -g pnpm@10
 # パッケージファイルをコピー
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/core/package.json ./packages/core/
-COPY packages/web/package.json ./packages/web/
+COPY packages/wrangler/package.json ./packages/wrangler/
 COPY packages/dkit/package.json ./packages/dkit/
 
 # 依存関係のインストール
@@ -30,17 +30,17 @@ COPY . .
 # coreパッケージのビルド
 RUN cd packages/core && pnpm build
 
-# webパッケージのビルド
-RUN cd packages/web && pnpm build
+# wranglerパッケージのビルド
+RUN cd packages/wrangler && pnpm build
 
 # データベースマイグレーションの実行
-RUN cd packages/web && pnpm d1:migrate:local
+RUN cd packages/wrangler && pnpm d1:migrate:local
 
 # ポートの公開
 EXPOSE 8788
 
-# webパッケージディレクトリに移動
-WORKDIR /app/packages/web
+# wranglerパッケージディレクトリに移動
+WORKDIR /app/packages/wrangler
 
 # wrangler dev実行（Docker用）
 CMD ["pnpm", "dev:docker"]

@@ -15,9 +15,9 @@ RUN node --version && npm --version && pnpm --version && wrangler --version
 # パッケージファイルをコピー
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/core/package.json ./packages/core/
-COPY packages/e2e-test/package.json ./packages/e2e-test/
+COPY packages/wrangler-e2e/package.json ./packages/wrangler-e2e/
 COPY packages/dkit/package.json ./packages/dkit/
-COPY packages/web/package.json ./packages/web/
+COPY packages/wrangler/package.json ./packages/wrangler/
 
 # 依存関係のインストール
 RUN pnpm install --frozen-lockfile
@@ -32,12 +32,12 @@ RUN rm -rf node_modules packages/*/node_modules && pnpm install --frozen-lockfil
 RUN cd packages/core && pnpm build
 
 # D1ローカルデータベースのマイグレーション実行（ローカルファイル自動作成）
-WORKDIR /app/packages/web
+WORKDIR /app/packages/wrangler
 # .wrangler-persistディレクトリを作成してマイグレーション実行
 RUN mkdir -p ../../.wrangler-persist && wrangler d1 migrations apply ptdev --local --persist-to ../../.wrangler-persist
 
-# e2e-testディレクトリに移動
-WORKDIR /app/packages/e2e-test
+# wrangler-e2eディレクトリに移動
+WORKDIR /app/packages/wrangler-e2e
 
 # テスト実行のデフォルトコマンド
 CMD ["pnpm", "test:docker"]
