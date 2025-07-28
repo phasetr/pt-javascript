@@ -49,3 +49,9 @@ AI_INSTRUCTIONS.md
 # sqlite
 dev.db
 *.wasm
+
+# Playwright E2E Tests
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
