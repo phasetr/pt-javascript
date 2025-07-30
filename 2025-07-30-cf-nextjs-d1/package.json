@@ -1,0 +1,31 @@
+{
+	"name": "pt-nextapp",
+	"version": "1.0.0",
+	"description": "simple next.js+D1+drizzle",
+	"type": "module",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"check": "pnpm lint:fix && pnpm lint && pnpm build && pnpm typecheck && pnpm test:dev",
+		"clean:build": "rm -rf coverage && rm -rf packages/*/coverage && rm -rf packages/*/dist && rm -f packages/*/tsconfig.tsbuildinfo && find packages -type f \\( -name \"*.d.ts\" -o -name \"*.d.ts.map\" -o -name \"*.js\" -o -name \"*.js.map\" \\) -exec rm -f {} +",
+		"lint:fix": "biome check . --fix --diagnostic-level=error",
+		"lint": "biome check .",
+		"build": "pnpm --filter \"*\" build",
+		"typecheck": "pnpm --filter \"*\" typecheck",
+		"test": "pnpm -r test",
+		"test:dev": "pnpm -r test:dev",
+		"test:coverage": "pnpm -r test:coverage",
+		"dev:nextapp": "pnpm --filter nextapp dev",
+		"dev:nextapp:wrangler": "pnpm --filter nextapp wrangler:dev",
+		"build:nextapp": "pnpm --filter nextapp build",
+		"db:migrate": "pnpm --filter nextapp db:migrate"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "latest"
+	},
+	"author": "phasetr",
+	"license": "MIT",
+	"packageManager": "pnpm@10.13.1"
+}

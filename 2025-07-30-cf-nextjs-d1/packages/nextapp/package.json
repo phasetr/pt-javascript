@@ -1,0 +1,28 @@
+{
+	"name": "nextapp",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"wrangler:dev": "wrangler dev",
+		"wrangler:deploy": "wrangler deploy",
+    "db:migrate": "npx wrangler d1 migrations apply numbers-db --local"
+	},
+	"dependencies": {
+		"next": "^15.4.5",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"drizzle-orm": "^0.44.4"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.2",
+		"@types/react": "^19.1.9",
+		"@types/react-dom": "^19.1.7",
+		"drizzle-kit": "^0.31.4",
+		"typescript": "^5.7.2",
+		"wrangler": "^4.26.1"
+	}
+}
